@@ -34,7 +34,7 @@ private:
 
 	// Decoding matrices
 	static PreachingBasedR<long double, M, N> mr; //check node to variable node
-	static PreachingBasedQ<long double, M, N> mq; //variable node to check node 
+	static PreachingBasedQ<long double, M, N> mq; //variable node to check node
 	static PreachingBasedQ<long double, M, N> mq0; //variable node to check node at 0th iteration
 	static Automatrix1<long double, N*Z> ml; // LLR update
 	static Automatrix1<long double, N*Z> ml0; // ln^(0)
@@ -42,7 +42,7 @@ private:
 
 
 	// The Gaussian distribution random number generator
-	MTRand_gaussian grand;	
+	MTRand_gaussian grand;
 	// Discrete value random number generator
 	MTRand_int32 irand;
 
@@ -73,9 +73,9 @@ public:
 	// Compute the output of the decoder
 	// Returns 0 if no error, or 1 if there was an error
 	unsigned decode();
-	
+
 	void rupdate_bp();
-	
+
 	void rupdate_offms();
 
 
@@ -91,7 +91,10 @@ public:
 
 	struct functor_updateq
 	{
-		static inline void callbackY
+		static inline void callbackY()
+		{
+		}
+	};
 
 
 	// Functor to find the sum over elements in ms for a row,
@@ -133,13 +136,13 @@ public:
 		}
 	};
 
-	
+
 	struct functor_r_offms
 	{
 		static int pi;
 		static long double min0, min1;
 		static inline void callback(unsigned y, unsigned x, unsigned i)
-		{   
+		{
 			// long double qv = mq[y][x];
 			long double qv = mq.Vc[y][i];
 			pi *= (qv > 0) ? 1 : -1;
@@ -160,19 +163,19 @@ public:
 		static long double sigma;
 		static inline void callback(unsigned y, unsigned x, unsigned i)
 		{
-			sigma += mr.Vc[x][i]; //update 
+			sigma += mr.Vc[x][i]; //update
 		}
 	};
 
 private:
-	
+
 	// Set the parity matrix based on the message
 	void setParity();
 
 	template <int X, typename MatrixType>
-	void outputLargeMatrix1(MatrixType &matrix)
+	static void outputLargeMatrix1(MatrixType &matrix)
 	{
-		for (int x = 0; x < X; x++)
+		for (int x = 0; x < X*Z; x++)
 		{
 			debugfile << matrix[x] << '\t';
 			if (x%Z == Z-1)
@@ -181,8 +184,21 @@ private:
 		debugfile << endl;
 	}
 
+	template <int X>
+	static void outputLargeMatrix1<X, bool(&)[X*Z]>(bool (&matrix)[X*Z])
+	{
+		bool *pm = matrix;
+		for (int x = 0; x < X; x++)
+		{
+			for (int z = 0; z < Z; z++, pm++)
+				debugfile << *pm;
+			debugfile << ' ';
+		}
+		debugfile << endl;
+	}
+
 	template <int Y, int X, typename MatrixType>
-	void outputLargeMatrix2(MatrixType &matrix)
+	static void outputLargeMatrix2(MatrixType &matrix)
 	{
 		for (int y = 0; y < Y; y++)
 		{
