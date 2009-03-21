@@ -46,18 +46,17 @@ Automatrix1<long double, N*Z> LDPC::ml;
 Automatrix1<long double, N*Z> LDPC::ml0;
 Automatrix1<bool, N*Z> LDPC::mxhat;
 
-const double LDPC::R = 0.5; //rate 
-const double LDPC::beta = 0.15; // Beta for minsum decoding
+const double LDPC::R = 0.5;		//rate
+const double LDPC::beta = 0.15;	// Beta for minsum decoding
 
-bool        LDPC::functor_summsy::sum;
-bool        LDPC::functor_multhpp::success;
-long double LDPC::functor_r_bp::pi;
-long double LDPC::functor_sigmar::sigma;
 unsigned    LDPC::functor_multhxhat::nerrs;
-int         LDPC::functor_r_offms::pi;
+bool        LDPC::functor_multhpp::success;
+bool        LDPC::functor_summsy::sum;
+long double LDPC::functor_sigmar::sigma;
+long double LDPC::functor_r_bp::pi;
 long double LDPC::functor_r_offms::min0;
 long double LDPC::functor_r_offms::min1;
-
+int         LDPC::functor_r_offms::pi;
 
 LDPC::LDPC() :
 	grand((unsigned long)time(0)),
@@ -67,8 +66,9 @@ LDPC::LDPC() :
 	cout << "Enter signal to noise ratio (dB): ";
 //	cin >> snrdb;
 	snrdb = 1.5;
-	snr = pow(10.0,snrdb/10);
+	snr = pow(10.0, snrdb/10);
 	sigma = pow(2*R*snr, -0.5);
+
 	cout << "Enter maximum decoding iteration count: ";
 //	cin >> imax;
 	imax = 50;
@@ -93,9 +93,9 @@ void LDPC::execute()
 	{
 		for (int n = 0; n < N*Z; n++)
 		{
-			debugfile << H.at(m,n) << '\t';
+			debugfile << H.at(m,n);
 			if (n%Z == Z-1)
-				debugfile << '\t';
+				debugfile << ' ';
 		}
 		debugfile << endl;
 		if (m%Z == Z-1)
@@ -113,22 +113,18 @@ void LDPC::execute()
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "Message:" << endl;
-		for (int i = 0; i < K*Z; i++)
-			debugfile << ms[i] << '\t';
-		debugfile << endl;
+		outputLargeMatrix1(ms);
 
 		debugfile << "Encoded parity bits:" << endl;
-		for (int i = 0; i < M*Z; i++)
-			debugfile << mp[i] << '\t';
-		debugfile << endl;
+		outputLargeMatrix(mp);
 #endif
 
 		// Decode
 		nerrs += decode();
 
 		cout << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
-		debugfile << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
+		debugfile << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
 		break;
 #endif
 	}
@@ -257,17 +253,17 @@ unsigned LDPC::decode()
 			functor_sigmar::sigma = 0;
 
 			H.iterX<functor_sigmar>(n);
-			
+
 			for (unsigned m = 0; m < Z*M; m++)
 			{
 				if (H.at(m, n))
 				{
-					mq[n][m] = mq0[n][m] + functor_sigmar::sigma; //variable node update 
+					mq[n][m] = mq0[n][m] + functor_sigmar::sigma; //variable node update
 					mq[n][m] -= mr[m][n]; //performs exlusion of m
 				}
 			}
-			
-			ml[n] = ml0[n] + functor_sigmar::sigma; //LLR update 
+
+			ml[n] = ml0[n] + functor_sigmar::sigma; //LLR update
 
 			mxhat[n] = ml[n] < 0; //hard decision
 		}
@@ -275,7 +271,7 @@ unsigned LDPC::decode()
 		// Check that the decoding succeeded
 		functor_multhxhat::nerrs = 0;
 		H.multCol<functor_multhxhat>(mxhat);
-		
+
 		unsigned diff = 0;        //errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
@@ -310,7 +306,7 @@ unsigned LDPC::decode()
 void LDPC::rupdate_bp()
 {
 	// Update mr
-	for (unsigned m = 0; m < Z*M; m++) //m outer dimension 
+	for (unsigned m = 0; m < Z*M; m++) //m outer dimension
 	{
 		// Do the graph iteration to calculate the pi term without exclusion
 		functor_r_bp::pi = 1;
@@ -358,13 +354,13 @@ void LDPC::rupdate_offms()
 	{
 		functor_r_offms::pi = 1;	// Multiplicative identity
 		// Min function identities
-		functor_r_offms::min0 = numeric_limits<long double>::max(); //use long double value as large value reference 
+		functor_r_offms::min0 = numeric_limits<long double>::max(); //use long double value as large value reference
 		functor_r_offms::min1 = functor_r_offms::min0;
 
 		// Do the graph iteration to calculate the pi and min
 		// terms without exclusion
 		H.iterY<functor_r_offms>(m); //includes '1' ingnores
-		
+
 		for (int n = 0; n < Z*N; n++)
 		{
 			if (H.at(m, n))
