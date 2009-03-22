@@ -77,7 +77,9 @@ double sigma;
 // Beta (for minsum decoding)
 const double beta = 0.15;
 
+#if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
+#endif
 
 int imax;
 
