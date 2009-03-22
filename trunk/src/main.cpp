@@ -4,7 +4,7 @@
 
 using namespace std;
 
-#ifdef _MSC_VER && _DEBUG
+#if defined(_MSC_VER) && defined(_DEBUG)
 
 #include <float.h>
 
@@ -42,7 +42,7 @@ void enableFPEs()
 
 int main()
 {
-#ifdef _MSC_VER && _DEBUG
+#if defined(_MSC_VER) && defined(_DEBUG)
 	// Enable floating-point exceptions for debugging purposes
 	enableFPEs();
 #endif

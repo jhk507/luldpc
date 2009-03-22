@@ -76,30 +76,6 @@ ofstream debugfile("debugfile.tsv");
 
 int imax;
 
-template <int X, typename MatrixType>
-void outputLargeMatrix1(MatrixType &matrix)
-{
-	for (int x = 0; x < X*Z; x++)
-	{
-		debugfile << matrix[x] << '\t';
-		if (x%Z == Z-1)
-			debugfile << '\t';
-	}
-	debugfile << endl;
-}
-
-template <int X>
-void outputLargeMatrix1Bool(bool (&matrix)[X*Z])
-{
-	bool *pm = matrix;
-	for (int x = 0; x < X; x++)
-	{
-		for (int z = 0; z < Z; z++, pm++)
-			debugfile << *pm;
-		debugfile << ' ';
-	}
-	debugfile << endl;
-}
 
 void init()
 {
@@ -142,10 +118,10 @@ void execute()
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "Message:" << endl;
-		outputLargeMatrix1Bool<K>(ms);
+		outputLargeContiguous<bool,K,Z>(ms, debugfile);
 
 		debugfile << "Encoded parity bits:" << endl;
-		outputLargeMatrix1Bool<M>(mp);
+		outputLargeContiguous<bool,M,Z>(mp, debugfile);
 #endif
 
 		// Decode
@@ -281,7 +257,7 @@ bool decode()
 		debugfile << "Before iteration " << i << ":" << endl;
 
 		debugfile << "l:" << endl;
-		outputLargeMatrix1<N*Z>(ml);
+		ml.outputLarge<N,Z>(debugfile);
 
 		debugfile << "q:" << endl;
 		mq.output(debugfile);
