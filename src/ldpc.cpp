@@ -17,9 +17,8 @@ this class per process.
 #include <iomanip>
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
-#define RUPDATE_BP 0		// Enable to use belief propagation decoding
-#define RUPDATE_MS 1		// Enable to use min-sum decoding
 
+#include "mtrand/MTRand_gaussian.hpp"
 #include "ldpc.hpp"
 
 using namespace std;
@@ -70,9 +69,9 @@ MTRand_gaussian grand((unsigned long)time(0));
 MTRand_int32 irand((unsigned long)~time(0));
 
 // Constants for AWGN calculation
-const double R = 0.5;
-double snr;		// Signal-to-noise ratio
-double snrdb;	// Signal-to-noise ratio (decibels)
+const double R = 0.5;	// Rate
+double snr;				// Signal-to-noise ratio
+double snrdb;			// Signal-to-noise ratio (decibels)
 double sigma;
 
 // Beta (for minsum decoding)
@@ -82,6 +81,11 @@ ofstream debugfile("debugfile.tsv");
 
 int imax;
 
+const enum DecodeMethod
+{
+	bp,
+	offms
+} method = offms;
 
 void init()
 {
@@ -242,11 +246,12 @@ bool decode()
 	for (int n = 0; n < N*Z; n++)
 	{
 		static long double l;
-#if RUPDATE_BP
-		l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
-#else
-		l = my[n];
-#endif
+
+		if (method == bp)
+			l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
+		else
+			l = my[n];
+
 		ml0[n] = l;
 		ml[n] = l;
 
@@ -278,12 +283,15 @@ bool decode()
 #endif
 
 		// Update mr
-#if RUPDATE_BP
-		rupdate_bp();
-#endif
-#if RUPDATE_MS
-		rupdate_offms();
-#endif
+		switch (method)
+		{
+		case bp:
+			rupdate_bp();
+			break;
+		case offms:
+			rupdate_offms();
+			break;
+		}
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "After iteration " << i << ":" << endl;

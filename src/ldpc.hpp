@@ -6,9 +6,7 @@
 
 #pragma once
 
-#include "automatrix.hpp"
 #include "preachingbased.hpp"
-#include "mtrand/MTRand_gaussian.hpp"
 
 // Presets for half-rate
 #define M 12	// Height of the unexpanded Preaching matrix
