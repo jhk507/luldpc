@@ -1,3 +1,9 @@
+/*
+* $URL$
+* $Date$
+* $Rev$
+*/
+
 #pragma once
 
 #include <ostream>
