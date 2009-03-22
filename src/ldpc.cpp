@@ -10,7 +10,7 @@ this class per process.
 #include <iomanip>
 #include <limits>
 
-#define OUTPUT_DEBUGFILE 1	// Enable to output data to a debug file
+#define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 #define RUPDATE_BP 0		// Enable to use belief propagation decoding
 #define RUPDATE_MS 1		// Enable to use min-sum decoding
 
@@ -92,6 +92,9 @@ void init()
 
 void execute()
 {
+	// Initialize the simulation
+	init();
+
 	int nerrs = 0;	// The number of block errors
 
 #if OUTPUT_DEBUGFILE
