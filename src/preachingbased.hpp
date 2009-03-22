@@ -1,99 +1,73 @@
 #pragma once
 
+#include <ostream>
+
 #include "preaching.hpp"
 
 //////////////////////////////////////////////////////////////////////////////
 
-template <typename Elm>
+template <typename Elm, int Y, int X, int RHO>
 class PreachingBased
 {
-protected:
-	template <unsigned Y, unsigned X, unsigned RHO>
-	PreachingBased(const Preaching<Y,X,RHO> &preaching)
+public:
+	PreachingBased(const Preaching<Y,X,RHO> &preachingInit) :
+		preaching(preachingInit)
 	{
 		data = new Elm[preaching.ones];
-	}
-public:
-	~PreachingBased()
-	{
-		delete [] data;
-	}
 
-	Elm *data;
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-template <typename Elm, unsigned Y>
-class PreachingBasedY :
-	public PreachingBased<Elm>
-{
-public:
-	template <unsigned X, unsigned RHO>
-	PreachingBasedY(const Preaching<Y,X,RHO> &preaching) :
-		PreachingBased<Elm>(preaching)
-	{
-		Elm *dati = PreachingBased<Elm>::data;
-		for (unsigned y = 0; y < Z*Y; y++)
+		Elm *dati = data;
+		for (int y = 0; y < Z*Y; y++)
 		{
-			Vcy[y] = dati;
-			int *pHyc = preaching.Hyc[y];
+			Vyc[y] = dati;
+			const int *pHyc = preaching.Hyc[y];
 			while (*pHyc++ >= 0)
 				dati++;
 		}
-	}
 
-	Elm *Vcy[Z*Y];
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-template <typename Elm, unsigned X>
-class PreachingBasedX :
-	virtual public PreachingBased<Elm>
-{
-public:
-	template <unsigned Y, unsigned RHO>
-	PreachingBasedX(const Preaching<Y,X,RHO> &preaching) :
-		PreachingBased<Elm>(preaching)
-	{
-		Elm *dati = PreachingBased<Elm>::data;
-		for (unsigned x = 0; x < Z*X; x++)
+		dati = data;
+		for (int x = 0; x < Z*X; x++)
 		{
-			Vcx[x] = dati;
-			int *pHxc = preaching.Hxc[x];
+			Vxc[x] = dati;
+			const int *pHxc = preaching.Hxc[x];
 			while (*pHxc++ >= 0)
 				dati++;
 		}
 	}
 
-	Elm *Vcx[Z*X];
-};
-
-//////////////////////////////////////////////////////////////////////////////
-
-template <typename Elm, unsigned Y, unsigned X>
-class PreachingBasedR :
-	public PreachingBasedX<Elm, X>
-{
-public:
-	template <unsigned RHO>
-	PreachingBasedR(const Preaching<Y,X,RHO> &preaching) :
-		PreachingBasedX<Elm, X>(preaching)
+	~PreachingBased()
 	{
+		delete [] data;
 	}
-};
 
-template <typename Elm, unsigned Y, unsigned X>
-class PreachingBasedQ :
-	public PreachingBasedY<Elm, Y>,
-	public PreachingBasedX<Elm, X>
-{
-public:
-	template <unsigned RHO>
-	PreachingBasedQ(const Preaching<Y,X,RHO> &preaching) :
-		PreachingBasedY<Elm, Y>(preaching),
-		PreachingBasedX<Elm, X>(preaching)
+	void output(std::ostream &out) const
 	{
+		const Elm *dati = data;
+		for (int y = 0; y < Z*Y; y++)
+		{
+			const int *pHyc = preaching.Hyc[y];
+			int xh = *pHyc;
+			for (int x = 0; x < Z*X; x++)
+			{
+				if (xh == x)
+				{
+					xh = *++pHyc;
+					out << *++dati << '\t';
+				}
+				else
+					out << "0\t";
+
+				if (x%Z == Z-1)
+					out << '\t';
+			}
+			out << std::endl;
+			if (y%Z == Z-1)
+				out << endl;
+		}
+		out << std::endl;
 	}
+
+	Elm *data;
+	Elm *Vyc[Z*Y];
+	Elm *Vxc[Z*X];
+	const Preaching<Y,X,RHO> &preaching;
 };

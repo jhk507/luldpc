@@ -1,16 +1,28 @@
+/*
+Warning: This code is VERY NON-REENTRANT. This is deliberate to facilitate
+access to variables from functors and to greatly increase performance by
+cutting down on frame pointer generation. In short, only instantiate one of
+this class per process.
+*/
+
 #include <ctime>
 #include <iostream>
 #include <iomanip>
 #include <limits>
 
-#define OUTPUT_DEBUGFILE 0
+#define OUTPUT_DEBUGFILE 1	// Enable to output data to a debug file
+#define RUPDATE_BP 0		// Enable to use belief propagation decoding
+#define RUPDATE_MS 1		// Enable to use min-sum decoding
 
 #include "ldpc.hpp"
 
 using namespace std;
 
+namespace LDPC
+{
+
 // Data for unexpanded half-rate Preaching matrix H
-const int LDPC::Ha[M][N] =
+const int Ha[M][N] =
 {
 	{-1,94,73,-1,-1,-1,-1,-1,55,83,-1,-1, 7, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
 	{-1,27,-1,-1,-1,22,79, 9,-1,-1,-1,12,-1, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1},
@@ -26,42 +38,70 @@ const int LDPC::Ha[M][N] =
 	{43,-1,-1,-1,-1,66,-1,41,-1,-1,-1,26, 7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0}
 };
 
-const Preaching<M,N,7> LDPC::H(Ha, 0);
-const Preaching<M,K,6> LDPC::Hs(Ha, 0); // Unexpanded half-rate Preaching matrix H (first half)
-const Preaching<M,M,3> LDPC::Hp(Ha, K); // Unexpanded half-rate Preaching matrix H (second half, for parity)
+const Preaching<M,N,7> H(Ha, 0);	// Unexpanded half-rate Preaching matrix H
+const Preaching<M,K,6> Hs(Ha, 0);	// Unexpanded half-rate Preaching matrix H (first half)
+const Preaching<M,M,3> Hp(Ha, K);	// Unexpanded half-rate Preaching matrix H (second half, for parity)
 
-Automatrix1<bool, N*Z> LDPC::mx;
-Automatrix1<long double, N*Z> LDPC::my;
+Automatrix1<bool, N*Z> mx;			// (col) Combination of ms and mp
+Automatrix1<long double, N*Z> my;	// (col) Encoder output after AWGN
 
 // Set the aliases into mx
-bool (&LDPC::ms)[K*Z] = (bool(&)[K*Z])*mx.getData(0);
-bool (&LDPC::mp)[M*Z] = (bool(&)[M*Z])*mx.getData(K*Z);
+bool (&ms)[K*Z] = (bool(&)[K*Z])*mx.getData(0);		// (col) Message
+bool (&mp)[M*Z] = (bool(&)[M*Z])*mx.getData(K*Z);	// (col) Generated parity
 
-Automatrix1<bool, M*Z> LDPC::msprod;
+Automatrix1<bool, M*Z> msprod;				// Encoding verification column
 
-PreachingBasedR<long double, M, N> LDPC::mr(H);
-PreachingBasedQ<long double, M, N> LDPC::mq(H);
-PreachingBasedQ<long double, M, N> LDPC::mq0(H);
-Automatrix1<long double, N*Z> LDPC::ml;
-Automatrix1<long double, N*Z> LDPC::ml0;
-Automatrix1<bool, N*Z> LDPC::mxhat;
+PreachingBased<long double, M,N,7> mr(H);	// R matrix
+PreachingBased<long double, M,N,7> mq(H);	// Q matrix
+PreachingBased<long double, M,N,7> mq0(H);	// Q matrix (iteration 0)
+Automatrix1<long double, N*Z> ml;			// L column
+Automatrix1<long double, N*Z> ml0;			// L column (iteration 0)
+Automatrix1<bool, N*Z> mxhat;				// xhat column
 
-const double LDPC::R = 0.5;		//rate
-const double LDPC::beta = 0.15;	// Beta for minsum decoding
+// The Gaussian distribution random number generator
+MTRand_gaussian grand((unsigned long)time(0));
+// Discrete value random number generator
+MTRand_int32 irand((unsigned long)~time(0));
 
-unsigned    LDPC::functor_multhxhat::nerrs;
-bool        LDPC::functor_multhpp::success;
-bool        LDPC::functor_summsy::sum;
-long double LDPC::functor_sigmar::sigma;
-long double LDPC::functor_r_bp::pi;
-long double LDPC::functor_r_offms::min0;
-long double LDPC::functor_r_offms::min1;
-int         LDPC::functor_r_offms::pi;
+// Constants for AWGN calculation
+const double R = 0.5;
+double snr;		// Signal-to-noise ratio
+double snrdb;	// Signal-to-noise ratio (decibels)
+double sigma;
 
-LDPC::LDPC() :
-	grand((unsigned long)time(0)),
-	irand((unsigned long)~time(0)),
-	debugfile("debugfile.tsv")
+// Beta (for minsum decoding)
+const double beta = 0.15;
+
+ofstream debugfile("debugfile.tsv");
+
+int imax;
+
+template <int X, typename MatrixType>
+void outputLargeMatrix1(MatrixType &matrix)
+{
+	for (int x = 0; x < X*Z; x++)
+	{
+		debugfile << matrix[x] << '\t';
+		if (x%Z == Z-1)
+			debugfile << '\t';
+	}
+	debugfile << endl;
+}
+
+template <int X>
+void outputLargeMatrix1Bool(bool (&matrix)[X*Z])
+{
+	bool *pm = matrix;
+	for (int x = 0; x < X; x++)
+	{
+		for (int z = 0; z < Z; z++, pm++)
+			debugfile << *pm;
+		debugfile << ' ';
+	}
+	debugfile << endl;
+}
+
+void init()
 {
 	cout << "Enter signal to noise ratio (dB): ";
 //	cin >> snrdb;
@@ -74,9 +114,9 @@ LDPC::LDPC() :
 	imax = 50;
 }
 
-void LDPC::execute()
+void execute()
 {
-	unsigned nerrs = 0;	// The number of block errors
+	int nerrs = 0;	// The number of block errors
 
 #if OUTPUT_DEBUGFILE
 	debugfile << "Unexpanded half-rate Preaching matrix" << endl;
@@ -89,19 +129,8 @@ void LDPC::execute()
 	debugfile << endl;
 
 	debugfile << "Expanded half-rate Preaching matrix" << endl;
-	for (int m = 0; m < M*Z; m++)
-	{
-		for (int n = 0; n < N*Z; n++)
-		{
-			debugfile << H.at(m,n);
-			if (n%Z == Z-1)
-				debugfile << ' ';
-		}
-		debugfile << endl;
-		if (m%Z == Z-1)
-			debugfile << endl;
-	}
-	debugfile << endl;
+	H.output(debugfile);
+	
 	debugfile.flush();
 #endif
 
@@ -113,14 +142,15 @@ void LDPC::execute()
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "Message:" << endl;
-		outputLargeMatrix1(ms);
+		outputLargeMatrix1Bool<K>(ms);
 
 		debugfile << "Encoded parity bits:" << endl;
-		outputLargeMatrix(mp);
+		outputLargeMatrix1Bool<M>(mp);
 #endif
 
 		// Decode
-		nerrs += decode();
+		if (!decode())
+			nerrs++;
 
 		cout << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
@@ -131,10 +161,10 @@ void LDPC::execute()
 }
 
 
-void LDPC::encode()
+void encode()
 {
 	// Generate the random bits of the message
-	for (unsigned m = 0; m < K*Z; m++)
+	for (int m = 0; m < K*Z; m++)
 		ms[m] = irand() & 1;
 
 	// Encode
@@ -150,76 +180,102 @@ void LDPC::encode()
 
 #ifdef _DEBUG
 	// Double-check that the encoding succeeded
-	functor_multhpp::success = true;
 	Hs.multCol(ms, msprod);
+
+	static bool success;
+	success = true;
+
+	struct functor_multhpp {
+		static inline void callback(int y, bool p) {
+			success &= msprod[y] == p;	// Checks if message sum product = parity SP
+		}
+	};
 	Hp.multCol<functor_multhpp>(mp);
-	cout << "Encoder check " << (functor_multhpp::success ? "passed." : "failed.") << endl;
+	
+	cout << "Encoder check " << (success ? "passed." : "failed.") << endl;
 #if OUTPUT_DEBUGFILE
-	debugfile << "Encoder check " << (functor_multhpp::success ? "passed." : "failed.") << endl;
+	debugfile << "Encoder check " << (success ? "passed." : "failed.") << endl;
 #endif
 #endif
-	for (unsigned n = 0; n < N*Z; n++)
+
+	for (int n = 0; n < N*Z; n++)
 		// Perform BPSK and AWGN addition
 		my[n] = (mx[n] ? -1 : 1) + grand()*sigma;	// 1->-1 and 0->1
 }
 
 // Set the parity matrix based on the message
-void LDPC::setParity()
+void setParity()
 {
+	static bool sum;
+
+	// Functor to find the sum over elements in ms for a row,
+	// iterating in x
+	struct functor_summsy {
+		static inline void callbackY(int y, int x, int xi) {
+			sum ^= ms[x]; //XOR
+		}
+	};
+
 	// Magic number for left side of v(0) determination
 	// With our matrix, this element is ZERO therefore there is NO SHIFT NEEDED
 	// const int xshift = 0;
 
 	// Determine v(0)
-	for (unsigned mi = 0; mi < Z; mi++) // Iterate over the index of v0
+	for (int mi = 0; mi < Z; mi++) // Iterate over the index of v0
 	{
-		functor_summsy::sum = 0;
-		for (unsigned m = mi; m < Z*M; m += Z)	// Iterate over m for whole H matrix
-			Hs.iterY<functor_summsy>(m);		// Effectively iterate over n
-		//mp[(mi+xshift)%Z] = sum;
-		mp[mi] = functor_summsy::sum;
+		sum = 0;
+		for (int m = mi; m < Z*M; m += Z)	// Iterate over m for whole H matrix
+			Hs.iterY<functor_summsy>(m);	// Effectively iterate over n
+		mp[mi] = sum;
 	}
 
 	// Determine v(1)
-	for (unsigned mi = 0; mi < Z; mi++)
+	for (int mi = 0; mi < Z; mi++)
 	{
-		functor_summsy::sum = Hp.pshift(0,0,mp,mi);	// P(i,k)v(0)
-		Hs.iterY<functor_summsy>(mi);				// sigma P(i,j)u(j)
-		mp[Z+mi] = functor_summsy::sum;				// p(1)
+		sum = Hp.pshift(0,0,mp,mi);		// P(i,k)v(0)
+		Hs.iterY<functor_summsy>(mi);	// sigma P(i,j)u(j)
+		mp[Z+mi] = sum;					// p(1)
 	}
 
 	// Determine v(i)
 	bool *pmp = mp+Z;	// p(i) starting at i=1
-	for (unsigned i = 1; i <= M-2; i++)
+	for (int i = 1; i <= M-2; i++)
 	{
-		for (unsigned mi = 0; mi < Z; mi++, pmp++)
+		for (int mi = 0; mi < Z; mi++, pmp++)
 		{
-			// v(i) + P(i,k)v(0)
-			functor_summsy::sum = *pmp ^ Hp.pshift(i,0,mp,mi);
-
-			// sigma P(i,j)u(j)
-			Hs.iterY<functor_summsy>(Z*i+mi);
-
-			pmp[Z] = functor_summsy::sum;	// p(i+1)
+			sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
+			Hs.iterY<functor_summsy>(Z*i+mi);	// sigma P(i,j)u(j)
+			pmp[Z] = sum;						// p(i+1)
 		}
 	}
 }
 
 
-unsigned LDPC::decode()
+bool decode()
 {
 	// Set initial state
-	for (unsigned n = 0; n < N*Z; n++)
+	for (int n = 0; n < N*Z; n++)
 	{
-		functor_setq::l = 2.0/sigma/sigma*my[n]; //(col) output after AWGN and noise channel o/p
-		//functor_setq::l = my[n];
-		ml0[n] = functor_setq::l;	//ln^(0)
-		ml[n] = functor_setq::l;	//ln (LLR update)
+		static long double l;
+#if RUPDATE_BP
+		l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
+#else
+		l = my[n];
+#endif
+		ml0[n] = l;
+		ml[n] = l;
+
+		struct functor_setq {
+			static inline void callbackX(int y, int x, int yi) {
+				mq0.Vxc[x][yi] = l;
+				mq.Vxc[x][yi] = l;
+			}
+		};
 		H.iterX<functor_setq>(n);
 	}
 
 	// Iterative decoding
-	for (unsigned i = 0; ; )
+	for (int i = 0; ; )
 	{
 #if OUTPUT_DEBUGFILE
 		debugfile << "Before iteration " << i << ":" << endl;
@@ -228,69 +284,87 @@ unsigned LDPC::decode()
 		outputLargeMatrix1<N*Z>(ml);
 
 		debugfile << "q:" << endl;
-		outputLargeMatrix2<N*Z,M*Z>(mq);
+		mq.output(debugfile);
 
 		debugfile.flush();
 
 		if (i >= 1)
-			return 0;
+			return true;
 #endif
+
 		// Update mr
-		// rupdate_bp();
+#if RUPDATE_BP
+		rupdate_bp();
+#endif
+#if RUPDATE_MS
 		rupdate_offms();
+#endif
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "After iteration " << i << ":" << endl;
 
 		debugfile << "r:" << endl;
-		outputLargeMatrix2<M*Z,N*Z>(mr);
+		mr.output(debugfile);
 
 		debugfile.flush();
 #endif
-		// Update mq and ml
-		for (unsigned n = 0; n < Z*N; n++)
-		{
-			functor_sigmar::sigma = 0;
 
+		// Update mq and ml
+		for (int n = 0; n < Z*N; n++)
+		{
+			static long double sigma;
+			sigma = 0;
+
+			struct functor_sigmar {
+				static inline void callbackX(int y, int x, int yi) {
+					sigma += mr.Vxc[x][yi];
+				}
+			};
 			H.iterX<functor_sigmar>(n);
 
-			for (unsigned m = 0; m < Z*M; m++)
+			struct functor_updateq
 			{
-				if (H.at(m, n))
-				{
-					mq[n][m] = mq0[n][m] + functor_sigmar::sigma; //variable node update
-					mq[n][m] -= mr[m][n]; //performs exlusion of m
+				static inline void callbackX(int y, int x, int yi) {
+					// Performs exclusion
+					mq.Vxc[x][yi] = mq0.Vxc[x][yi] + sigma - mr.Vxc[x][yi];
 				}
-			}
+			};
 
-			ml[n] = ml0[n] + functor_sigmar::sigma; //LLR update
+			ml[n] = ml0[n] + sigma;
 
-			mxhat[n] = ml[n] < 0; //hard decision
+			mxhat[n] = ml[n] < 0; // Hard decision
 		}
 
 		// Check that the decoding succeeded
-		functor_multhxhat::nerrs = 0;
+		static int nerrs;	// The number of H*xhat errors
+		nerrs = 0;
+
+		struct functor_multhxhat {
+			static inline void callback(int y, bool p) {
+				nerrs += p;
+			}
+		};
 		H.multCol<functor_multhxhat>(mxhat);
 
-		unsigned diff = 0;        //errors
+		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
 
 #ifdef _DEBUG
 		cout << "Iteration " << setw(3) << i << ": "
-			<< setw(4) << functor_multhxhat::nerrs << " H*xhat errors, "
+			<< setw(4) << nerrs << " H*xhat errors, "
 			<< setw(4) << diff << " x==xhat errors."
 			<< endl;
 #if OUTPUT_DEBUGFILE
 		debugfile << "Iteration " << setw(3) << i << ": "
-			<< setw(4) << functor_multhxhat::nerrs << " H*xhat errors, "
+			<< setw(4) << nerrs << " H*xhat errors, "
 			<< setw(4) << diff << " x==xhat errors."
 			<< endl;
 #endif
 #endif
 
-		if (!functor_multhxhat::nerrs)
-			return 0;
+		if (!nerrs)
+			return true;
 
 		if (++i > imax)
 		{
@@ -298,85 +372,106 @@ unsigned LDPC::decode()
 #if OUTPUT_DEBUGFILE
 			debugfile << "Maximum iteration reached; error." << endl;
 #endif
-			return 1;
+			return false;
 		}
 	}
 }
 
-void LDPC::rupdate_bp()
+void rupdate_bp()
 {
 	// Update mr
-	for (unsigned m = 0; m < Z*M; m++) //m outer dimension
+	for (int m = 0; m < Z*M; m++)
 	{
 		// Do the graph iteration to calculate the pi term without exclusion
-		functor_r_bp::pi = 1;
+		static long double pi;
+		pi = 1;
 
-		H.iterY<functor_r_bp>(m);
+		struct functor_r_bp_pi {
+			static inline void callbackY(int y, int x, int xi) {
+				pi *= tanh(mq.Vyc[y][xi]/2);
+			}
+		};
+		H.iterY<functor_r_bp_pi>(m);
 
-		for (unsigned n = 0; n < Z*N; n++) // n inner dimension
-		{
-			if (H.at(m, n))
-			{
-				long double pir = functor_r_bp::pi;
-				const long double tanhr = tanh(mq[n][m]/2);
+		struct functor_r_bp_update {
+			static inline void callbackY(int y, int x, int xi) {
+				long double pir = pi;
+				const long double tanhr = tanh(mq.Vyc[y][xi]/2);
 				if (tanhr)
 					pir /= tanhr;
 				else
-				{
-					n=n; // divide by 0 case
-				}
+					exit(-1);	// Divide by 0
 				if (pir == 1)
 				{
-					mr[m][n] = numeric_limits<long double>::max(); // Explode!
+//					mr[m][n] = numeric_limits<long double>::max();
+					exit(-1);	// Divide by 0
 				}
 				else
 				{
 					const long double lnarg = (1+pir)/(1-pir);
-					if (lnarg < 0)
-					{
-						n = n;	// Explode! -ve case
-					}
+					if (lnarg <= 0)
+						exit(-1);	// Negative log
 					else
-						mr[m][n] = log(lnarg);
+						mr.Vyc[y][xi] = log(lnarg);
 				}
 			}
-			else
-				mr[m][n] = 0;
-		}
+		};
+		H.iterY<functor_r_bp_update>(m);
 	}
 }
 
-void LDPC::rupdate_offms()
+void rupdate_offms()
 {
 	// Update mr
 	// OFF-MS method
 	for (int m = 0; m < Z*M; m++)
 	{
-		functor_r_offms::pi = 1;	// Multiplicative identity
+		static long double pi;
+		pi = 1;	// Multiplicative identity
+
 		// Min function identities
-		functor_r_offms::min0 = numeric_limits<long double>::max(); //use long double value as large value reference
-		functor_r_offms::min1 = functor_r_offms::min0;
+		// Assume a very large value so that it may be overwritten on the first
+		// iteration.
+		static long double min0, min1;
+		min0 = numeric_limits<long double>::max();
+		min1 = min0;
 
 		// Do the graph iteration to calculate the pi and min
 		// terms without exclusion
-		H.iterY<functor_r_offms>(m); //includes '1' ingnores
-
-		for (int n = 0; n < Z*N; n++)
-		{
-			if (H.at(m, n))
-			{
-				long double pi = functor_r_offms::pi;
-
-				// Perform exclusion
-				long double qv = mq[n][m]; //Q matrix
-				pi /= (qv > 0) ? 1 : -1; //performs exlusion
-				long double qvmin = (fabs(qv) == functor_r_offms::min0) ?
-					functor_r_offms::min1 : functor_r_offms::min0; //determines "true" the min
-
-				mr[m][n] = pi * max((long double)0.0, qvmin - beta);//offset min sum calculation for r^(i)_(m,n)
+		struct functor_r_offms_pi {
+			static inline void callbackY(int y, int x, int xi) {
+				long double qv = mq.Vyc[y][xi];
+				if (qv < 0)
+					pi *= -1;
+				qv = fabs(qv);
+				if (min0 >= qv)
+				{
+					min1 = min0;
+					min0 = qv;
+				}
+				else if (min1 > qv)
+					min1 = qv;
 			}
-			else
-				mr[m][n] = 0;
-		}
+		};
+		H.iterY<functor_r_offms_pi>(m);
+
+		struct functor_r_offms_update {
+			static inline void callbackY(int y, int x, int xi) {
+				long double pir = pi;
+
+				const long double qv = mq.Vyc[y][xi];
+				// Perform exclusion on the pi term
+				if (qv < 0)
+					pir *= -1;
+				// Perform exclusion on the min term
+				const long double qvmin = (fabs(qv) == min0) ? min1 : min0;
+
+				// Offset min sum calculation for r^(i)_(m,n)
+				mr.Vyc[y][xi] = pir * max((long double)0.0, qvmin - beta);
+			}
+		};
+		H.iterY<functor_r_offms_update>(m);
 	}
+}
+
 }

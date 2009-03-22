@@ -3,7 +3,7 @@
 
 #pragma once
 
-#include <list>
+#include <ostream>
 
 #include "automatrix.hpp"
 
@@ -15,20 +15,20 @@
 
 // Rho is the maximum matrix sparsity parameter
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 class Preaching
 {
 public:
 	// Constructor initializes compressed matrices
-	template <unsigned XH>
-	Preaching(const int (&Hinit)[Y][XH], unsigned off);
+	template <int XH>
+	Preaching(const int (&Hinit)[Y][XH], int off);
 
 	// Get a single bit of the expanded matrix
-	inline bool at(unsigned y, unsigned x) const;
+	inline bool at(int y, int x) const;
 
 	// Multiply a row with the expanded matrix
 
-	// Functor member is of the form static void callback(unsigned x, bool p)
+	// Functor member is of the form static void callback(int x, bool p)
 	template <typename Functor>
 	inline void multRow(const bool (&row)[Z*Y]) const;
 	
@@ -36,23 +36,27 @@ public:
 
 	// Multiply the expanded matrix with a column
 	
-	// Functor member is of the form inline static void callback(unsigned y, bool p)
+	// Functor member is of the form inline static void callback(int y, bool p)
 	template <typename Functor>
 	inline void multCol(const bool (&col)[Z*X]) const;
 	
 	inline void multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const;
 
 	// Iterate over nonzero elements in expanded matrix
-	// Both functor members are of the form inline static void callback(unsigned y, unsigned x, unsigned i)
+	
+	// Functor member is of the form inline static void callbackY(int y, int x, int xi)
 	template <typename Functor>	// For a y, iterate over x
-	inline void iterY(unsigned y) const;
+	inline void iterY(int y) const;
+	// Functor member is of the form inline static void callbackX(int y, int x, int yi)
 	template <typename Functor> // For an x, iterate over y
-	inline void iterX(unsigned x) const;
+	inline void iterX(int x) const;
 
 	// Multiply a ZxZ matrix expanded from the Preaching element at (xp,yp),
 	// 0 <= xp <= X, 0 <= yp <= Y; with a Zx1 column, and return the index into
 	// the OLD column determined by y, the index in the NEW (product) column.
-	inline bool pshift(unsigned yp, unsigned xp, const bool *col, unsigned y) const;
+	inline bool pshift(int yp, int xp, const bool *col, int y) const;
+
+	void output(std::ostream &out) const;
 
 public:
 	const Automatrix2Alias<int,Y,X> H;	// The matrix array reference
@@ -61,30 +65,30 @@ public:
 	// and are terminated with a -1.
 	int Hyc[Z*Y][RHO+1];	// Compressed matrix, y-dimension
 	int Hxc[Z*X][RHO+1];	// Compressed matrix, x-dimension
-	unsigned ones;
+	int ones;
 };
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 
-template <unsigned Y, unsigned X, unsigned RHO>
-template <unsigned XH>
-Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], unsigned off) :
+template <int Y, int X, int RHO>
+template <int XH>
+Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 	H(Hinit, off)
 {
 	ones = 0;
 
 	// Initialize the compressed matrices
-	for (unsigned yb = 0; yb < Y; yb++) // Iterate over preaching blocks
+	for (int yb = 0; yb < Y; yb++) // Iterate over preaching blocks
 	{
-		for (unsigned ys = 0; ys < Z; ys++) // Iterate within preaching subblocks
+		for (int ys = 0; ys < Z; ys++) // Iterate within preaching subblocks
 		{
 			// Stores the position of "1" elements within expanded Preaching matrix
 			int *const pHyc = Hyc[Z*yb+ys];
 
-			unsigned c = 0;
-			for (unsigned xb = 0; xb < X; xb++)
+			int c = 0;
+			for (int xb = 0; xb < X; xb++)
 			{
 				const int h = H[yb][xb];
 				if (h >= 0)
@@ -97,15 +101,15 @@ Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], unsigned off) :
 		}
 	}
 
-	for (unsigned xb = 0; xb < X; xb++) // Iterate over preaching blocks
+	for (int xb = 0; xb < X; xb++) // Iterate over preaching blocks
 	{
-		for (unsigned xs = 0; xs < Z; xs++) // Iterate within preaching subblocks
+		for (int xs = 0; xs < Z; xs++) // Iterate within preaching subblocks
 		{
 			// Stores the position of "1" elements within expanded Preaching matrix
 			int *const pHxc = Hxc[Z*xb+xs];
 
-			unsigned c = 0;
-			for (unsigned yb = 0; yb < Y; yb++)
+			int c = 0;
+			for (int yb = 0; yb < Y; yb++)
 			{
 				const int h = H[yb][xb];
 				if (h >= 0)
@@ -116,11 +120,11 @@ Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], unsigned off) :
 	}
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
-inline bool Preaching<Y,X,RHO>::at(unsigned y, unsigned x) const
+template <int Y, int X, int RHO>
+inline bool Preaching<Y,X,RHO>::at(int y, int x) const
 {
 /*	// Search for y within Hxc[x]
-	const unsigned *pHxc;
+	const int *pHxc;
 	for (pHxc = Hxc[x]; y > *pHxc; pHxc++)
 		if (*pHxc < 0)
 			return false;
@@ -131,11 +135,11 @@ inline bool Preaching<Y,X,RHO>::at(unsigned y, unsigned x) const
 	return !((p+y-x)%Z); //converts from unexpanded to expanded bit
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 template <typename Functor>
 inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y]) const
 {
-	for (unsigned x = 0; x < Z*X; x++)
+	for (int x = 0; x < Z*X; x++)
 	{
 		bool prod = 0;
 		for (const int *pHxc = Hxc[x]; *pHxc >= 0; pHxc++)
@@ -144,10 +148,10 @@ inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y]) const
 	}
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const
 {
-	for (unsigned x = 0; x < Z*X; x++)
+	for (int x = 0; x < Z*X; x++)
 	{
 		bool prod = 0;
 		for (const int *pHxc = Hxc[x]; *pHxc >= 0; pHxc++)
@@ -156,11 +160,11 @@ inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[
 	}
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 template <typename Functor>
 inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X]) const
 {
-	for (unsigned y = 0; y < Z*Y; y++)
+	for (int y = 0; y < Z*Y; y++)
 	{
 		bool prod = 0;
 		for (const int *pHyc = Hyc[y]; *pHyc >= 0; pHyc++)
@@ -169,10 +173,10 @@ inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X]) const
 	}
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const
 {
-	for (unsigned y = 0; y < Z*Y; y++)
+	for (int y = 0; y < Z*Y; y++)
 	{
 		bool prod = 0;
 		for (const int *pHyc = Hyc[y]; *pHyc >= 0; pHyc++)
@@ -181,40 +185,40 @@ inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[
 	}
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::iterY(unsigned y) const
+inline void Preaching<Y,X,RHO>::iterY(int y) const
 {
 	const int *pHyc = Hyc[y];
 	int x = *pHyc;
-	unsigned i = 0;
+	int xi = 0;
 	do
 	{
-		Functor::callbackY(y, i);
-		i++;
+		Functor::callbackY(y, x, xi);
+		xi++;
 		pHyc++;
 		x = *pHyc;
 	} while (x >= 0);
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
+template <int Y, int X, int RHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::iterX(unsigned x) const
+inline void Preaching<Y,X,RHO>::iterX(int x) const
 {
 	const int *pHxc = Hxc[x];
 	int y = *pHxc;
-	unsigned i = 0;
+	int yi = 0;
 	do
 	{
-		Functor::callbackX(x, i);
-		i++;
+		Functor::callbackX(y, x, yi);
+		yi++;
 		pHxc++;
 		y = *pHxc;
 	} while (y >= 0);
 }
 
-template <unsigned Y, unsigned X, unsigned RHO>
-inline bool Preaching<Y,X,RHO>::pshift(unsigned yp, unsigned xp, const bool *col, unsigned y) const
+template <int Y, int X, int RHO>
+inline bool Preaching<Y,X,RHO>::pshift(int yp, int xp, const bool *col, int y) const
 {
 	const int p = H[yp][xp];
 	if (p < 0)
@@ -222,6 +226,23 @@ inline bool Preaching<Y,X,RHO>::pshift(unsigned yp, unsigned xp, const bool *col
 	return col[(y+p)%Z];
 }
 
+template <int Y, int X, int RHO>
+void Preaching<Y,X,RHO>::output(std::ostream &out) const
+{
+	for (int y = 0; y < Y*Z; y++)
+	{
+		for (int x = 0; x < X*Z; x++)
+		{
+			out << at(y,x);
+			if (x%Z == Z-1)
+				out << ' ';
+		}
+		out << endl;
+		if (y%Z == Z-1)
+			out << endl;
+	}
+	out << endl;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////////

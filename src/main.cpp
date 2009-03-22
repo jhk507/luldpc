@@ -47,8 +47,7 @@ int main()
 	enableFPEs();
 #endif
 
-	LDPC ldpc;
-	ldpc.execute();
+	LDPC::execute();
 
 	return 0;
 }
