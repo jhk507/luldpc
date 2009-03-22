@@ -23,32 +23,32 @@ protected:
 	Array data;
 };
 
-template <typename Elm, unsigned X>
+template <typename Elm, int X>
 class Automatrix1 : public Automatrix<Elm, Elm[X]>
 {
 };
 
-template <typename Elm, unsigned Y, unsigned X>
+template <typename Elm, int Y, int X>
 class Automatrix2 : public Automatrix<Elm, Elm[Y][X]>
 {
 };
 
-template <typename Elm, unsigned Y, unsigned X>
+template <typename Elm, int Y, int X>
 class Automatrix2Alias
 {
 public:
 	typedef const Elm (&SubArrayRef)[X];
 
 public:
-	template <unsigned XH>
-	Automatrix2Alias(const Elm (&original)[Y][XH], unsigned off)
+	template <int XH>
+	Automatrix2Alias(const Elm (&original)[Y][XH], int off)
 	{
-		for (unsigned y = 0; y < Y; y++)
+		for (int y = 0; y < Y; y++)
 			data[y] = &original[y][off];
 	}
 
 
-	inline SubArrayRef operator[](unsigned y) const
+	inline SubArrayRef operator[](int y) const
 	{
 		return (SubArrayRef)*data[y];
 	}
