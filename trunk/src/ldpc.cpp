@@ -437,7 +437,7 @@ void rupdate_offms()
 			static inline void callbackY(int y, int x, int xi) {
 				long double qv = mq.Vyc[y][xi];
 				if (qv < 0)
-					pi *= -1;
+					pi = -pi;
 				qv = fabs(qv);
 				if (min0 >= qv)
 				{
@@ -457,7 +457,7 @@ void rupdate_offms()
 				const long double qv = mq.Vyc[y][xi];
 				// Perform exclusion on the pi term
 				if (qv < 0)
-					pir *= -1;
+					pir = -pir;
 				// Perform exclusion on the min term
 				const long double qvmin = (fabs(qv) == min0) ? min1 : min0;
 
