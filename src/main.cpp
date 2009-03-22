@@ -1,8 +1,12 @@
+/*
+* $URL$
+* $Date$
+* $Rev$
+*/
+
 #include <iostream>
 
 #include "ldpc.hpp"
-
-using namespace std;
 
 #if defined(_MSC_VER) && defined(_DEBUG)
 

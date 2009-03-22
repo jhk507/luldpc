@@ -1,4 +1,8 @@
 /*
+* $URL$
+* $Date$
+* $Rev$
+
 Warning: This code is VERY NON-REENTRANT. This is deliberate to facilitate
 access to variables from functors and to greatly increase performance by
 cutting down on frame pointer generation. In short, only instantiate one of
@@ -6,9 +10,11 @@ this class per process.
 */
 
 #include <ctime>
-#include <iostream>
-#include <iomanip>
+#include <cmath>
 #include <limits>
+#include <iostream>
+#include <fstream>
+#include <iomanip>
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 #define RUPDATE_BP 0		// Enable to use belief propagation decoding
