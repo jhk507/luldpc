@@ -5,8 +5,7 @@
 
 Warning: This code is VERY NON-REENTRANT. This is deliberate to facilitate
 access to variables from functors and to greatly increase performance by
-cutting down on frame pointer generation. In short, only instantiate one of
-this class per process.
+cutting down on frame pointer generation. In short, no multithreading allowed.
 */
 
 #include <ctime>
