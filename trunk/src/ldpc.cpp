@@ -63,6 +63,7 @@ bool (&mp)[M*Z] = (bool(&)[M*Z])*mx.getData(K*Z);	// (col) Generated parity
 
 Automatrix1<bool, M*Z> msprod;		// Encoding verification column
 
+// Decoding matrices
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq0(H);	// Q matrix (iteration 0)
@@ -71,9 +72,9 @@ Automatrix1<long double, N*Z> ml0;	// L column (iteration 0)
 Automatrix1<bool, N*Z> mxhat;		// xhat column
 
 // The Gaussian distribution random number generator
-MTRand_gaussian grand((unsigned long)time(0));
+MTRand_gaussian grand(0); //((unsigned long)time(0));
 // Discrete value random number generator
-MTRand_int32 irand((unsigned long)~time(0));
+MTRand_int32 irand(1); //((unsigned long)~time(0));
 
 // Constants for AWGN calculation
 const double R = 0.5;	// Rate
@@ -94,7 +95,7 @@ const enum DecodeMethod
 {
 	bp,
 	offms
-} method = offms;
+} method = bp;
 
 void init()
 {
@@ -130,13 +131,13 @@ void init()
 	}
 */
 
-	cout << "Enter signal to noise ratio (dB): ";
+//	cout << "Enter signal to noise ratio (dB): ";
 //	cin >> snrdb;
 	snrdb = 1.5;
 	snr = pow(10.0, snrdb/10);
 	sigma = pow(2*R*snr, -0.5);
 
-	cout << "Enter maximum decoding iteration count: ";
+//	cout << "Enter maximum decoding iteration count: ";
 //	cin >> imax;
 	imax = 50;
 }
@@ -346,25 +347,25 @@ bool decode()
 		// Update mq and ml
 		for (int n = 0; n < Z*N; n++)
 		{
-			static long double sigma;
-			sigma = 0;
+			static long double rsigma;
+			rsigma = 0;
 
 			struct functor_sigmar {
 				static inline void callbackX(int y, int x, int yi) {
-					sigma += mr.Vxc[x][yi];
+					rsigma += mr.Vxc[x][yi];
 				}
 			};
 			H.iterX<functor_sigmar>(n);
 
-			struct functor_updateq
-			{
+			struct functor_updateq {
 				static inline void callbackX(int y, int x, int yi) {
 					// Performs exclusion
-					mq.Vxc[x][yi] = mq0.Vxc[x][yi] + sigma - mr.Vxc[x][yi];
+					mq.Vxc[x][yi] = mq0.Vxc[x][yi] + rsigma - mr.Vxc[x][yi];
 				}
 			};
+			H.iterX<functor_updateq>(n);
 
-			ml[n] = ml0[n] + sigma;
+			ml[n] = ml0[n] + rsigma;
 
 			mxhat[n] = ml[n] < 0; // Hard decision
 		}
@@ -422,7 +423,11 @@ void rupdate_bp()
 
 		struct functor_r_bp_pi {
 			static inline void callbackY(int y, int x, int xi) {
-				pi *= tanh(mq.Vyc[y][xi]/2);
+				const long double tanharg = mq.Vyc[y][xi]/2.0;
+				const long double tanhres = tanh(tanharg);
+				if (tanhres == 1.0)
+					exit(-1);
+				pi *= tanhres;
 			}
 		};
 		H.iterY<functor_r_bp_pi>(m);
