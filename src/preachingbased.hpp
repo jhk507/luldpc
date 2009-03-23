@@ -65,7 +65,7 @@ public:
 			}
 			out << std::endl;
 			if (y%Z == Z-1)
-				out << endl;
+				out << std::endl;
 		}
 		out << std::endl;
 	}

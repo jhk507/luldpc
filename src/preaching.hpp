@@ -32,19 +32,19 @@ public:
 	// Functor member is of the form static void callback(int x, bool p)
 	template <typename Functor>
 	inline void multRow(const bool (&row)[Z*Y]) const;
-	
+
 	inline void multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const;
 
 	// Multiply the expanded matrix with a column
-	
+
 	// Functor member is of the form inline static void callback(int y, bool p)
 	template <typename Functor>
 	inline void multCol(const bool (&col)[Z*X]) const;
-	
+
 	inline void multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const;
 
 	// Iterate over nonzero elements in expanded matrix
-	
+
 	// Functor member is of the form inline static void callbackY(int y, int x, int xi)
 	template <typename Functor>	// For a y, iterate over x
 	inline void iterY(int y) const;
@@ -238,11 +238,11 @@ void Preaching<Y,X,YRHO,XRHO>::output(std::ostream &out) const
 			if (x%Z == Z-1)
 				out << ' ';
 		}
-		out << endl;
+		out << std::endl;
 		if (y%Z == Z-1)
-			out << endl;
+			out << std::endl;
 	}
-	out << endl;
+	out << std::endl;
 }
 
 
