@@ -16,7 +16,7 @@
 
 // Rho is the maximum matrix sparsity parameter
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 class Preaching
 {
 public:
@@ -64,8 +64,8 @@ public:
 
 	// These two matrices store the position of "1"s in the expanded matrix,
 	// and are terminated with a -1.
-	int Hyc[Z*Y][RHO+1];	// Compressed matrix, y-dimension
-	int Hxc[Z*X][RHO+1];	// Compressed matrix, x-dimension
+	int Hyc[Z*Y][YRHO+1];	// Compressed matrix, y-dimension
+	int Hxc[Z*X][XRHO+1];	// Compressed matrix, x-dimension
 	int ones;
 };
 
@@ -73,9 +73,9 @@ public:
 ///////////////////////////////////////////////////////////////////////////////
 
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 template <int XH>
-Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
+Preaching<Y,X,YRHO,XRHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 	H(Hinit, off)
 {
 	ones = 0;
@@ -121,8 +121,8 @@ Preaching<Y,X,RHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 	}
 }
 
-template <int Y, int X, int RHO>
-inline bool Preaching<Y,X,RHO>::at(int y, int x) const
+template <int Y, int X, int YRHO, int XRHO>
+inline bool Preaching<Y,X,YRHO,XRHO>::at(int y, int x) const
 {
 /*	// Search for y within Hxc[x]
 	const int *pHxc;
@@ -136,9 +136,9 @@ inline bool Preaching<Y,X,RHO>::at(int y, int x) const
 	return !((p+y-x)%Z); //converts from unexpanded to expanded bit
 }
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y]) const
+inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
 {
 	for (int x = 0; x < Z*X; x++)
 	{
@@ -149,8 +149,8 @@ inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y]) const
 	}
 }
 
-template <int Y, int X, int RHO>
-inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const
+template <int Y, int X, int YRHO, int XRHO>
+inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const
 {
 	for (int x = 0; x < Z*X; x++)
 	{
@@ -161,9 +161,9 @@ inline void Preaching<Y,X,RHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[
 	}
 }
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X]) const
+inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
 {
 	for (int y = 0; y < Z*Y; y++)
 	{
@@ -174,8 +174,8 @@ inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X]) const
 	}
 }
 
-template <int Y, int X, int RHO>
-inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const
+template <int Y, int X, int YRHO, int XRHO>
+inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const
 {
 	for (int y = 0; y < Z*Y; y++)
 	{
@@ -186,9 +186,9 @@ inline void Preaching<Y,X,RHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[
 	}
 }
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::iterY(int y) const
+inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
 {
 	const int *pHyc = Hyc[y];
 	int x = *pHyc;
@@ -202,9 +202,9 @@ inline void Preaching<Y,X,RHO>::iterY(int y) const
 	} while (x >= 0);
 }
 
-template <int Y, int X, int RHO>
+template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,RHO>::iterX(int x) const
+inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 {
 	const int *pHxc = Hxc[x];
 	int y = *pHxc;
@@ -218,8 +218,8 @@ inline void Preaching<Y,X,RHO>::iterX(int x) const
 	} while (y >= 0);
 }
 
-template <int Y, int X, int RHO>
-inline bool Preaching<Y,X,RHO>::pshift(int yp, int xp, const bool *col, int y) const
+template <int Y, int X, int YRHO, int XRHO>
+inline bool Preaching<Y,X,YRHO,XRHO>::pshift(int yp, int xp, const bool *col, int y) const
 {
 	const int p = H[yp][xp];
 	if (p < 0)
@@ -227,8 +227,8 @@ inline bool Preaching<Y,X,RHO>::pshift(int yp, int xp, const bool *col, int y) c
 	return col[(y+p)%Z];
 }
 
-template <int Y, int X, int RHO>
-void Preaching<Y,X,RHO>::output(std::ostream &out) const
+template <int Y, int X, int YRHO, int XRHO>
+void Preaching<Y,X,YRHO,XRHO>::output(std::ostream &out) const
 {
 	for (int y = 0; y < Y*Z; y++)
 	{
