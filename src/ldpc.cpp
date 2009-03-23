@@ -461,7 +461,7 @@ void rupdate_offms()
 	// OFF-MS method
 	for (int m = 0; m < Z*M; m++)
 	{
-		static long double pi;
+		static int pi;
 		pi = 1;	// Multiplicative identity
 
 		// Min function identities
@@ -492,7 +492,7 @@ void rupdate_offms()
 
 		struct functor_r_offms_update {
 			static inline void callbackY(int y, int x, int xi) {
-				long double pir = pi;
+				int pir = pi;
 
 				const long double qv = mq.Vyc[y][xi];
 				// Perform exclusion on the pi term
