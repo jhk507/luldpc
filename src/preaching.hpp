@@ -45,10 +45,10 @@ public:
 
 	// Iterate over nonzero elements in expanded matrix
 
-	// Functor member is of the form inline static void callbackY(int y, int x, int xi)
+	// Functor member is of the form inline static void callbackY(int y, int x)
 	template <typename Functor>	// For a y, iterate over x
 	inline void iterY(int y) const;
-	// Functor member is of the form inline static void callbackX(int y, int x, int yi)
+	// Functor member is of the form inline static void callbackX(int y, int x)
 	template <typename Functor> // For an x, iterate over y
 	inline void iterX(int x) const;
 
@@ -192,11 +192,9 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
 {
 	const int *pHyc = Hyc[y];
 	int x = *pHyc;
-	int xi = 0;
 	do
 	{
-		Functor::callbackY(y, x, xi);
-		xi++;
+		Functor::callbackY(y, x);
 		pHyc++;
 		x = *pHyc;
 	} while (x >= 0);
@@ -208,11 +206,9 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 {
 	const int *pHxc = Hxc[x];
 	int y = *pHxc;
-	int yi = 0;
 	do
 	{
-		Functor::callbackX(y, x, yi);
-		yi++;
+		Functor::callbackX(y, x);
 		pHxc++;
 		y = *pHxc;
 	} while (y >= 0);

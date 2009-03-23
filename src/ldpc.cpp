@@ -243,7 +243,7 @@ void setParity()
 	// Functor to find the sum over elements in ms for a row,
 	// iterating in x
 	struct functor_summsy {
-		static inline void callbackY(int y, int x, int xi) {
+		static inline void callbackY(int y, int x) {
 			sum ^= ms[x]; //XOR
 		}
 	};
@@ -299,12 +299,12 @@ bool decode()
 		ml[n] = l;
 
 		struct functor_setq {
-			static inline void callbackX(int y, int x, int yi) {
-				mq0.Vxc[x][yi] = l;
-				mq.Vxc[x][yi] = l;
+			static inline void callback(long double &q, long double &q0) {
+				q = l;
+				q0 = l;
 			}
 		};
-		H.iterX<functor_setq>(n);
+		mq.iterX2<functor_setq>(n, mq0);
 	}
 
 	// Iterative decoding
@@ -352,19 +352,19 @@ bool decode()
 			rsigma = 0;
 
 			struct functor_sigmar {
-				static inline void callbackX(int y, int x, int yi) {
-					rsigma += mr.Vxc[x][yi];
+				static inline void callback(long double &r) {
+					rsigma += r;
 				}
 			};
-			H.iterX<functor_sigmar>(n);
+			mr.iterX<functor_sigmar>(n);
 
 			struct functor_updateq {
-				static inline void callbackX(int y, int x, int yi) {
+				static inline void callback(long double &q, long double &q0, long double &r) {
 					// Performs exclusion
-					mq.Vxc[x][yi] = mq0.Vxc[x][yi] + rsigma - mr.Vxc[x][yi];
+					q = q0 + rsigma - r;
 				}
 			};
-			H.iterX<functor_updateq>(n);
+			mq.iterX3<functor_updateq>(n,mq0,mr);
 
 			ml[n] = ml0[n] + rsigma;
 
@@ -423,27 +423,27 @@ void rupdate_bp()
 		pi = 1;
 
 		struct functor_r_bp_pi {
-			static inline void callbackY(int y, int x, int xi) {
-				const long double tanharg = mq.Vyc[y][xi]/2.0;
+			static inline void callback(long double &q) {
+				const long double tanharg = q/2.0;
 				const long double tanhres = tanh(tanharg);
 				if (tanhres == 1.0)
 					exit(-1);
 				pi *= tanhres;
 			}
 		};
-		H.iterY<functor_r_bp_pi>(m);
+		mq.iterY<functor_r_bp_pi>(m);
 
 		struct functor_r_bp_update {
-			static inline void callbackY(int y, int x, int xi) {
+			static inline void callback(long double &r, long double &q) {
 				long double pir = pi;
-				const long double tanhr = tanh(mq.Vyc[y][xi]/2);
+				const long double tanhr = tanh(q/2.0);
 				if (tanhr)
 					pir /= tanhr;
 				else
 					exit(-1);	// Divide by 0
 				if (pir == 1)
 				{
-//					mr[m][n] = numeric_limits<long double>::max();
+//					r = numeric_limits<long double>::max();
 					exit(-1);	// Divide by 0
 				}
 				else
@@ -452,11 +452,11 @@ void rupdate_bp()
 					if (lnarg <= 0)
 						exit(-1);	// Negative log
 					else
-						mr.Vyc[y][xi] = log(lnarg);
+						r = log(lnarg);
 				}
 			}
 		};
-		H.iterY<functor_r_bp_update>(m);
+		mr.iterY2<functor_r_bp_update>(m,mq);
 	}
 }
 
@@ -479,8 +479,8 @@ void rupdate_offms()
 		// Do the graph iteration to calculate the pi and min
 		// terms without exclusion
 		struct functor_r_offms_pi {
-			static inline void callbackY(int y, int x, int xi) {
-				long double qv = mq.Vyc[y][xi];
+			static inline void callback(long double &q) {
+				long double qv = q;
 				if (qv < 0)
 					pi = -pi;
 				qv = fabs(qv);
@@ -493,13 +493,13 @@ void rupdate_offms()
 					min1 = qv;
 			}
 		};
-		H.iterY<functor_r_offms_pi>(m);
+		mq.iterY<functor_r_offms_pi>(m);
 
 		struct functor_r_offms_update {
-			static inline void callbackY(int y, int x, int xi) {
+			static inline void callback(long double &r, long double &q) {
 				int pir = pi;
 
-				const long double qv = mq.Vyc[y][xi];
+				const long double qv = q;
 				// Perform exclusion on the pi term
 				if (qv < 0)
 					pir = -pir;
@@ -507,10 +507,10 @@ void rupdate_offms()
 				const long double qvmin = (fabs(qv) == min0) ? min1 : min0;
 
 				// Offset min sum calculation for r^(i)_(m,n)
-				mr.Vyc[y][xi] = pir * max((long double)0.0, qvmin - beta);
+				r = pir * max((long double)0.0, qvmin - beta);
 			}
 		};
-		H.iterY<functor_r_offms_update>(m);
+		mr.iterY2<functor_r_offms_update>(m,mq);
 	}
 }
 
