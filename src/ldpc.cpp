@@ -43,9 +43,17 @@ const int Ha[M][N] =
 	{43,-1,-1,-1,-1,66,-1,41,-1,-1,-1,26, 7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0}
 };
 
-const Preaching<M,N,7> H(Ha, 0);	// Unexpanded half-rate Preaching matrix H
-const Preaching<M,K,6> Hs(Ha, 0);	// Unexpanded half-rate Preaching matrix H (first half)
-const Preaching<M,M,3> Hp(Ha, K);	// Unexpanded half-rate Preaching matrix H (second half, for parity)
+// Matrix sparsity parameters
+#define RHO_H_Y  7
+#define RHO_H_X  6
+#define RHO_HS_Y 5
+#define RHO_HS_X 6
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+
+const Preaching<M,N,RHO_H_Y, RHO_H_X>	H(Ha, 0);	// Unexpanded half-rate Preaching matrix H
+const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Unexpanded half-rate Preaching matrix H (first half)
+const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Unexpanded half-rate Preaching matrix H (second half, for parity)
 
 Automatrix1<bool, N*Z> mx;			// (col) Combination of ms and mp
 Automatrix1<long double, N*Z> my;	// (col) Encoder output after AWGN
@@ -54,14 +62,14 @@ Automatrix1<long double, N*Z> my;	// (col) Encoder output after AWGN
 bool (&ms)[K*Z] = (bool(&)[K*Z])*mx.getData(0);		// (col) Message
 bool (&mp)[M*Z] = (bool(&)[M*Z])*mx.getData(K*Z);	// (col) Generated parity
 
-Automatrix1<bool, M*Z> msprod;				// Encoding verification column
+Automatrix1<bool, M*Z> msprod;		// Encoding verification column
 
-PreachingBased<long double, M,N,7> mr(H);	// R matrix
-PreachingBased<long double, M,N,7> mq(H);	// Q matrix
-PreachingBased<long double, M,N,7> mq0(H);	// Q matrix (iteration 0)
-Automatrix1<long double, N*Z> ml;			// L column
-Automatrix1<long double, N*Z> ml0;			// L column (iteration 0)
-Automatrix1<bool, N*Z> mxhat;				// xhat column
+PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
+PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
+PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq0(H);	// Q matrix (iteration 0)
+Automatrix1<long double, N*Z> ml;	// L column
+Automatrix1<long double, N*Z> ml0;	// L column (iteration 0)
+Automatrix1<bool, N*Z> mxhat;		// xhat column
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand((unsigned long)time(0));
@@ -91,6 +99,38 @@ const enum DecodeMethod
 
 void init()
 {
+/*	// Calculate rho factors for Preaching matrix and submatrices
+	int hx = 0, hy = 0,
+		hsx = 0, hsy = 0,
+		hpx = 0, hpy = 0;
+	for (int a = 0; a < M; a++) {
+		int hsxi = 0, hsyi = 0,
+			hpxi = 0, hpyi = 0;
+		for (int b = 0; b < M; b++) {
+			if (Hs.H[a][b] != -1) hsyi++;
+			if (Hs.H[b][a] != -1) hsxi++;
+			if (Hp.H[a][b] != -1) hpyi++;
+			if (Hp.H[b][a] != -1) hpxi++;
+		}
+		if (hsx < hsxi) hsx = hsxi;
+		if (hsy < hsyi) hsy = hsyi;
+		if (hpx < hpxi) hpx = hpxi;
+		if (hpy < hpyi) hpy = hpyi;
+	}
+	for (int a = 0; a < M; a++) {
+		int hyi = 0;
+		for (int b = 0; b < N; b++)
+			if (H.H[a][b] != -1) hyi++;
+		if (hy < hyi) hy = hyi;
+	}
+	for (int a = 0; a < N; a++) {
+		int hxi = 0;
+		for (int b = 0; b < M; b++)
+			if (H.H[b][a] != -1) hxi++;
+		if (hx < hxi) hx = hxi;
+	}
+*/
+
 	cout << "Enter signal to noise ratio (dB): ";
 //	cin >> snrdb;
 	snrdb = 1.5;

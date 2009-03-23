@@ -10,11 +10,11 @@
 
 //////////////////////////////////////////////////////////////////////////////
 
-template <typename Elm, int Y, int X, int RHO>
+template <typename Elm, int Y, int X, int YRHO, int XRHO>
 class PreachingBased
 {
 public:
-	PreachingBased(const Preaching<Y,X,RHO> &preachingInit) :
+	PreachingBased(const Preaching<Y,X,YRHO,XRHO> &preachingInit) :
 		preaching(preachingInit)
 	{
 		data = new Elm[preaching.ones];
@@ -73,5 +73,5 @@ public:
 	Elm *data;
 	Elm *Vyc[Z*Y];
 	Elm *Vxc[Z*X];
-	const Preaching<Y,X,RHO> &preaching;
+	const Preaching<Y,X,YRHO,XRHO> &preaching;
 };
