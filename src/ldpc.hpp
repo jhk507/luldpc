@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include "preachingbased.hpp"
-
 // Presets for half-rate
 #define M 12	// Height of the unexpanded Preaching matrix
 #define N 24	// Width of the unexpanded Preaching matrix
