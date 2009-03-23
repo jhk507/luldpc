@@ -10,6 +10,7 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 
 #include <ctime>
 #include <cmath>
+#include <cstdlib>
 #include <limits>
 #include <iostream>
 #include <fstream>
@@ -161,7 +162,7 @@ void execute()
 
 	debugfile << "Expanded half-rate Preaching matrix" << endl;
 	H.output(debugfile);
-	
+
 	debugfile.flush();
 #endif
 
@@ -222,7 +223,7 @@ void encode()
 		}
 	};
 	Hp.multCol<functor_multhpp>(mp);
-	
+
 	cout << "Encoder check " << (success ? "passed." : "failed.") << endl;
 #if OUTPUT_DEBUGFILE
 	debugfile << "Encoder check " << (success ? "passed." : "failed.") << endl;
