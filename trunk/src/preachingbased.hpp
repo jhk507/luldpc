@@ -182,7 +182,7 @@ template <typename Elm, int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
 inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY3(int y, PreachingBased &p2, PreachingBased &p3) const
 {
-	LinkedElm *e1 = Vyc[y], *e2 = p2.Vyc[y];
+	LinkedElm *e1 = Vyc[y], *e2 = p2.Vyc[y], *e3 = p3.Vyc[y];
 	const LinkedElm *const end = Vyc[++y];
 	do
 	{

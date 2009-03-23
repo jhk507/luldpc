@@ -19,6 +19,7 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
 #include "mtrand/MTRand_gaussian.hpp"
+#include "preachingbased.hpp"
 #include "ldpc.hpp"
 
 using namespace std;
