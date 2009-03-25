@@ -79,8 +79,8 @@ const int imax = 50;
 // The orthagonality error and output difference error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-Histogram<20, M*Z, M*Z*0.33> orthhist[imax];
-Histogram<20, N*Z, N*Z*0.06> diffhist[imax];
+Histogram<20, M*Z, (int)(M*Z*0.33)> orthhist[imax];
+Histogram<20, N*Z, (int)(N*Z*0.06)> diffhist[imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -424,7 +424,7 @@ void rupdate_bp()
 	// Update mr
 	for (int m = 0; m < Z*M; m++)
 	{
-		
+
 		static long double pi;					// The pi term (without exclusion)
 		pi = 1;
 		static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
