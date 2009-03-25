@@ -136,6 +136,7 @@
 				WarningLevel="4"
 				DebugInformationFormat="0"
 				CallingConvention="1"
+				DisableSpecificWarnings="4996;4512"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -291,6 +292,10 @@
 		</Filter>
 		<File
 			RelativePath=".\src\automatrix.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\histogram.hpp"
 			>
 		</File>
 		<File
