@@ -282,27 +282,7 @@ void setParity()
 
 bool decode()
 {
-	// Set initial state
-	for (int n = 0; n < N*Z; n++)
-	{
-		static long double l;
-
-		if (method == bp)
-			l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
-		else
-			l = my[n];
-
-		ml0[n] = l;
-		ml[n] = l;
-
-		struct functor_setq {
-			static inline void callback(long double &q, long double &q0) {
-				q = l;
-				q0 = l;
-			}
-		};
-		mq.iterX2<functor_setq>(n, mq0);
-	}
+	decode_initial();
 
 	// Iterative decoding
 	for (int i = 0; ; )
@@ -342,32 +322,7 @@ bool decode()
 		debugfile.flush();
 #endif
 
-		// Update mq and ml
-		for (int n = 0; n < Z*N; n++)
-		{
-			static long double rsigma;
-			rsigma = 0;
-
-			struct functor_sigmar {
-				static inline void callback(long double &r) {
-					// Calculates the sigma term without exclusion
-					rsigma += r;
-				}
-			};
-			mr.iterX<functor_sigmar>(n);
-
-			struct functor_updateq {
-				static inline void callback(long double &q, long double &q0, long double &r) {
-					// Performs exclusion and sets Q
-					q = q0 + rsigma - r;
-				}
-			};
-			mq.iterX3<functor_updateq>(n,mq0,mr);
-
-			ml[n] = ml0[n] + rsigma;
-
-			mxhat[n] = ml[n] < 0; // Hard decision
-		}
+		qlupdate();
 
 		// Check that the decoding succeeded
 		static int nerrs;	// The number of H*xhat errors
@@ -396,6 +351,31 @@ bool decode()
 
 		if (++i > imax)
 			return false;
+	}
+}
+
+void decode_initial()
+{
+	// Set initial state
+	for (int n = 0; n < N*Z; n++)
+	{
+		static long double l;
+
+		if (method == bp)
+			l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
+		else
+			l = my[n];
+
+		ml0[n] = l;
+		ml[n] = l;
+
+		struct functor_setq {
+			static inline void callback(long double &q, long double &q0) {
+				q = l;
+				q0 = l;
+			}
+		};
+		mq.iterX2<functor_setq>(n, mq0);
 	}
 }
 
@@ -502,6 +482,36 @@ void rupdate_offms()
 			}
 		};
 		mr.iterY2<functor_r_offms_update>(m,mq);
+	}
+}
+
+void qlupdate()
+{
+	// Update mq and ml
+	for (int n = 0; n < Z*N; n++)
+	{
+		static long double rsigma;
+		rsigma = 0;
+
+		struct functor_sigmar {
+			static inline void callback(long double &r) {
+				// Calculates the sigma term without exclusion
+				rsigma += r;
+			}
+		};
+		mr.iterX<functor_sigmar>(n);
+
+		struct functor_updateq {
+			static inline void callback(long double &q, long double &q0, long double &r) {
+				// Performs exclusion and sets Q
+				q = q0 + rsigma - r;
+			}
+		};
+		mq.iterX3<functor_updateq>(n,mq0,mr);
+
+		ml[n] = ml0[n] + rsigma;
+
+		mxhat[n] = ml[n] < 0; // Hard decision
 	}
 }
 
