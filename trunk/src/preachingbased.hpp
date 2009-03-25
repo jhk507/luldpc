@@ -106,7 +106,6 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO>
 		const int *pHyc = (*rHyc)[y];
 		while (*pHyc++ >= 0)	// Find the end of the row.
 			dati++;
-		dati++;				// Skip the terminator.
 	}
 
 	for (int x = 0; x < Z*X; x++)	// Iterate over the columns.
