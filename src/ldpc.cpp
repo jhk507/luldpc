@@ -79,13 +79,12 @@ MTRand_gaussian grand(0); //((unsigned long)time(0));
 MTRand_int32 irand(1); //((unsigned long)~time(0));
 
 // Constants for AWGN calculation
-const double R = 0.5;	// Rate
-double snr;				// Signal-to-noise ratio
-double snrdb;			// Signal-to-noise ratio (decibels)
-double sigma;
+long double snr;			// Signal-to-noise ratio
+long double snrdb;			// Signal-to-noise ratio (decibels)
+long double sigma;
 
 // Beta (for minsum decoding)
-const double beta = 0.15;
+const long double beta = 0.15;
 
 #if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
@@ -97,50 +96,57 @@ const enum DecodeMethod
 {
 	bp,
 	offms
-} method = offms;
+} method = bp;
 
-void init()
+void calculateRho()
 {
-/*	// Calculate rho factors for Preaching matrix and submatrices
+	// Calculate rho factors for Preaching matrix and submatrices
 	int hx = 0, hy = 0,
 		hsx = 0, hsy = 0,
 		hpx = 0, hpy = 0;
+	for (int y = 0; y < M; y++) {
+		int hpyi = 0;
+		for (int x = 0; x < K; x++)
+			if (Hp.H[y][x] != -1) hpyi++;
+		if (hpy < hpyi) hpy = hpyi;
+	}
+	for (int x = 0; x < K; x++) {
+		int hsxi = 0, hsyi = 0,
+			hpxi = 0, hpyi = 0;
+		for (int y = 0; y < M; y++)
+			if (Hp.H[y][x] != -1) hpxi++;
+		if (hpx < hpxi) hpx = hpxi;
+	}
 	for (int a = 0; a < M; a++) {
 		int hsxi = 0, hsyi = 0,
 			hpxi = 0, hpyi = 0;
 		for (int b = 0; b < M; b++) {
 			if (Hs.H[a][b] != -1) hsyi++;
 			if (Hs.H[b][a] != -1) hsxi++;
-			if (Hp.H[a][b] != -1) hpyi++;
-			if (Hp.H[b][a] != -1) hpxi++;
 		}
 		if (hsx < hsxi) hsx = hsxi;
 		if (hsy < hsyi) hsy = hsyi;
-		if (hpx < hpxi) hpx = hpxi;
-		if (hpy < hpyi) hpy = hpyi;
 	}
-	for (int a = 0; a < M; a++) {
+	for (int y = 0; y < M; y++) {
 		int hyi = 0;
-		for (int b = 0; b < N; b++)
-			if (H.H[a][b] != -1) hyi++;
+		for (int x = 0; x < N; x++)
+			if (H.H[y][x] != -1) hyi++;
 		if (hy < hyi) hy = hyi;
 	}
-	for (int a = 0; a < N; a++) {
+	for (int x = 0; x < N; x++) {
 		int hxi = 0;
-		for (int b = 0; b < M; b++)
-			if (H.H[b][a] != -1) hxi++;
+		for (int y = 0; y < M; y++)
+			if (H.H[y][x] != -1) hxi++;
 		if (hx < hxi) hx = hxi;
 	}
-*/
+}
 
-//	cout << "Enter signal to noise ratio (dB): ";
-//	cin >> snrdb;
+void init()
+{
 	snrdb = 1.5;
-	snr = pow(10.0, snrdb/10);
-	sigma = pow(2*R*snr, -0.5);
+	snr = pow((long double)10.0, (long double)snrdb/10);
+	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
 
-//	cout << "Enter maximum decoding iteration count: ";
-//	cin >> imax;
 	imax = 50;
 }
 
@@ -185,11 +191,14 @@ void execute()
 		if (!decode())
 			nerrs++;
 
-		cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
+		if (!(b%10))
+		{
+			cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
-		debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
-		break;
+			debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
+			break;
 #endif
+		}
 	}
 }
 
@@ -200,18 +209,9 @@ void encode()
 	for (int m = 0; m < K*Z; m++)
 		ms[m] = irand() & 1;
 
-/*	// Encode
-#ifdef _DEBUG
-	cout << "Encoding..." << endl;
-#if OUTPUT_DEBUGFILE
-	debugfile << "Encoding..." << endl;
-#endif
-#endif
-*/
 	// Get the parity bits
 	setParity();
 
-/*
 #ifdef _DEBUG
 	// Double-check that the encoding succeeded
 	Hs.multCol(ms, msprod);
@@ -226,12 +226,13 @@ void encode()
 	};
 	Hp.multCol<functor_multhpp>(mp);
 
-	cout << "Encoder check " << (success ? "passed." : "failed.") << endl;
-#if OUTPUT_DEBUGFILE
-	debugfile << "Encoder check " << (success ? "passed." : "failed.") << endl;
+	if (!success)
+	{
+		cerr << "Encoding check failed!\n";
+		exit(-1);
+	}
 #endif
-#endif
-*/
+
 	for (int n = 0; n < N*Z; n++)
 		// Perform BPSK and AWGN addition
 		my[n] = (mx[n] ? -1 : 1) + grand()*sigma;	// 1->-1 and 0->1
@@ -355,6 +356,7 @@ bool decode()
 
 			struct functor_sigmar {
 				static inline void callback(long double &r) {
+					// Calculates the sigma term without exclusion
 					rsigma += r;
 				}
 			};
@@ -362,7 +364,7 @@ bool decode()
 
 			struct functor_updateq {
 				static inline void callback(long double &q, long double &q0, long double &r) {
-					// Performs exclusion
+					// Performs exclusion and sets Q
 					q = q0 + rsigma - r;
 				}
 			};
@@ -388,31 +390,18 @@ bool decode()
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
 
-/*
-#ifdef _DEBUG
-		cout << "Iteration " << setw(3) << i << ": "
-			<< setw(4) << nerrs << " H*xhat errors, "
-			<< setw(4) << diff << " x==xhat errors."
-			<< endl;
-#if OUTPUT_DEBUGFILE
-		debugfile << "Iteration " << setw(3) << i << ": "
-			<< setw(4) << nerrs << " H*xhat errors, "
-			<< setw(4) << diff << " x==xhat errors."
-			<< endl;
-#endif
-#endif
-*/
 		if (!nerrs)
+		{
+			if (diff)
+			{
+				cerr << "Warning: False positive; " << diff << " errors.\n";
+				return false;
+			}
 			return true;
+		}
 
 		if (++i > imax)
-		{
-/*			cout << "Maximum iteration reached; error." << endl;
-#if OUTPUT_DEBUGFILE
-			debugfile << "Maximum iteration reached; error." << endl;
-#endif*/
 			return false;
-		}
 	}
 }
 
@@ -441,13 +430,13 @@ void rupdate_bp()
 				else
 				{
 					pir = numeric_limits<long double>::max();
-					cout << "Warning: Divide by 0 in BP for pir!\n";
+					cerr << "Warning: Divide by 0 in BP for pir!\n";
 //					exit(-1);	// Divide by 0
 				}
 				if (pir == 1)
 				{
 					r = numeric_limits<long double>::max();
-					cout << "Warning: Divide by 0 in BP for r!\n";
+					cerr << "Warning: Divide by 0 in BP for r!\n";
 //					exit(-1);	// Divide by 0
 				}
 				else
@@ -456,7 +445,7 @@ void rupdate_bp()
 					if (lnarg <= 0)
 					{
 						r = -numeric_limits<long double>::max();
-						cout << "Warning: Negative log in BP!";
+						cerr << "Warning: Negative log in BP!";
 //						exit(-1);	// Negative log
 					}
 					else
