@@ -218,8 +218,8 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 	int y = *pHxc;				// The current y value.
 	do
 	{
-		// Loop through the row, calling the callback for every coordinate present
-		// in the sparse matrix.
+		// Loop through the column, calling the callback for every coordinate
+		// present in the sparse matrix.
 		Functor::callbackX(y, x);
 		pHxc++;
 		y = *pHxc;

@@ -5,6 +5,7 @@
 */
 
 #include <iostream>
+#include <windows.h>
 
 #include "ldpc.hpp"
 
@@ -43,6 +44,7 @@ void enableFPEs()
 }
 #endif
 
+using namespace std;
 
 int main()
 {
@@ -51,7 +53,24 @@ int main()
 	enableFPEs();
 #endif
 
+#if defined(WIN32) && !defined(_DEBUG)
+	SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
+	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
+
+	LARGE_INTEGER freq;
+	QueryPerformanceFrequency(&freq);
+	LARGE_INTEGER start;
+	QueryPerformanceCounter(&start);
+#endif
+
 	LDPC::execute();
+
+#if defined(WIN32) && !defined(_DEBUG)
+	LARGE_INTEGER end;
+	QueryPerformanceCounter(&end);
+	end.QuadPart -= start.QuadPart;
+	cout << "\n\nRuntime: " << ((long double)end.QuadPart)/freq.QuadPart << "s\n";
+#endif
 
 	return 0;
 }
