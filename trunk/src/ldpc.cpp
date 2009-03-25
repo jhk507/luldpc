@@ -103,7 +103,7 @@ const enum DecodeMethod
 {
 	bp,		// Belief propagation
 	offms	// Offset min sum
-} method = offms;
+} method = bp;
 
 void calculateRho()
 {
@@ -424,23 +424,31 @@ void rupdate_bp()
 	// Update mr
 	for (int m = 0; m < Z*M; m++)
 	{
-		// The pi term (without exclusion)
-		static long double pi;
+		
+		static long double pi;					// The pi term (without exclusion)
 		pi = 1;
+		static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
+		static int xi;							// The current index in the row
+		xi = 0;
 
 		// Do the graph iteration to calculate the pi term without exclusion
 		struct functor_r_bp_pi {
 			static inline void callback(long double &q) {
-				pi *= tanh(q/2.0);
+				const long double tanhval = tanh(q/2.0);
+				pi *= tanhval;
+				tanh_cache[xi++] = tanhval;
 			}
 		};
 		mq.iterY<functor_r_bp_pi>(m);
+
+		// Reset the row index
+		xi = 0;
 
 		// The functor to update the R matrix
 		struct functor_r_bp_update {
 			static inline void callback(long double &r, long double &q) {
 				long double pir = pi;
-				const long double tanhr = tanh(q/2.0);
+				const long double tanhr = tanh_cache[xi++];
 				if (tanhr)
 					pir /= tanhr;
 				else
