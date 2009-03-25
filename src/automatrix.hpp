@@ -9,8 +9,8 @@
 #include <ostream>
 
 // Output a large column or row matrix of length Z*X; values are tab-separated
-template <typename Elm, int X, int Z>
-void outputLarge(const Elm *edata, std::ostream &out)
+template <int X, int Z, typename Elm>
+void outputLarge(const Elm (&edata)[Z*X], std::ostream &out)
 {
 	const Elm *pelm = edata;
 	for (int x = 0; x < X; x++)
@@ -24,8 +24,8 @@ void outputLarge(const Elm *edata, std::ostream &out)
 
 // Output a large column or row matrix of length Z*X; values are not separated;
 // Z blocks are separated.
-template <typename Elm, int X, int Z>
-void outputLargeContiguous(const Elm *edata, std::ostream &out)
+template <int X, int Z, typename Elm>
+void outputLargeContiguous(const Elm (&edata)[Z*X], std::ostream &out)
 {
 	const Elm *pelm = edata;
 	for (int x = 0; x < X; x++)
@@ -36,54 +36,6 @@ void outputLargeContiguous(const Elm *edata, std::ostream &out)
 	}
 	out << std::endl;
 }
-
-// Class to store an array of arbitrary type
-template <typename Elm, typename Array>
-class Automatrix
-{
-public:
-	// Get a reference to the array
-	inline operator Array&()
-	{
-		return (Array&)*data;
-	}
-
-	// Get a pointer to the array data, offset by off
-	inline Elm *getData(int off)
-	{
-		return data+off;
-	}
-
-	// Output the array, separated by tabs
-	template <int X, int Z>
-	inline void outputLarge(std::ostream &out) const
-	{
-		::outputLarge<Elm,X,Z>(data, out);
-	}
-
-	// Output the array; only Z blocks are separated by tabs
-	template <int X, int Z>
-	inline void outputLargeContiguous(std::ostream &out) const
-	{
-		::outputLargeContiguous<Elm,X,Z>(data, out);
-	}
-
-private:
-	// The array data
-	Array data;
-};
-
-// A single-dimension (row or column) basic matrix
-template <typename Elm, int X>
-class Automatrix1 : public Automatrix<Elm, Elm[X]>
-{
-};
-
-// A dual-dimension basic matrix
-template <typename Elm, int Y, int X>
-class Automatrix2 : public Automatrix<Elm, Elm[Y][X]>
-{
-};
 
 // An 'alias' into a part of a dual-dimension matrix.
 template <typename Elm, int Y, int X>
