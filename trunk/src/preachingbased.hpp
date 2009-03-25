@@ -246,7 +246,8 @@ void PreachingBased<Elm,Y,X,YRHO,XRHO>::output(std::ostream &out) const
 			if (xh == x)
 			{
 				xh = *++pHyc;
-				out << *++dati << '\t';
+				out << dati->val << '\t';
+				dati++;
 			}
 			else
 				out << "0\t";

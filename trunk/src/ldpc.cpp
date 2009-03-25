@@ -56,31 +56,30 @@ const Preaching<M,N,RHO_H_Y, RHO_H_X>	H(Ha, 0);	// Unexpanded half-rate Preachin
 const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Unexpanded half-rate Preaching matrix H (first half)
 const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Unexpanded half-rate Preaching matrix H (second half, for parity)
 
-Automatrix1<bool, N*Z> mx;			// (col) Combination of ms and mp
-Automatrix1<long double, N*Z> my;	// (col) Encoder output after AWGN
+bool mx[N*Z];			// (col) Combination of ms and mp
+long double my[N*Z];	// (col) Encoder output after AWGN
 
 // Set the aliases into mx
-bool (&ms)[K*Z] = (bool(&)[K*Z])*mx.getData(0);		// (col) Message
-bool (&mp)[M*Z] = (bool(&)[M*Z])*mx.getData(K*Z);	// (col) Generated parity
+bool (&ms)[K*Z] = (bool(&)[K*Z])mx;			// (col) Message
+bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 
-Automatrix1<bool, M*Z> msprod;		// Encoding verification column
+bool msprod[M*Z];		// Encoding verification column
 
 // Decoding matrices
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq0(H);	// Q matrix (iteration 0)
-Automatrix1<long double, N*Z> ml;	// L column
-Automatrix1<long double, N*Z> ml0;	// L column (iteration 0)
-Automatrix1<bool, N*Z> mxhat;		// xhat column
+long double ml[N*Z];	// L column
+long double ml0[N*Z];	// L column (iteration 0)
+bool mxhat[N*Z];		// xhat column
 
 // The Gaussian distribution random number generator
-MTRand_gaussian grand(0); //((unsigned long)time(0));
+MTRand_gaussian grand(0);	//((unsigned long)time(0));
 // Discrete value random number generator
-MTRand_int32 irand(1); //((unsigned long)~time(0));
+MTRand_int32 irand(1);		//((unsigned long)~time(0));
 
 // Constants for AWGN calculation
-long double snr;			// Signal-to-noise ratio
-long double snrdb;			// Signal-to-noise ratio (decibels)
+long double snr;	// Signal-to-noise ratio
 long double sigma;
 
 // Beta (for minsum decoding)
@@ -90,13 +89,13 @@ const long double beta = 0.15;
 ofstream debugfile("debugfile.tsv");
 #endif
 
-int imax;
+int imax = 50;
 
 const enum DecodeMethod
 {
 	bp,
 	offms
-} method = bp;
+} method = offms;
 
 void calculateRho()
 {
@@ -105,27 +104,25 @@ void calculateRho()
 		hsx = 0, hsy = 0,
 		hpx = 0, hpy = 0;
 	for (int y = 0; y < M; y++) {
-		int hpyi = 0;
+		int hsyi = 0;
 		for (int x = 0; x < K; x++)
-			if (Hp.H[y][x] != -1) hpyi++;
-		if (hpy < hpyi) hpy = hpyi;
+			if (Hs.H[y][x] != -1) hsyi++;
+		if (hsy < hsyi) hsy = hsyi;
 	}
 	for (int x = 0; x < K; x++) {
-		int hsxi = 0, hsyi = 0,
-			hpxi = 0, hpyi = 0;
+		int hsxi = 0;
 		for (int y = 0; y < M; y++)
-			if (Hp.H[y][x] != -1) hpxi++;
-		if (hpx < hpxi) hpx = hpxi;
+			if (Hs.H[y][x] != -1) hsxi++;
+		if (hsx < hsxi) hsx = hsxi;
 	}
 	for (int a = 0; a < M; a++) {
-		int hsxi = 0, hsyi = 0,
-			hpxi = 0, hpyi = 0;
+		int hpxi = 0, hpyi = 0;
 		for (int b = 0; b < M; b++) {
-			if (Hs.H[a][b] != -1) hsyi++;
-			if (Hs.H[b][a] != -1) hsxi++;
+			if (Hp.H[a][b] != -1) hpyi++;
+			if (Hp.H[b][a] != -1) hpxi++;
 		}
-		if (hsx < hsxi) hsx = hsxi;
-		if (hsy < hsyi) hsy = hsyi;
+		if (hpx < hpxi) hpx = hpxi;
+		if (hpy < hpyi) hpy = hpyi;
 	}
 	for (int y = 0; y < M; y++) {
 		int hyi = 0;
@@ -141,19 +138,16 @@ void calculateRho()
 	}
 }
 
-void init()
+void setSnrDB(long double snrdb)
 {
-	snrdb = 1.5;
 	snr = pow((long double)10.0, (long double)snrdb/10);
 	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
-
-	imax = 50;
 }
 
 void execute()
 {
 	// Initialize the simulation
-	init();
+	setSnrDB(1.5);
 
 	int nerrs = 0;	// The number of block errors
 
@@ -181,10 +175,10 @@ void execute()
 
 #if OUTPUT_DEBUGFILE
 		debugfile << "Message:" << endl;
-		outputLargeContiguous<bool,K,Z>(ms, debugfile);
+		outputLargeContiguous<K,Z>(ms, debugfile);
 
 		debugfile << "Encoded parity bits:" << endl;
-		outputLargeContiguous<bool,M,Z>(mp, debugfile);
+		outputLargeContiguous<M,Z>(mp, debugfile);
 #endif
 
 		// Decode
@@ -317,7 +311,7 @@ bool decode()
 		debugfile << "Before iteration " << i << ":" << endl;
 
 		debugfile << "l:" << endl;
-		ml.outputLarge<N,Z>(debugfile);
+		outputLarge<N,Z>(ml, debugfile);
 
 		debugfile << "q:" << endl;
 		mq.output(debugfile);

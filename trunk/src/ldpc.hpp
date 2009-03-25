@@ -13,7 +13,7 @@
 namespace LDPC
 {
 	// Initialize the simulation parameters
-	void init();
+	void setSnrDB(long double snrdbInit);
 
 	// Run the simulation
 	void execute();
