@@ -14,8 +14,8 @@
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
-// Rho is the maximum matrix sparsity parameter
-
+// A Preaching class that constructs a sparse matrix
+// Rho is the maximum matrix sparsity parameter for the X and Y dimensions.
 template <int Y, int X, int YRHO, int XRHO>
 class Preaching
 {
@@ -57,15 +57,18 @@ public:
 	// the OLD column determined by y, the index in the NEW (product) column.
 	inline bool pshift(int yp, int xp, const bool *col, int y) const;
 
+	// Output the expanded Preaching matrix.
 	void output(std::ostream &out) const;
 
 public:
-	const Automatrix2Alias<int,Y,X> H;	// The matrix array reference
+	// The unexpanded matrix array reference
+	const Automatrix2Alias<int,Y,X> H;
 
 	// These two matrices store the position of "1"s in the expanded matrix,
 	// and are terminated with a -1.
 	int Hyc[Z*Y][YRHO+1];	// Compressed matrix, y-dimension
 	int Hxc[Z*X][XRHO+1];	// Compressed matrix, x-dimension
+	// The number of ones in the expanded matrix.
 	int ones;
 };
 
@@ -81,41 +84,47 @@ Preaching<Y,X,YRHO,XRHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 	ones = 0;
 
 	// Initialize the compressed matrices
-	for (int yb = 0; yb < Y; yb++) // Iterate over preaching blocks
+	for (int yb = 0; yb < Y; yb++) // Iterate over preaching blocks, y
 	{
-		for (int ys = 0; ys < Z; ys++) // Iterate within preaching subblocks
+		for (int ys = 0; ys < Z; ys++) // Iterate within preaching subblocks, y
 		{
-			// Stores the position of "1" elements within expanded Preaching matrix
+			// Set a pointer to the current compressed y-dimension data
 			int *const pHyc = Hyc[Z*yb+ys];
 
 			int c = 0;
-			for (int xb = 0; xb < X; xb++)
+			for (int xb = 0; xb < X; xb++) // Iterate over preaching blocks, x
 			{
+				// Examine the current unexpanded value
 				const int h = H[yb][xb];
 				if (h >= 0)
 				{
+					// Stores the position of the "1" element within expanded Preaching matrix
 					pHyc[c++] = (h + ys)%Z + Z*xb;
 					ones++;
 				}
 			}
+			// Terminate the compressed data
 			pHyc[c] = -1;
 		}
 	}
 
-	for (int xb = 0; xb < X; xb++) // Iterate over preaching blocks
+	for (int xb = 0; xb < X; xb++)			// Iterate over preaching blocks, x
 	{
-		for (int xs = 0; xs < Z; xs++) // Iterate within preaching subblocks
+		for (int xs = 0; xs < Z; xs++)		// Iterate within preaching subblocks, x
 		{
-			// Stores the position of "1" elements within expanded Preaching matrix
+			// Set a pointer to the current compressed x-dimension data
 			int *const pHxc = Hxc[Z*xb+xs];
 
 			int c = 0;
-			for (int yb = 0; yb < Y; yb++)
+			for (int yb = 0; yb < Y; yb++)	// Iterate over preaching blocks, y
 			{
+				// Examine the current unexpanded value
 				const int h = H[yb][xb];
 				if (h >= 0)
+					// Stores the position of the "1" element within expanded Preaching matrix
 					pHxc[c++] = (Z - h + xs)%Z + Z*yb;
 			}
+			// Terminate the compressed data
 			pHxc[c] = -1;
 		}
 	}
@@ -124,22 +133,17 @@ Preaching<Y,X,YRHO,XRHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 template <int Y, int X, int YRHO, int XRHO>
 inline bool Preaching<Y,X,YRHO,XRHO>::at(int y, int x) const
 {
-/*	// Search for y within Hxc[x]
-	const int *pHxc;
-	for (pHxc = Hxc[x]; y > *pHxc; pHxc++)
-		if (*pHxc < 0)
-			return false;
-	return *pHxc == y;*/
-	const int p = H[y/Z][x/Z];  //
-	if (p < 0)
+	const int p = H[y/Z][x/Z];  // Get the appropriate unexpanded value
+	if (p < 0)					// If negative, the whole block is 0
 		return false;
-	return !((p+y-x)%Z); //converts from unexpanded to expanded bit
+	return !((p+y-x)%Z);		// Checks to see if there's a 1 at these coordinates
 }
 
 template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
 inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
 {
+	// Do the matrix multiplication loop, over x first
 	for (int x = 0; x < Z*X; x++)
 	{
 		bool prod = 0;
@@ -152,6 +156,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
 template <int Y, int X, int YRHO, int XRHO>
 inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const
 {
+	// Do the matrix multiplication loop, over x first
 	for (int x = 0; x < Z*X; x++)
 	{
 		bool prod = 0;
@@ -165,6 +170,7 @@ template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
 inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
 {
+	// Do the matrix multiplication loop, over y first
 	for (int y = 0; y < Z*Y; y++)
 	{
 		bool prod = 0;
@@ -177,6 +183,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
 template <int Y, int X, int YRHO, int XRHO>
 inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const
 {
+	// Do the matrix multiplication loop, over y first
 	for (int y = 0; y < Z*Y; y++)
 	{
 		bool prod = 0;
@@ -190,8 +197,10 @@ template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
 inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
 {
-	const int *pHyc = Hyc[y];
-	int x = *pHyc;
+	const int *pHyc = Hyc[y];	// A pointer to the current row.
+	int x = *pHyc;				// The current x value.
+	// Loop through the row, calling the callback for every coordinate present
+	// in the sparse matrix.
 	do
 	{
 		Functor::callbackY(y, x);
@@ -204,10 +213,12 @@ template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
 inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 {
-	const int *pHxc = Hxc[x];
-	int y = *pHxc;
+	const int *pHxc = Hxc[x];	// A pointer to the current column.
+	int y = *pHxc;				// The current y value.
 	do
 	{
+		// Loop through the row, calling the callback for every coordinate present
+		// in the sparse matrix.
 		Functor::callbackX(y, x);
 		pHxc++;
 		y = *pHxc;
@@ -217,15 +228,16 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 template <int Y, int X, int YRHO, int XRHO>
 inline bool Preaching<Y,X,YRHO,XRHO>::pshift(int yp, int xp, const bool *col, int y) const
 {
-	const int p = H[yp][xp];
-	if (p < 0)
+	const int p = H[yp][xp];	// The associated unexpanded value.
+	if (p < 0)					// If it's -1, the whole block is zero.
 		return false;
-	return col[(y+p)%Z];
+	return col[(y+p)%Z];		// Calculate the shifted value.
 }
 
 template <int Y, int X, int YRHO, int XRHO>
 void Preaching<Y,X,YRHO,XRHO>::output(std::ostream &out) const
 {
+	// Loop through the entire expanded matrix, outputting a '1' when appropriate.
 	for (int y = 0; y < Y*Z; y++)
 	{
 		for (int x = 0; x < X*Z; x++)
