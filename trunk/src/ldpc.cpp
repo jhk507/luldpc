@@ -69,15 +69,18 @@ bool msprod[M*Z];		// Encoding verification column
 // Decoding matrices
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
 PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
-PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq0(H);	// Q matrix (iteration 0)
 long double ml[N*Z];	// L column
 long double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];		// xhat column
 
+// The maximum number of decode iterations
 const int imax = 50;
 
-Histogram<M*Z/3,  20> orthhist[imax];
-Histogram<N*Z/10, 20> diffhist[imax];
+// The orthagonality error and output difference error histograms.
+// The template parameters are the number of histogram buckets, the full size
+// of the data range, and the desired portion of the data range to examine.
+Histogram<20, M*Z, M*Z*0.33> orthhist[imax];
+Histogram<20, N*Z, N*Z*0.06> diffhist[imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -95,10 +98,11 @@ const long double beta = 0.15;
 ofstream debugfile("debugfile.tsv");
 #endif
 
+// The decode method.
 const enum DecodeMethod
 {
-	bp,
-	offms
+	bp,		// Belief propagation
+	offms	// Offset min sum
 } method = offms;
 
 void calculateRho()
@@ -144,6 +148,7 @@ void calculateRho()
 
 void setSnrDB(long double snrdb)
 {
+	// Calculate the linear SNR and sigma from an SNR in dB
 	snr = pow((long double)10.0, (long double)snrdb/10);
 	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
 }
@@ -199,9 +204,10 @@ void execute()
 		}
 	}
 
+	// Output the error histograms.
 	ofstream hist("histogram.tsv");
-	// i vertical, buckets horizontal
 
+	// i is on the vertical axis, buckets are on the horizontal axis.
 	hist << '\t';
 	orthhist->outputHeader(hist);
 	for (int i = 0; i < imax; i++)
@@ -237,7 +243,7 @@ void encode()
 	success = true;
 
 	struct functor_multhpp {
-		static inline void callback(int y, bool p) {
+		static inline void callbackProduct(int y, bool p) {
 			success &= msprod[y] == p;	// Checks if message sum product = parity SP
 		}
 	};
@@ -305,6 +311,7 @@ void setParity()
 
 bool decode()
 {
+	// Set the initial state of the decoder
 	decode_initial();
 
 	// Iterative decoding
@@ -325,7 +332,7 @@ bool decode()
 			return true;
 #endif
 
-		// Update mr
+		// Update the R matrix
 		switch (method)
 		{
 		case bp:
@@ -345,14 +352,17 @@ bool decode()
 		debugfile.flush();
 #endif
 
+		// Update the Q and L matrices
 		qlupdate();
 
-		// Check that the decoding succeeded
+		// Check that the decoding succeeded with orthagonality verification
 		static int nerrs;	// The number of H*xhat errors
 		nerrs = 0;
 
+		// The matrix multiplication functor
 		struct functor_multhxhat {
-			static inline void callback(int y, bool p) {
+			static inline void callbackProduct(int y, bool p) {
+				// There is an error every time there is a 1 in the product.
 				nerrs += p;
 			}
 		};
@@ -399,13 +409,13 @@ void decode_initial()
 		ml0[n] = l;
 		ml[n] = l;
 
+		// The functor to set the initial values for Q and Q0
 		struct functor_setq {
-			static inline void callback(long double &q, long double &q0) {
+			static inline void callback(long double &q) { //, long double &q0) {
 				q = l;
-				q0 = l;
 			}
 		};
-		mq.iterX2<functor_setq>(n, mq0);
+		mq.iterX<functor_setq>(n);
 	}
 }
 
@@ -414,10 +424,11 @@ void rupdate_bp()
 	// Update mr
 	for (int m = 0; m < Z*M; m++)
 	{
-		// Do the graph iteration to calculate the pi term without exclusion
+		// The pi term (without exclusion)
 		static long double pi;
 		pi = 1;
 
+		// Do the graph iteration to calculate the pi term without exclusion
 		struct functor_r_bp_pi {
 			static inline void callback(long double &q) {
 				pi *= tanh(q/2.0);
@@ -425,6 +436,7 @@ void rupdate_bp()
 		};
 		mq.iterY<functor_r_bp_pi>(m);
 
+		// The functor to update the R matrix
 		struct functor_r_bp_update {
 			static inline void callback(long double &r, long double &q) {
 				long double pir = pi;
@@ -522,6 +534,8 @@ void qlupdate()
 	{
 		static long double rsigma;
 		rsigma = 0;
+		static long double q0;
+		q0 = ml0[n];
 
 		struct functor_sigmar {
 			static inline void callback(long double &r) {
@@ -532,12 +546,12 @@ void qlupdate()
 		mr.iterX<functor_sigmar>(n);
 
 		struct functor_updateq {
-			static inline void callback(long double &q, long double &q0, long double &r) {
+			static inline void callback(long double &q, long double &r) {
 				// Performs exclusion and sets Q
 				q = q0 + rsigma - r;
 			}
 		};
-		mq.iterX3<functor_updateq>(n,mq0,mr);
+		mq.iterX2<functor_updateq>(n,mr);
 
 		ml[n] = ml0[n] + rsigma;
 

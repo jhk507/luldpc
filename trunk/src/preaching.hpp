@@ -30,7 +30,7 @@ public:
 
 	// Multiply a row with the expanded matrix
 
-	// Functor member is of the form static void callback(int x, bool p)
+	// Functor member is of the form static void callbackProduct(int x, bool p)
 	template <typename Functor>
 	inline void multRow(const bool (&row)[Z*Y]) const;
 
@@ -38,7 +38,7 @@ public:
 
 	// Multiply the expanded matrix with a column
 
-	// Functor member is of the form inline static void callback(int y, bool p)
+	// Functor member is of the form inline static void callbackProduct(int y, bool p)
 	template <typename Functor>
 	inline void multCol(const bool (&col)[Z*X]) const;
 
@@ -150,7 +150,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
 		bool prod = 0;
 		for (const int *pHxc = Hxc[x]; *pHxc >= 0; pHxc++)
 			prod ^= row[*pHxc];
-		Functor::callback(x, prod);
+		Functor::callbackProduct(x, prod);
 	}
 }
 
@@ -177,7 +177,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
 		bool prod = 0;
 		for (const int *pHyc = Hyc[y]; *pHyc >= 0; pHyc++)
 			prod ^= col[*pHyc];
-		Functor::callback(y, prod);
+		Functor::callbackProduct(y, prod);
 	}
 }
 
