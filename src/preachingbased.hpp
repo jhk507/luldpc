@@ -55,16 +55,6 @@ public:
 	template <typename Functor>
 	inline void iterY2(int y, PreachingBased &p2) const;
 
-	// Iterate through a column of this matrix and two other PreachingBased
-	// matrices at the same coordinates.
-	template <typename Functor>
-	inline void iterX3(int x, PreachingBased &p2, PreachingBased &p3) const;
-
-	// Iterate through a row of this matrix and two other PreachingBased
-	// matrices at the same coordinates.
-	template <typename Functor>
-	inline void iterY3(int y, PreachingBased &p2, PreachingBased &p3) const;
-
 public:
 	// The main data array. This is stored in order of occurrence from left to
 	// right, then top to bottom.
@@ -201,35 +191,6 @@ inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY2(int y, PreachingBased &p2)
 		Functor::callback(e1->val, e2->val);
 		e1++;
 		e2++;
-	} while (e1 != end);
-}
-
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX3(int x, PreachingBased &p2, PreachingBased &p3) const
-{
-	LinkedElm *e1 = Vxc[x], *e2 = p2.Vxc[x], *e3 = p3.Vxc[x];
-	do
-	{
-		Functor::callback(e1->val, e2->val, e3->val);
-		e1 = e1->nexty;
-		e2 = e2->nexty;
-		e3 = e3->nexty;
-	} while (e1);
-}
-
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY3(int y, PreachingBased &p2, PreachingBased &p3) const
-{
-	LinkedElm *e1 = Vyc[y], *e2 = p2.Vyc[y], *e3 = p3.Vyc[y];
-	const LinkedElm *const end = Vyc[++y];
-	do
-	{
-		Functor::callback(e1->val, e2->val, e3->val);
-		e1++;
-		e2++;
-		e3++;
 	} while (e1 != end);
 }
 

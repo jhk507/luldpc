@@ -411,7 +411,7 @@ void decode_initial()
 
 		// The functor to set the initial values for Q and Q0
 		struct functor_setq {
-			static inline void callback(long double &q) { //, long double &q0) {
+			static inline void callback(long double &q) {
 				q = l;
 			}
 		};
