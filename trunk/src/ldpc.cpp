@@ -97,7 +97,7 @@ const enum DecodeMethod
 {
 	bp,
 	offms
-} method = bp;
+} method = offms;
 
 void init()
 {
@@ -168,7 +168,7 @@ void execute()
 #endif
 
 	// The main block loop
-	for (int b = 1; nerrs < 50; b++)
+	for (int b = 1; b < 500; b++)
 	{
 		// Encode
 		encode();
@@ -185,9 +185,9 @@ void execute()
 		if (!decode())
 			nerrs++;
 
-		cout << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
+		cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
-		debugfile << "Block " << b << ": " << nerrs << " errors, BLER=" << 100.0*nerrs/b << '%' << endl;
+		debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
 		break;
 #endif
 	}
@@ -200,17 +200,18 @@ void encode()
 	for (int m = 0; m < K*Z; m++)
 		ms[m] = irand() & 1;
 
-	// Encode
+/*	// Encode
 #ifdef _DEBUG
 	cout << "Encoding..." << endl;
 #if OUTPUT_DEBUGFILE
 	debugfile << "Encoding..." << endl;
 #endif
 #endif
-
+*/
 	// Get the parity bits
 	setParity();
 
+/*
 #ifdef _DEBUG
 	// Double-check that the encoding succeeded
 	Hs.multCol(ms, msprod);
@@ -230,7 +231,7 @@ void encode()
 	debugfile << "Encoder check " << (success ? "passed." : "failed.") << endl;
 #endif
 #endif
-
+*/
 	for (int n = 0; n < N*Z; n++)
 		// Perform BPSK and AWGN addition
 		my[n] = (mx[n] ? -1 : 1) + grand()*sigma;	// 1->-1 and 0->1
@@ -387,6 +388,7 @@ bool decode()
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
 
+/*
 #ifdef _DEBUG
 		cout << "Iteration " << setw(3) << i << ": "
 			<< setw(4) << nerrs << " H*xhat errors, "
@@ -399,16 +401,16 @@ bool decode()
 			<< endl;
 #endif
 #endif
-
+*/
 		if (!nerrs)
 			return true;
 
 		if (++i > imax)
 		{
-			cout << "Maximum iteration reached; error." << endl;
+/*			cout << "Maximum iteration reached; error." << endl;
 #if OUTPUT_DEBUGFILE
 			debugfile << "Maximum iteration reached; error." << endl;
-#endif
+#endif*/
 			return false;
 		}
 	}
@@ -425,11 +427,7 @@ void rupdate_bp()
 
 		struct functor_r_bp_pi {
 			static inline void callback(long double &q) {
-				const long double tanharg = q/2.0;
-				const long double tanhres = tanh(tanharg);
-				if (tanhres == 1.0)
-					exit(-1);
-				pi *= tanhres;
+				pi *= tanh(q/2.0);
 			}
 		};
 		mq.iterY<functor_r_bp_pi>(m);
@@ -441,17 +439,26 @@ void rupdate_bp()
 				if (tanhr)
 					pir /= tanhr;
 				else
-					exit(-1);	// Divide by 0
+				{
+					pir = numeric_limits<long double>::max();
+					cout << "Warning: Divide by 0 in BP for pir!\n";
+//					exit(-1);	// Divide by 0
+				}
 				if (pir == 1)
 				{
-//					r = numeric_limits<long double>::max();
-					exit(-1);	// Divide by 0
+					r = numeric_limits<long double>::max();
+					cout << "Warning: Divide by 0 in BP for r!\n";
+//					exit(-1);	// Divide by 0
 				}
 				else
 				{
 					const long double lnarg = (1+pir)/(1-pir);
 					if (lnarg <= 0)
-						exit(-1);	// Negative log
+					{
+						r = -numeric_limits<long double>::max();
+						cout << "Warning: Negative log in BP!";
+//						exit(-1);	// Negative log
+					}
 					else
 						r = log(lnarg);
 				}
