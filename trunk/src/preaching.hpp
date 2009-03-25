@@ -8,8 +8,9 @@
 
 #include "automatrix.hpp"
 
-#define Z 96	// Matrix expansion factor
-#define K (N-M)	// Width of parity portion of Preaching matrix
+#define Z 96					// Matrix expansion factor
+#define K (N-M)					// Width of parity portion of Preaching matrix
+#define RATE ((long double)M/N)	// Rate
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
