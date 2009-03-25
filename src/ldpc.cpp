@@ -19,6 +19,7 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
 #include "mtrand/MTRand_gaussian.hpp"
+#include "histogram.hpp"
 #include "preachingbased.hpp"
 #include "ldpc.hpp"
 
@@ -73,6 +74,11 @@ long double ml[N*Z];	// L column
 long double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];		// xhat column
 
+const int imax = 50;
+
+Histogram<M*Z/3,  20> orthhist[imax];
+Histogram<N*Z/10, 20> diffhist[imax];
+
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
 // Discrete value random number generator
@@ -88,8 +94,6 @@ const long double beta = 0.15;
 #if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
 #endif
-
-int imax = 50;
 
 const enum DecodeMethod
 {
@@ -168,7 +172,7 @@ void execute()
 #endif
 
 	// The main block loop
-	for (int b = 1; b < 500; b++)
+	for (int b = 1; b <= 500; b++)
 	{
 		// Encode
 		encode();
@@ -193,6 +197,25 @@ void execute()
 			break;
 #endif
 		}
+	}
+
+	ofstream hist("histogram.tsv");
+	// i vertical, buckets horizontal
+
+	hist << '\t';
+	orthhist->outputHeader(hist);
+	for (int i = 0; i < imax; i++)
+	{
+		hist << i << '\t';
+		orthhist[i].output(hist);
+	}
+
+	hist << "\n\n\t";
+	diffhist->outputHeader(hist);
+	for (int i = 0; i < imax; i++)
+	{
+		hist << i << '\t';
+		diffhist[i].output(hist);
 	}
 }
 
@@ -334,10 +357,12 @@ bool decode()
 			}
 		};
 		H.multCol<functor_multhxhat>(mxhat);
+		orthhist[i].report(nerrs);
 
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
+		diffhist[i].report(diff);
 
 		if (!nerrs)
 		{
@@ -345,6 +370,11 @@ bool decode()
 			{
 				cerr << "Warning: False positive; " << diff << " errors.\n";
 				return false;
+			}
+			for (++i; i < imax; i++)
+			{
+				orthhist[i].report(0);
+				diffhist[i].report(0);
 			}
 			return true;
 		}
