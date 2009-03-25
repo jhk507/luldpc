@@ -21,9 +21,15 @@ namespace LDPC
 	// Computer the output of the encoder
 	void encode();
 
+	// Set the parity matrix based on the message
+	void setParity();
+
 	// Compute the output of the decoder
 	// Returns true if no error
 	bool decode();
+
+	// Set the initial decoder state
+	void decode_initial();
 
 	// Update the R matrix (belief propagation method)
 	void rupdate_bp();
@@ -31,6 +37,6 @@ namespace LDPC
 	// Update the R matrix (offset minsum method)
 	void rupdate_offms();
 
-	// Set the parity matrix based on the message
-	void setParity();
+	// Update the Q and L matrices
+	void qlupdate();
 }
