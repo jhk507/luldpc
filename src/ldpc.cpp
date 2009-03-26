@@ -77,12 +77,9 @@ double ml[N*Z];		// L column
 double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];	// xhat column
 
-// The maximum number of decode iterations
-#define IMAX 30
-// The number of histogram buckets
-#define NBUCKETS 50
-// The number of blocks to run
-#define NBLOCKS 500
+#define IMAX 50		// The maximum number of decode iterations
+#define NBUCKETS 25	// The number of histogram buckets
+#define NBLOCKS 500	// The number of blocks to run
 
 // The decode method.
 const enum DecodeMethod
@@ -100,12 +97,10 @@ const char *const decodeNames[ndecodes] =
 
 // The SNRs to try.
 const double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
-// The number of SNRs to try
-#define NSNRS (sizeof(snrs)/sizeof(*snrs))
-// The index of the default SNR.
-#define DEFAULTSNR 8
-// The current SNR index
-int snrindex;
+
+#define NSNRS (sizeof(snrs)/sizeof(*snrs))	// The number of SNRs to try
+#define DEFAULTSNR 5						// The index of the default SNR.
+int snrindex;								// The current SNR index
 
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
@@ -200,13 +195,17 @@ struct functor_r_bp_update {
 		else
 		{
 			pir = numeric_limits<double>::max();
+#ifdef _DEBUG
 			cerr << "Warning: Divide by 0 in BP for pir!\n";
+#endif
 //			exit(-1);	// Divide by 0
 		}
 		if (pir == 1)
 		{
 			r = numeric_limits<double>::max();
+#ifdef _DEBUG
 			cerr << "Warning: Divide by 0 in BP for r!\n";
+#endif
 //			exit(-1);	// Divide by 0
 		}
 		else
@@ -216,7 +215,9 @@ struct functor_r_bp_update {
 			if (lnarg <= 0)
 			{
 				r = -numeric_limits<double>::max();
-				cerr << "Warning: Negative log in BP!";
+#ifdef _DEBUG
+				cerr << "Warning: Negative log in BP!\n";
+#endif
 //				exit(-1);	// Negative log
 			}
 			else
@@ -446,7 +447,7 @@ void execute()
 	// The decode method loop
 	for (method = (DecodeMethod)0; method < ndecodes; ((int&)method)++)
 	{
-		cout << "Using " << decodeNames[method] << " decoding method...\n";
+		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
 		// The SNR loop
 		for (snrindex = 0; snrindex < NSNRS; snrindex++)
@@ -475,17 +476,12 @@ void execute()
 					nerrs++;
 
 				if (!(b%10))
-				{
-					cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
-		#if OUTPUT_DEBUGFILE
-					debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
-					break;
-		#endif
-				}
+					cout << "Block " << b << '/' << NBLOCKS
+						<< "\tBLER=" << nerrs/(double)NBLOCKS << "%\r";
 			}
+			cout << '\n';
 		}
-
-		cout << "\n\n";
+		cout << '\n';
 	}
 
 	// Output the error histograms.
@@ -629,7 +625,9 @@ bool decode()
 		{
 			if (diff)
 			{
+#ifdef _DEBUG
 				cerr << "Warning: False positive; " << diff << " errors.\n";
+#endif
 				return false;
 			}
 			for (++i; i < IMAX; i++)
