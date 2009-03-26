@@ -342,32 +342,55 @@ void outputHistogram(
 {
 	// Output the error histograms.
 
+	// Surface histogram
+	// x - error buckets
+	// y - iterations
+	// z - frequency
 	string filename = "hist_surf_";
 	filename += name;
 	filename += ".tsv";
-
-	// Surface histogram
-	// i is on the vertical axis, buckets are on the horizontal axis.
-	// frequency is on Z.
 	ofstream fhist(filename.c_str());
-	fhist << "-0\t";
+	fhist << "-0\t" << setprecision(10);
 	hists[defaultSnr]->outputHeader(fhist);
 	for (int i = 0; i < imax; i++)
 	{
-		fhist << i << '\t';
-		hists[defaultSnr][i].output(fhist);
+		fhist << i;
+		for (int b = 0; b < nbuckets; b++)
+			fhist << '\t' << hists[defaultSnr][i].getNormalizedFreq(b);
+		fhist << '\n';
 	}
 	fhist.close();
 
+	// SNR surface histogram at zero error
+	// x - snr
+	// y - iterations
+	// z - frequency
+	filename = "hist_snr_";
+	filename += name;
+	filename += ".tsv";
+	fhist.open(filename.c_str());
+	fhist << "-0";
+	for (snrindex = 0; snrindex < nsnrs; snrindex++)
+		fhist << '\t' << snrs[snrindex];
+	fhist << '\n';
+	for (int i = 0; i < imax; i++)
+	{
+		fhist << i;
+		for (snrindex = 0; snrindex < nsnrs; snrindex++)
+			fhist << '\t' << hists[snrindex][i].getNormalizedFreq(0);
+		fhist << '\n';
+	}
+	fhist.close();
+	
 	// Giant scatterplot histogram
-	// 
+	// x - snr
+	// y - iterations
+	// z - error buckets
+	// size, colour - frequency
 	filename = "hist_scat_";
 	filename += name;
 	filename += ".tsv";
 	fhist.open(filename.c_str());
-
-	fhist << fixed;
-	const int defprecis = fhist.precision();
 	for (snrindex = 0; snrindex < nsnrs; snrindex++)
 	{
 		for (int i = 0; i < imax; i++)
@@ -380,13 +403,12 @@ void outputHistogram(
 					fhist
 						<< snrs[snrindex] << '\t'
 						<< i << '\t'
-						<< setprecision(10)
 						<< (*hists)->getNormalizedBucket(bucket) << '\t'
-						<< freq << "\t\n"
-						<< setprecision(defprecis);
+						<< freq << "\t\n";
 			}
 		}
 	}
+	fhist.close();
 }
 
 
