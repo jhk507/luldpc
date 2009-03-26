@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_surface(file, error, nplot)
+function graph_error(file, error, nplot)
     % Load the histogram data.
     hist = load(['hist_surf_', file, '.tsv']);
 
