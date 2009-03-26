@@ -81,13 +81,20 @@ const int imax = 30;
 // The number of histogram buckets
 const int nbuckets = 20;
 // The number of blocks to run
-const int nblocks = 500;
+const int nblocks = 100;
+
+// The SNRs to try.
+const long double snrs[] = { 0.5, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
+// The number of SNRs to try
+const int nsnrs = sizeof(snrs)/sizeof(*snrs);
+// The current SNR index
+int snrindex;
 
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-Histogram<nbuckets, M*Z, (int)(M*Z*0.33), nblocks> orthhist[imax];
-Histogram<nbuckets, N*Z, (int)(N*Z*0.06), nblocks> messhist[imax];
+Histogram<nbuckets, M*Z, (int)(M*Z*0.33), nblocks> orthhist[nsnrs][imax];
+Histogram<nbuckets, N*Z, (int)(N*Z*0.06), nblocks> messhist[nsnrs][imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -318,6 +325,7 @@ void calculateRho()
 
 void setSnrDB(long double snrdb)
 {
+	cout << "Setting the SNR to " << snrdb << " dB...\n";
 	// Calculate the linear SNR and sigma from an SNR in dB
 	snr = pow((long double)10.0, (long double)snrdb/10);
 	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
@@ -325,10 +333,6 @@ void setSnrDB(long double snrdb)
 
 void execute()
 {
-	// Initialize the simulation
-	setSnrDB(1.3);
-
-	int nerrs = 0;	// The number of block errors
 
 #if OUTPUT_DEBUGFILE
 	debugfile << "Unexpanded half-rate Preaching matrix" << endl;
@@ -346,36 +350,47 @@ void execute()
 	debugfile.flush();
 #endif
 
-	// The main block loop
-	for (int b = 1; b <= nblocks; b++)
+	// The SNR loop
+	for (snrindex = 0; snrindex < nsnrs; snrindex++)
 	{
-		// Encode
-		encode();
+		// Set the signal-to-noise ratio
+		setSnrDB(snrs[snrindex]);
 
-#if OUTPUT_DEBUGFILE
-		debugfile << "Message:" << endl;
-		outputLargeContiguous<K,Z>(ms, debugfile);
+		int nerrs = 0;	// The number of block errors
 
-		debugfile << "Encoded parity bits:" << endl;
-		outputLargeContiguous<M,Z>(mp, debugfile);
-#endif
-
-		// Decode
-		if (!decode())
-			nerrs++;
-
-		if (!(b%10))
+		// The block loop
+		for (int b = 1; b <= nblocks; b++)
 		{
-			cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
-#if OUTPUT_DEBUGFILE
-			debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
-			break;
-#endif
+			// Encode
+			encode();
+
+	#if OUTPUT_DEBUGFILE
+			debugfile << "Message:" << endl;
+			outputLargeContiguous<K,Z>(ms, debugfile);
+
+			debugfile << "Encoded parity bits:" << endl;
+			outputLargeContiguous<M,Z>(mp, debugfile);
+	#endif
+
+			// Decode
+			if (!decode())
+				nerrs++;
+
+			if (!(b%10))
+			{
+				cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
+	#if OUTPUT_DEBUGFILE
+				debugfile << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
+				break;
+	#endif
+			}
 		}
 	}
 
 	// Output the error histograms.
-	// i is on the vertical axis, buckets are on the horizontal axis.
+
+	
+/*	// i is on the vertical axis, buckets are on the horizontal axis.
 
 	// Orthagonal error histogram
 	ofstream hist("hist_orth.tsv");
@@ -397,7 +412,31 @@ void execute()
 		hist << i << '\t';
 		messhist[i].output(hist);
 	}
-	hist.close();
+	hist.close();*/
+
+	cout << "Generating histogram files...\n";
+
+	ofstream hist("hist_orth.tsv");
+	hist << fixed;
+	const int defprecis = hist.precision();
+	for (snrindex = 0; snrindex < nsnrs; snrindex++)
+	{
+		for (int i = 0; i < imax; i++)
+		{
+			for (int bucket = 0; bucket < nbuckets; bucket++)
+			{
+				const long double freq =
+					orthhist[snrindex][i].getNormalizedFreq(bucket);
+				hist
+					<< snrs[snrindex] << '\t'
+					<< i << '\t'
+					<< setprecision(10)
+					<< (*orthhist)->getNormalizedBucket(bucket) << '\t'
+					<< freq << '\t' << freq << "\t\n"
+					<< setprecision(defprecis);
+			}
+		}
+	}
 }
 
 
@@ -515,12 +554,12 @@ bool decode()
 
 		functor_multhxhat::nerrs = 0;
 		H.multCol<functor_multhxhat>(mxhat);
-		orthhist[i].report(functor_multhxhat::nerrs);
+		orthhist[snrindex][i].report(functor_multhxhat::nerrs);
 
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
-		messhist[i].report(diff);
+		messhist[snrindex][i].report(diff);
 
 		if (!functor_multhxhat::nerrs)
 		{
@@ -531,8 +570,8 @@ bool decode()
 			}
 			for (++i; i < imax; i++)
 			{
-				orthhist[i].report(0);
-				messhist[i].report(0);
+				orthhist[snrindex][i].report(0);
+				messhist[snrindex][i].report(0);
 			}
 			return true;
 		}

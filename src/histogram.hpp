@@ -24,19 +24,25 @@ public:
 	{
 		out << '0';
 		for (int b = 1; b < nBuckets; b++)
-		{
-			const long double v =
-				(valSection*(b-1)/(long double)(nBuckets-1) + 1)/valMax;
-			out << '\t' << v;
-		}
+			out << '\t' << getNormalizedBucket(b);
 		out << '\n';
 	}
 
 	void output(std::ostream &out) const
 	{
 		for (int b = 0; b < nBuckets; b++)
-			out << buckets[b]/(long double)nTrials << '\t';
+			out << getNormalizedFreq(b) << '\t';
 		out << '\n';
+	}
+
+	static inline long double getNormalizedBucket(int b)
+	{
+		return (valSection*(b-1)/(long double)(nBuckets-1) + 1)/valMax;
+	}
+
+	inline long double getNormalizedFreq(int b) const
+	{
+		return buckets[b]/(long double)nTrials;
 	}
 
 private:
