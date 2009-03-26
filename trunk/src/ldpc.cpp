@@ -80,9 +80,9 @@ bool mxhat[N*Z];	// xhat column
 // The maximum number of decode iterations
 #define IMAX 30
 // The number of histogram buckets
-#define NBUCKETS 20
+#define NBUCKETS 50
 // The number of blocks to run
-#define NBLOCKS 100
+#define NBLOCKS 500
 
 // The decode method.
 const enum DecodeMethod
@@ -355,13 +355,14 @@ void outputHistogram(
 	// x - error buckets
 	// y - iterations
 	// z - frequency
-	string filename = "hist_surf_";
+	string filename = "hist_err_";
 	filename += name;
 	filename += ".tsv";
 	fhist.open(filename.c_str());
 	fhist << "-0";
 	for (int b = 0; b < NBUCKETS; b++)
 		fhist << '\t' << (*hists)->getNormalizedBucket(b);
+	fhist << '\n';
 	for (int i = 0; i < IMAX; i++)
 	{
 		fhist << i;
