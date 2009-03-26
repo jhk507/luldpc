@@ -17,7 +17,7 @@ function loadScatter(file, error, nplot)
     iters   = scat(:,2);
     buckets = scat(:,3);
     sizes   = scat(:,4)*80 + 1;
-    colours = scat(:,5);
+    colours = scat(:,4);
 
     % Do the scatterplot.
     subplot(2,1,nplot)
