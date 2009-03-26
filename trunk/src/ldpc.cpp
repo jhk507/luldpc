@@ -85,7 +85,7 @@ const int nbuckets = 20;
 const int nblocks = 100;
 
 // The SNRs to try.
-const long double snrs[] = { 0.5, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
+const long double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
 // The number of SNRs to try
 const int nsnrs = sizeof(snrs)/sizeof(*snrs);
 // The current SNR index
