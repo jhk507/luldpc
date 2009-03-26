@@ -77,13 +77,15 @@ long double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];		// xhat column
 
 // The maximum number of decode iterations
-const int imax = 50;
+const int imax = 30;
+// The number of histogram buckets
+const int nbuckets = 20;
 
 // The orthagonality error and output difference error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-Histogram<20, M*Z, (int)(M*Z*0.33)> orthhist[imax];
-Histogram<20, N*Z, (int)(N*Z*0.06)> diffhist[imax];
+Histogram<nbuckets, M*Z, (int)(M*Z*0.33)> orthhist[imax];
+Histogram<nbuckets, N*Z, (int)(N*Z*0.06)> diffhist[imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -322,7 +324,7 @@ void setSnrDB(long double snrdb)
 void execute()
 {
 	// Initialize the simulation
-	setSnrDB(1.5);
+	setSnrDB(1.3);
 
 	int nerrs = 0;	// The number of block errors
 
@@ -360,7 +362,7 @@ void execute()
 		if (!decode())
 			nerrs++;
 
-		//if (!(b%10))
+		if (!(b%10))
 		{
 			cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
@@ -374,21 +376,21 @@ void execute()
 	ofstream hist("histogram.tsv");
 
 	// i is on the vertical axis, buckets are on the horizontal axis.
-	hist << '\t';
+	hist << "-0\t";
 	orthhist->outputHeader(hist);
 	for (int i = 0; i < imax; i++)
 	{
 		hist << i << '\t';
 		orthhist[i].output(hist);
 	}
-
+/*
 	hist << "\n\n\t";
 	diffhist->outputHeader(hist);
 	for (int i = 0; i < imax; i++)
 	{
 		hist << i << '\t';
 		diffhist[i].output(hist);
-	}
+	}*/
 }
 
 
