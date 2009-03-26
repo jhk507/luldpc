@@ -111,39 +111,38 @@ const enum DecodeMethod
 ///////////////////////////////////////////////////////////////////////////////
 // Functors ///////////////////////////////////////////////////////////////////
 
+// Checks the product of the Preaching matrix and the generated parity bits to
+// verify them.
 struct functor_multhpp {
-	static bool success;
+	static bool success;	// Whether or not the encoding succeeded.
 	static inline void callbackProduct(int y, bool p) {
 		success &= msprod[y] == p;	// Checks if message sum product = parity SP
 	}
 };
 bool functor_multhpp::success;
 
-// Functor to find the sum over elements in ms for a row,
-// iterating in x
+// Functor to find the sum over elements in ms for a row, iterating in x.
 struct functor_summsy {
-	static bool sum;
+	static bool sum;		// The sum for this row.
 	static inline void callbackY(int y, int x) {
-		sum ^= ms[x]; //XOR
+		sum ^= ms[x];		// Binary addition is equivalent to XOR.
 	}
 };
 bool functor_summsy::sum;
 
-// Check that the decoding succeeded with orthagonality verification
-
-// The matrix multiplication functor
+// The matrix multiplication functor for decoding orthagonality verification.
 struct functor_multhxhat {
-	static int nerrs;
+	static int nerrs;		// The number of orthagonality errors.
 	static inline void callbackProduct(int y, bool p) {
 		// There is an error every time there is a 1 in the product.
 		nerrs += p;
 	}
 };
-int functor_multhxhat::nerrs;	// The number of H*xhat errors
+int functor_multhxhat::nerrs;
 
-// The functor to set the initial values for Q and Q0
+// The functor to set the initial values for Q.
 struct functor_setq {
-	static long double l;
+	static long double l;	// The L-matrix value to take.
 	static inline void callback(long double &q) {
 		q = l;
 	}
@@ -151,72 +150,76 @@ struct functor_setq {
 long double functor_setq::l;
 
 
-// Do the graph iteration to calculate the pi term without exclusion
+// Calculate the BP decoding pi term without exclusion. Keeps a cache of tanh
+// values as these take a while to get.
 struct functor_r_bp_pi {
 	static long double pi;					// The pi term (without exclusion)
 	static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
 	static int xi;							// The current index in the row
 
 	static inline void callback(long double &q) {
-		const long double tanhval = tanh(q/2.0);
-		pi *= tanhval;
-		tanh_cache[xi++] = tanhval;
+		const long double tanhval = tanh(q/2.0);	// Calculate the tanh term.
+		pi *= tanhval;								// Multiply it into pi.
+		tanh_cache[xi++] = tanhval;					// Cache it.
 	}
 };
 long double functor_r_bp_pi::pi;
 long double functor_r_bp_pi::tanh_cache[RHO_H_Y];
 int functor_r_bp_pi::xi;
 
-// The functor to update the R matrix
+// The functor to update the R matrix, using BP decoding. Performs exclusion.
 struct functor_r_bp_update {
 	static inline void callback(long double &r, long double &q) {
-		long double pir = functor_r_bp_pi::pi;
+		long double pir = functor_r_bp_pi::pi;		// The pi term to use.
+		// Retrieve the appropriate cached tanh.
 		const long double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
 		if (tanhr)
+			// Perform exclusion.
 			pir /= tanhr;
 		else
 		{
 			pir = numeric_limits<long double>::max();
 			cerr << "Warning: Divide by 0 in BP for pir!\n";
-//					exit(-1);	// Divide by 0
+//			exit(-1);	// Divide by 0
 		}
 		if (pir == 1)
 		{
 			r = numeric_limits<long double>::max();
 			cerr << "Warning: Divide by 0 in BP for r!\n";
-//					exit(-1);	// Divide by 0
+//			exit(-1);	// Divide by 0
 		}
 		else
 		{
+			// Calculate the argument for ln.
 			const long double lnarg = (1+pir)/(1-pir);
 			if (lnarg <= 0)
 			{
 				r = -numeric_limits<long double>::max();
 				cerr << "Warning: Negative log in BP!";
-//						exit(-1);	// Negative log
+//				exit(-1);	// Negative log
 			}
 			else
+				// Update R.
 				r = log(lnarg);
 		}
 	}
 };
 
-// Do the graph iteration to calculate the pi and min
-// terms without exclusion
+// Calculate the minsum decoding pi and min terms without exclusion.
 struct functor_r_offms_pi {
-	static long double min0, min1;
-	static int pi;
+	static long double min0, min1;	// The lowest and second-lowest minima, respectively
+	static int pi;					// The pi term, without exclusion.
 	static inline void callback(long double &q) {
 		long double qv = q;
 		if (qv < 0)
-			pi = -pi;
+			pi = -pi;				// This effectively does the sign function.
 		qv = fabs(qv);
-		if (min0 >= qv)
+		if (min0 >= qv)				// Update both minima.
 		{
 			min1 = min0;
 			min0 = qv;
 		}
-		else if (min1 > qv)
+		else if (min1 > qv)			// Update the second-lowest minimum.
 			min1 = qv;
 	}
 };
@@ -224,15 +227,16 @@ long double functor_r_offms_pi::min0;
 long double functor_r_offms_pi::min1;
 int functor_r_offms_pi::pi;
 
+// Updates the R matrix with minsum decoding. Performs exclusion.
 struct functor_r_offms_update {
 	static inline void callback(long double &r, long double &q) {
-		int pir = functor_r_offms_pi::pi;
+		int pir = functor_r_offms_pi::pi;		// The pi term to use.
 
-		const long double qv = q;
-		// Perform exclusion on the pi term
+		const long double qv = q;				// The Q term to use.
+		// Perform exclusion on the pi term.
 		if (qv < 0)
 			pir = -pir;
-		// Perform exclusion on the min term
+		// Perform exclusion on the min term.
 		const long double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
 				functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
 
@@ -241,19 +245,23 @@ struct functor_r_offms_update {
 	}
 };
 
+// Calculates the sigma term without exclusion, for use in updating Q and L
+// during decoding.
 struct functor_sigmar {
 	static long double rsigma;
 	static inline void callback(long double &r) {
-		// Calculates the sigma term without exclusion
 		rsigma += r;
 	}
 };
 long double functor_sigmar::rsigma;
 
+// Update Q during decoding. Performs exclusion.
 struct functor_updateq {
+	// The value of Q for all elements in this column at iteration 0
 	static long double q0;
+
 	static inline void callback(long double &q, long double &r) {
-		// Performs exclusion and sets Q
+		// Performs exclusion and sets Q.
 		q = q0 + functor_sigmar::rsigma - r;
 	}
 };
