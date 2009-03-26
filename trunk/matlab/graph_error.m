@@ -16,7 +16,7 @@ function graph_error(file, error, nplot)
     freqs   = hist(2:(niters+1),2:(nbuckets+1));
 
     % Plot the surface.
-    subplot(1,2,nplot)
+    subplot(2,2,nplot)
     surf(buckets, iters, freqs)
 
     % Make the labels.

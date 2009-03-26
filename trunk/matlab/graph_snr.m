@@ -16,7 +16,7 @@ function graph_snr(file, error, nplot)
     freqs = hist(2:(niters+1),2:(nsnrs+1));
 
     % Plot the surface.
-    subplot(1,2,nplot)
+    subplot(2,2,nplot)
     surf(snrs, iters, freqs)
 
     % Make the labels.
