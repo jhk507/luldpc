@@ -16,7 +16,7 @@ function loadScatter(file, error, nplot)
     snrs    = scat(:,1);
     iters   = scat(:,2);
     buckets = scat(:,3);
-    sizes   = scat(:,4)*80 + 1;
+    sizes   = scat(:,4)*40 + 1;
     colours = scat(:,4);
 
     % Do the scatterplot.
