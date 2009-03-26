@@ -2,15 +2,9 @@
 % $Date$
 % $Rev$
 
-function graph_surface
-    clear;
-    loadHist('hist_surf_orth.tsv', 'Orthagonal', 1);
-    loadHist('hist_surf_mess.tsv', 'Message', 2);
-end
-
-function loadHist(file, error, nplot)
+function graph_surface(file, error, nplot)
     % Load the histogram data.
-    hist = load(file);
+    hist = load(['hist_surf_', file, '.tsv']);
 
     % Calculate the histogram dimensions.
     niters   = size(hist,1)-1;

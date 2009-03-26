@@ -71,7 +71,7 @@ int main()
 	LARGE_INTEGER end;
 	QueryPerformanceCounter(&end);
 	end.QuadPart -= start.QuadPart;
-	cout << "\n\nRuntime: " << ((long double)end.QuadPart)/freq.QuadPart << "s\n";
+	cout << "\n\nRuntime: " << ((double)end.QuadPart)/freq.QuadPart << "s\n";
 #endif
 
 	return 0;

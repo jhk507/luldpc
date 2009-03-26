@@ -35,14 +35,14 @@ public:
 		out << '\n';
 	}
 
-	static inline long double getNormalizedBucket(int b)
+	static inline double getNormalizedBucket(int b)
 	{
-		return (valSection*(b-1)/(long double)(nBuckets-1) + 1)/valMax;
+		return (valSection*(b-1)/(double)(nBuckets-1) + 1)/valMax;
 	}
 
-	inline long double getNormalizedFreq(int b) const
+	inline double getNormalizedFreq(int b) const
 	{
-		return buckets[b]/(long double)nTrials;
+		return buckets[b]/(double)nTrials;
 	}
 
 private:

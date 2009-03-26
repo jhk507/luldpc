@@ -62,7 +62,7 @@ const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Unexpanded half-rate Preach
 const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Unexpanded half-rate Preaching matrix H (second half, for parity)
 
 bool mx[N*Z];			// (col) Combination of ms and mp
-long double my[N*Z];	// (col) Encoder output after AWGN
+double my[N*Z];	// (col) Encoder output after AWGN
 
 // Set the aliases into mx
 bool (&ms)[K*Z] = (bool(&)[K*Z])mx;			// (col) Message
@@ -71,10 +71,10 @@ bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 bool msprod[M*Z];		// Encoding verification column
 
 // Decoding matrices
-PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
-PreachingBased<long double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
-long double ml[N*Z];	// L column
-long double ml0[N*Z];	// L column (iteration 0)
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);		// R matrix
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);		// Q matrix
+double ml[N*Z];	// L column
+double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];		// xhat column
 
 // The maximum number of decode iterations
@@ -85,7 +85,7 @@ const int nbuckets = 20;
 const int nblocks = 100;
 
 // The SNRs to try.
-const long double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
+const double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
 // The number of SNRs to try
 const int nsnrs = sizeof(snrs)/sizeof(*snrs);
 // The current SNR index
@@ -105,11 +105,11 @@ MTRand_gaussian grand(0);	//((unsigned long)time(0));
 MTRand_int32 irand(1);		//((unsigned long)~time(0));
 
 // Constants for AWGN calculation
-long double snr;	// Signal-to-noise ratio
-long double sigma;
+double snr;	// Signal-to-noise ratio
+double sigma;
 
 // Beta (for minsum decoding)
-const long double beta = 0.15;
+const double beta = 0.15;
 
 #if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
@@ -156,59 +156,59 @@ int functor_multhxhat::nerrs;
 
 // The functor to set the initial values for Q.
 struct functor_setq {
-	static long double l;	// The L-matrix value to take.
-	static inline void callback(long double &q) {
+	static double l;	// The L-matrix value to take.
+	static inline void callback(double &q) {
 		q = l;
 	}
 };
-long double functor_setq::l;
+double functor_setq::l;
 
 
 // Calculate the BP decoding pi term without exclusion. Keeps a cache of tanh
 // values as these take a while to get.
 struct functor_r_bp_pi {
-	static long double pi;					// The pi term (without exclusion)
-	static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
+	static double pi;					// The pi term (without exclusion)
+	static double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
 	static int xi;							// The current index in the row
 
-	static inline void callback(long double &q) {
-		const long double tanhval = tanh(q/2.0);	// Calculate the tanh term.
+	static inline void callback(double &q) {
+		const double tanhval = tanh(q/2.0);	// Calculate the tanh term.
 		pi *= tanhval;								// Multiply it into pi.
 		tanh_cache[xi++] = tanhval;					// Cache it.
 	}
 };
-long double functor_r_bp_pi::pi;
-long double functor_r_bp_pi::tanh_cache[RHO_H_Y];
+double functor_r_bp_pi::pi;
+double functor_r_bp_pi::tanh_cache[RHO_H_Y];
 int functor_r_bp_pi::xi;
 
 // The functor to update the R matrix, using BP decoding. Performs exclusion.
 struct functor_r_bp_update {
-	static inline void callback(long double &r, long double &q) {
-		long double pir = functor_r_bp_pi::pi;		// The pi term to use.
+	static inline void callback(double &r, double &q) {
+		double pir = functor_r_bp_pi::pi;		// The pi term to use.
 		// Retrieve the appropriate cached tanh.
-		const long double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
+		const double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
 		if (tanhr)
 			// Perform exclusion.
 			pir /= tanhr;
 		else
 		{
-			pir = numeric_limits<long double>::max();
+			pir = numeric_limits<double>::max();
 			cerr << "Warning: Divide by 0 in BP for pir!\n";
 //			exit(-1);	// Divide by 0
 		}
 		if (pir == 1)
 		{
-			r = numeric_limits<long double>::max();
+			r = numeric_limits<double>::max();
 			cerr << "Warning: Divide by 0 in BP for r!\n";
 //			exit(-1);	// Divide by 0
 		}
 		else
 		{
 			// Calculate the argument for ln.
-			const long double lnarg = (1+pir)/(1-pir);
+			const double lnarg = (1+pir)/(1-pir);
 			if (lnarg <= 0)
 			{
-				r = -numeric_limits<long double>::max();
+				r = -numeric_limits<double>::max();
 				cerr << "Warning: Negative log in BP!";
 //				exit(-1);	// Negative log
 			}
@@ -221,10 +221,10 @@ struct functor_r_bp_update {
 
 // Calculate the minsum decoding pi and min terms without exclusion.
 struct functor_r_offms_pi {
-	static long double min0, min1;	// The lowest and second-lowest minima, respectively
+	static double min0, min1;	// The lowest and second-lowest minima, respectively
 	static int pi;					// The pi term, without exclusion.
-	static inline void callback(long double &q) {
-		long double qv = q;
+	static inline void callback(double &q) {
+		double qv = q;
 		if (qv < 0)
 			pi = -pi;				// This effectively does the sign function.
 		qv = fabs(qv);
@@ -237,49 +237,49 @@ struct functor_r_offms_pi {
 			min1 = qv;
 	}
 };
-long double functor_r_offms_pi::min0;
-long double functor_r_offms_pi::min1;
+double functor_r_offms_pi::min0;
+double functor_r_offms_pi::min1;
 int functor_r_offms_pi::pi;
 
 // Updates the R matrix with minsum decoding. Performs exclusion.
 struct functor_r_offms_update {
-	static inline void callback(long double &r, long double &q) {
+	static inline void callback(double &r, double &q) {
 		int pir = functor_r_offms_pi::pi;		// The pi term to use.
 
-		const long double qv = q;				// The Q term to use.
+		const double qv = q;				// The Q term to use.
 		// Perform exclusion on the pi term.
 		if (qv < 0)
 			pir = -pir;
 		// Perform exclusion on the min term.
-		const long double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
+		const double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
 				functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
 
 		// Offset min sum calculation for r^(i)_(m,n)
-		r = pir * max((long double)0.0, qvmin - beta);
+		r = pir * max((double)0.0, qvmin - beta);
 	}
 };
 
 // Calculates the sigma term without exclusion, for use in updating Q and L
 // during decoding.
 struct functor_sigmar {
-	static long double rsigma;
-	static inline void callback(long double &r) {
+	static double rsigma;
+	static inline void callback(double &r) {
 		rsigma += r;
 	}
 };
-long double functor_sigmar::rsigma;
+double functor_sigmar::rsigma;
 
 // Update Q during decoding. Performs exclusion.
 struct functor_updateq {
 	// The value of Q for all elements in this column at iteration 0
-	static long double q0;
+	static double q0;
 
-	static inline void callback(long double &q, long double &r) {
+	static inline void callback(double &q, double &r) {
 		// Performs exclusion and sets Q.
 		q = q0 + functor_sigmar::rsigma - r;
 	}
 };
-long double functor_updateq::q0;
+double functor_updateq::q0;
 
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -326,12 +326,12 @@ void calculateRho()
 	}
 }
 
-void setSnrDB(long double snrdb)
+void setSnrDB(double snrdb)
 {
 	cout << "Setting the SNR to " << snrdb << " dB...\n";
 	// Calculate the linear SNR and sigma from an SNR in dB
-	snr = pow((long double)10.0, (long double)snrdb/10);
-	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
+	snr = pow((double)10.0, (double)snrdb/10);
+	sigma = pow((double)2.0*RATE*snr, (double)-0.5);
 }
 
 
@@ -342,12 +342,13 @@ void outputHistogram(
 {
 	// Output the error histograms.
 
-	// i is on the vertical axis, buckets are on the horizontal axis.
 	string filename = "hist_surf_";
 	filename += name;
 	filename += ".tsv";
 
 	// Surface histogram
+	// i is on the vertical axis, buckets are on the horizontal axis.
+	// frequency is on Z.
 	ofstream fhist(filename.c_str());
 	fhist << "-0\t";
 	hists[defaultSnr]->outputHeader(fhist);
@@ -359,6 +360,7 @@ void outputHistogram(
 	fhist.close();
 
 	// Giant scatterplot histogram
+	// 
 	filename = "hist_scat_";
 	filename += name;
 	filename += ".tsv";
@@ -372,15 +374,16 @@ void outputHistogram(
 		{
 			for (int bucket = 0; bucket < nbuckets; bucket++)
 			{
-				const long double freq =
+				const double freq =
 					hists[snrindex][i].getNormalizedFreq(bucket);
-				fhist
-					<< snrs[snrindex] << '\t'
-					<< i << '\t'
-					<< setprecision(10)
-					<< (*hists)->getNormalizedBucket(bucket) << '\t'
-					<< freq << "\t\n"
-					<< setprecision(defprecis);
+				if (freq)
+					fhist
+						<< snrs[snrindex] << '\t'
+						<< i << '\t'
+						<< setprecision(10)
+						<< (*hists)->getNormalizedBucket(bucket) << '\t'
+						<< freq << "\t\n"
+						<< setprecision(defprecis);
 			}
 		}
 	}
@@ -637,8 +640,8 @@ void rupdate_offms()
 		// Min function identities
 		// Assume a very large value so that it may be overwritten on the first
 		// iteration.
-		functor_r_offms_pi::min0 = numeric_limits<long double>::max();
-		functor_r_offms_pi::min1 = numeric_limits<long double>::max();
+		functor_r_offms_pi::min0 = numeric_limits<double>::max();
+		functor_r_offms_pi::min1 = numeric_limits<double>::max();
 
 		mq.iterY<functor_r_offms_pi>(m);
 

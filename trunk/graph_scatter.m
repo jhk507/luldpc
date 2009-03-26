@@ -2,22 +2,16 @@
 % $Date$
 % $Rev$
 
-function graph_scatter
-    clear;
-    loadScatter('hist_scat_orth.tsv', 'Orthagonal', 1);
-    loadScatter('hist_scat_mess.tsv', 'Message', 2);
-end
-
-function loadScatter(file, error, nplot)
+function graph_scatter(file, error, nplot)
     % Load the scatter data.
-    scat = load(file);
+    hist = load(['hist_scat_', file, '.tsv']);
 
     % Extract the scatter matrices.
-    snrs    = scat(:,1);
-    iters   = scat(:,2);
-    buckets = scat(:,3);
-    sizes   = scat(:,4)*40 + 1;
-    colours = scat(:,4);
+    snrs    = hist(:,1);
+    iters   = hist(:,2);
+    buckets = hist(:,3);
+    sizes   = hist(:,4)*40 + 1;
+    colours = hist(:,4);
 
     % Do the scatterplot.
     subplot(2,1,nplot)
