@@ -13,8 +13,9 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 #include <cstdlib>
 #include <limits>
 #include <iostream>
-#include <fstream>
 #include <iomanip>
+#include <fstream>
+#include <string>
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
@@ -89,6 +90,8 @@ const long double snrs[] = { 0.5, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
 const int nsnrs = sizeof(snrs)/sizeof(*snrs);
 // The current SNR index
 int snrindex;
+// The index of the default SNR.
+const int defaultSnr = 8;
 
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
@@ -331,6 +334,60 @@ void setSnrDB(long double snrdb)
 	sigma = pow((long double)2.0*RATE*snr, (long double)-0.5);
 }
 
+
+template <int valMax, int valSection>
+void outputHistogram(
+	Histogram<nbuckets, valMax, valSection, nblocks> (&hists)[nsnrs][imax],
+	const char *const name)
+{
+	// Output the error histograms.
+
+	// i is on the vertical axis, buckets are on the horizontal axis.
+	string filename = "hist_surf_";
+	filename += name;
+	filename += ".tsv";
+
+	// Surface histogram
+	ofstream fhist(filename.c_str());
+	fhist << "-0\t";
+	hists[defaultSnr]->outputHeader(fhist);
+	for (int i = 0; i < imax; i++)
+	{
+		fhist << i << '\t';
+		hists[defaultSnr][i].output(fhist);
+	}
+	fhist.close();
+
+	// Giant scatterplot histogram
+	filename = "hist_scat_";
+	filename += name;
+	filename += ".tsv";
+	fhist.open(filename.c_str());
+
+	fhist << fixed;
+	const int defprecis = fhist.precision();
+	for (snrindex = 0; snrindex < nsnrs; snrindex++)
+	{
+		for (int i = 0; i < imax; i++)
+		{
+			for (int bucket = 0; bucket < nbuckets; bucket++)
+			{
+				const long double freq =
+					hists[snrindex][i].getNormalizedFreq(bucket);
+				fhist
+					<< snrs[snrindex] << '\t'
+					<< i << '\t'
+					<< setprecision(10)
+					<< (*hists)->getNormalizedBucket(bucket) << '\t'
+					<< freq << '\t' << freq << "\t\n"
+					<< setprecision(defprecis);
+			}
+		}
+	}
+}
+
+
+
 void execute()
 {
 
@@ -388,55 +445,10 @@ void execute()
 	}
 
 	// Output the error histograms.
-
-	
-/*	// i is on the vertical axis, buckets are on the horizontal axis.
-
-	// Orthagonal error histogram
-	ofstream hist("hist_orth.tsv");
-	hist << "-0\t";
-	orthhist->outputHeader(hist);
-	for (int i = 0; i < imax; i++)
-	{
-		hist << i << '\t';
-		orthhist[i].output(hist);
-	}
-	hist.close();
-
-	// Message error histogram
-	hist.open("hist_mess.tsv");
-	hist << "-0\t";
-	messhist->outputHeader(hist);
-	for (int i = 0; i < imax; i++)
-	{
-		hist << i << '\t';
-		messhist[i].output(hist);
-	}
-	hist.close();*/
-
 	cout << "Generating histogram files...\n";
 
-	ofstream hist("hist_orth.tsv");
-	hist << fixed;
-	const int defprecis = hist.precision();
-	for (snrindex = 0; snrindex < nsnrs; snrindex++)
-	{
-		for (int i = 0; i < imax; i++)
-		{
-			for (int bucket = 0; bucket < nbuckets; bucket++)
-			{
-				const long double freq =
-					orthhist[snrindex][i].getNormalizedFreq(bucket);
-				hist
-					<< snrs[snrindex] << '\t'
-					<< i << '\t'
-					<< setprecision(10)
-					<< (*orthhist)->getNormalizedBucket(bucket) << '\t'
-					<< freq << '\t' << freq << "\t\n"
-					<< setprecision(defprecis);
-			}
-		}
-	}
+	outputHistogram(orthhist, "orth");
+	outputHistogram(messhist, "mess");
 }
 
 
