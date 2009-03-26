@@ -106,7 +106,7 @@ const enum DecodeMethod
 {
 	bp,		// Belief propagation
 	offms	// Offset min sum
-} method = bp;
+} method = offms;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functors ///////////////////////////////////////////////////////////////////
@@ -397,10 +397,10 @@ void encode()
 	// Double-check that the encoding succeeded
 	Hs.multCol(ms, msprod);
 
-	success = true;
+	functor_multhpp::success = true;
 	Hp.multCol<functor_multhpp>(mp);
 
-	if (!success)
+	if (!functor_multhpp::success)
 	{
 		cerr << "Encoding check failed!\n";
 		exit(-1);
