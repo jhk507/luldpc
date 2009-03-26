@@ -80,12 +80,14 @@ bool mxhat[N*Z];		// xhat column
 const int imax = 30;
 // The number of histogram buckets
 const int nbuckets = 20;
+// The number of blocks to run
+const int nblocks = 1000;
 
 // The orthagonality error and output difference error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-Histogram<nbuckets, M*Z, (int)(M*Z*0.33)> orthhist[imax];
-Histogram<nbuckets, N*Z, (int)(N*Z*0.06)> diffhist[imax];
+Histogram<nbuckets, M*Z, (int)(M*Z*0.33), nblocks> orthhist[imax];
+Histogram<nbuckets, N*Z, (int)(N*Z*0.06), nblocks> diffhist[imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -345,7 +347,7 @@ void execute()
 #endif
 
 	// The main block loop
-	for (int b = 1; b <= 500; b++)
+	for (int b = 1; b <= nblocks; b++)
 	{
 		// Encode
 		encode();
