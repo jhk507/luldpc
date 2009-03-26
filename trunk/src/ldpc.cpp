@@ -477,7 +477,7 @@ void execute()
 
 				if (!(b%10))
 					cout << "Block " << b << '/' << NBLOCKS
-						<< "\tBLER=" << nerrs/(double)NBLOCKS << "%\r";
+						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%\r";
 			}
 			cout << '\n';
 		}
