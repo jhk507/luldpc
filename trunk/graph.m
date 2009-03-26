@@ -2,10 +2,10 @@
 % $Date$
 % $Rev$
 
-function graph
+function graph_surface
     clear;
-    loadHist('hist_orth.tsv', 'Orthagonal', 1);
-    loadHist('hist_mess.tsv', 'Message', 2);
+    loadHist('hist_surf_orth.tsv', 'Orthagonal', 1);
+    loadHist('hist_surf_mess.tsv', 'Message', 2);
 end
 
 function loadHist(file, error, nplot)
