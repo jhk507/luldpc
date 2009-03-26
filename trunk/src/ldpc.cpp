@@ -379,7 +379,7 @@ void outputHistogram(
 					<< i << '\t'
 					<< setprecision(10)
 					<< (*hists)->getNormalizedBucket(bucket) << '\t'
-					<< freq << '\t' << freq << "\t\n"
+					<< freq << "\t\n"
 					<< setprecision(defprecis);
 			}
 		}
