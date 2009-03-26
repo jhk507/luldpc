@@ -8,7 +8,7 @@
 
 #include <ostream>
 
-template <int nBuckets, int valMax, int valSection>
+template <int nBuckets, int valMax, int valSection, int nTrials>
 class Histogram
 {
 public:
@@ -35,7 +35,7 @@ public:
 	void output(std::ostream &out) const
 	{
 		for (int b = 0; b < nBuckets; b++)
-			out << buckets[b] << '\t';
+			out << buckets[b]/(long double)nTrials << '\t';
 		out << '\n';
 	}
 
