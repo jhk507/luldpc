@@ -28,6 +28,9 @@ using namespace std;
 namespace LDPC
 {
 
+///////////////////////////////////////////////////////////////////////////////
+// Globals ////////////////////////////////////////////////////////////////////
+
 // Data for unexpanded half-rate Preaching matrix H
 const int Ha[M][N] =
 {
@@ -104,6 +107,161 @@ const enum DecodeMethod
 	bp,		// Belief propagation
 	offms	// Offset min sum
 } method = bp;
+
+///////////////////////////////////////////////////////////////////////////////
+// Functors ///////////////////////////////////////////////////////////////////
+
+struct functor_multhpp {
+	static bool success;
+	static inline void callbackProduct(int y, bool p) {
+		success &= msprod[y] == p;	// Checks if message sum product = parity SP
+	}
+};
+bool functor_multhpp::success;
+
+// Functor to find the sum over elements in ms for a row,
+// iterating in x
+struct functor_summsy {
+	static bool sum;
+	static inline void callbackY(int y, int x) {
+		sum ^= ms[x]; //XOR
+	}
+};
+bool functor_summsy::sum;
+
+// Check that the decoding succeeded with orthagonality verification
+
+// The matrix multiplication functor
+struct functor_multhxhat {
+	static int nerrs;
+	static inline void callbackProduct(int y, bool p) {
+		// There is an error every time there is a 1 in the product.
+		nerrs += p;
+	}
+};
+int functor_multhxhat::nerrs;	// The number of H*xhat errors
+
+// The functor to set the initial values for Q and Q0
+struct functor_setq {
+	static long double l;
+	static inline void callback(long double &q) {
+		q = l;
+	}
+};
+long double functor_setq::l;
+
+
+// Do the graph iteration to calculate the pi term without exclusion
+struct functor_r_bp_pi {
+	static long double pi;					// The pi term (without exclusion)
+	static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
+	static int xi;							// The current index in the row
+
+	static inline void callback(long double &q) {
+		const long double tanhval = tanh(q/2.0);
+		pi *= tanhval;
+		tanh_cache[xi++] = tanhval;
+	}
+};
+long double functor_r_bp_pi::pi;
+long double functor_r_bp_pi::tanh_cache[RHO_H_Y];
+int functor_r_bp_pi::xi;
+
+// The functor to update the R matrix
+struct functor_r_bp_update {
+	static inline void callback(long double &r, long double &q) {
+		long double pir = functor_r_bp_pi::pi;
+		const long double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
+		if (tanhr)
+			pir /= tanhr;
+		else
+		{
+			pir = numeric_limits<long double>::max();
+			cerr << "Warning: Divide by 0 in BP for pir!\n";
+//					exit(-1);	// Divide by 0
+		}
+		if (pir == 1)
+		{
+			r = numeric_limits<long double>::max();
+			cerr << "Warning: Divide by 0 in BP for r!\n";
+//					exit(-1);	// Divide by 0
+		}
+		else
+		{
+			const long double lnarg = (1+pir)/(1-pir);
+			if (lnarg <= 0)
+			{
+				r = -numeric_limits<long double>::max();
+				cerr << "Warning: Negative log in BP!";
+//						exit(-1);	// Negative log
+			}
+			else
+				r = log(lnarg);
+		}
+	}
+};
+
+// Do the graph iteration to calculate the pi and min
+// terms without exclusion
+struct functor_r_offms_pi {
+	static long double min0, min1;
+	static int pi;
+	static inline void callback(long double &q) {
+		long double qv = q;
+		if (qv < 0)
+			pi = -pi;
+		qv = fabs(qv);
+		if (min0 >= qv)
+		{
+			min1 = min0;
+			min0 = qv;
+		}
+		else if (min1 > qv)
+			min1 = qv;
+	}
+};
+long double functor_r_offms_pi::min0;
+long double functor_r_offms_pi::min1;
+int functor_r_offms_pi::pi;
+
+struct functor_r_offms_update {
+	static inline void callback(long double &r, long double &q) {
+		int pir = functor_r_offms_pi::pi;
+
+		const long double qv = q;
+		// Perform exclusion on the pi term
+		if (qv < 0)
+			pir = -pir;
+		// Perform exclusion on the min term
+		const long double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
+				functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
+
+		// Offset min sum calculation for r^(i)_(m,n)
+		r = pir * max((long double)0.0, qvmin - beta);
+	}
+};
+
+struct functor_sigmar {
+	static long double rsigma;
+	static inline void callback(long double &r) {
+		// Calculates the sigma term without exclusion
+		rsigma += r;
+	}
+};
+long double functor_sigmar::rsigma;
+
+struct functor_updateq {
+	static long double q0;
+	static inline void callback(long double &q, long double &r) {
+		// Performs exclusion and sets Q
+		q = q0 + functor_sigmar::rsigma - r;
+	}
+};
+long double functor_updateq::q0;
+
+
+///////////////////////////////////////////////////////////////////////////////
+// Functions //////////////////////////////////////////////////////////////////
 
 void calculateRho()
 {
@@ -239,14 +397,7 @@ void encode()
 	// Double-check that the encoding succeeded
 	Hs.multCol(ms, msprod);
 
-	static bool success;
 	success = true;
-
-	struct functor_multhpp {
-		static inline void callbackProduct(int y, bool p) {
-			success &= msprod[y] == p;	// Checks if message sum product = parity SP
-		}
-	};
 	Hp.multCol<functor_multhpp>(mp);
 
 	if (!success)
@@ -264,16 +415,6 @@ void encode()
 // Set the parity matrix based on the message
 void setParity()
 {
-	static bool sum;
-
-	// Functor to find the sum over elements in ms for a row,
-	// iterating in x
-	struct functor_summsy {
-		static inline void callbackY(int y, int x) {
-			sum ^= ms[x]; //XOR
-		}
-	};
-
 	// Magic number for left side of v(0) determination
 	// With our matrix, this element is ZERO therefore there is NO SHIFT NEEDED
 	// const int xshift = 0;
@@ -281,18 +422,18 @@ void setParity()
 	// Determine v(0)
 	for (int mi = 0; mi < Z; mi++) // Iterate over the index of v0
 	{
-		sum = 0;
+		functor_summsy::sum = 0;
 		for (int m = mi; m < Z*M; m += Z)	// Iterate over m for whole H matrix
 			Hs.iterY<functor_summsy>(m);	// Effectively iterate over n
-		mp[mi] = sum;
+		mp[mi] = functor_summsy::sum;
 	}
 
 	// Determine v(1)
 	for (int mi = 0; mi < Z; mi++)
 	{
-		sum = Hp.pshift(0,0,mp,mi);		// P(i,k)v(0)
+		functor_summsy::sum = Hp.pshift(0,0,mp,mi);		// P(i,k)v(0)
 		Hs.iterY<functor_summsy>(mi);	// sigma P(i,j)u(j)
-		mp[Z+mi] = sum;					// p(1)
+		mp[Z+mi] = functor_summsy::sum;					// p(1)
 	}
 
 	// Determine v(i)
@@ -301,9 +442,9 @@ void setParity()
 	{
 		for (int mi = 0; mi < Z; mi++, pmp++)
 		{
-			sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
+			functor_summsy::sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
 			Hs.iterY<functor_summsy>(Z*i+mi);	// sigma P(i,j)u(j)
-			pmp[Z] = sum;						// p(i+1)
+			pmp[Z] = functor_summsy::sum;						// p(i+1)
 		}
 	}
 }
@@ -355,26 +496,16 @@ bool decode()
 		// Update the Q and L matrices
 		qlupdate();
 
-		// Check that the decoding succeeded with orthagonality verification
-		static int nerrs;	// The number of H*xhat errors
-		nerrs = 0;
-
-		// The matrix multiplication functor
-		struct functor_multhxhat {
-			static inline void callbackProduct(int y, bool p) {
-				// There is an error every time there is a 1 in the product.
-				nerrs += p;
-			}
-		};
+		functor_multhxhat::nerrs = 0;
 		H.multCol<functor_multhxhat>(mxhat);
-		orthhist[i].report(nerrs);
+		orthhist[i].report(functor_multhxhat::nerrs);
 
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
 		diffhist[i].report(diff);
 
-		if (!nerrs)
+		if (!functor_multhxhat::nerrs)
 		{
 			if (diff)
 			{
@@ -399,22 +530,15 @@ void decode_initial()
 	// Set initial state
 	for (int n = 0; n < N*Z; n++)
 	{
-		static long double l;
 
 		if (method == bp)
-			l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
+			functor_setq::l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
 		else
-			l = my[n];
+			functor_setq::l = my[n];
 
-		ml0[n] = l;
-		ml[n] = l;
+		ml0[n] = functor_setq::l;
+		ml[n] = functor_setq::l;
 
-		// The functor to set the initial values for Q and Q0
-		struct functor_setq {
-			static inline void callback(long double &q) {
-				q = l;
-			}
-		};
 		mq.iterX<functor_setq>(n);
 	}
 }
@@ -424,59 +548,12 @@ void rupdate_bp()
 	// Update mr
 	for (int m = 0; m < Z*M; m++)
 	{
-
-		static long double pi;					// The pi term (without exclusion)
-		pi = 1;
-		static long double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
-		static int xi;							// The current index in the row
-		xi = 0;
-
-		// Do the graph iteration to calculate the pi term without exclusion
-		struct functor_r_bp_pi {
-			static inline void callback(long double &q) {
-				const long double tanhval = tanh(q/2.0);
-				pi *= tanhval;
-				tanh_cache[xi++] = tanhval;
-			}
-		};
+		functor_r_bp_pi::pi = 1;
+		functor_r_bp_pi::xi = 0;
 		mq.iterY<functor_r_bp_pi>(m);
 
 		// Reset the row index
-		xi = 0;
-
-		// The functor to update the R matrix
-		struct functor_r_bp_update {
-			static inline void callback(long double &r, long double &q) {
-				long double pir = pi;
-				const long double tanhr = tanh_cache[xi++];
-				if (tanhr)
-					pir /= tanhr;
-				else
-				{
-					pir = numeric_limits<long double>::max();
-					cerr << "Warning: Divide by 0 in BP for pir!\n";
-//					exit(-1);	// Divide by 0
-				}
-				if (pir == 1)
-				{
-					r = numeric_limits<long double>::max();
-					cerr << "Warning: Divide by 0 in BP for r!\n";
-//					exit(-1);	// Divide by 0
-				}
-				else
-				{
-					const long double lnarg = (1+pir)/(1-pir);
-					if (lnarg <= 0)
-					{
-						r = -numeric_limits<long double>::max();
-						cerr << "Warning: Negative log in BP!";
-//						exit(-1);	// Negative log
-					}
-					else
-						r = log(lnarg);
-				}
-			}
-		};
+		functor_r_bp_pi::xi = 0;
 		mr.iterY2<functor_r_bp_update>(m,mq);
 	}
 }
@@ -487,50 +564,16 @@ void rupdate_offms()
 	// OFF-MS method
 	for (int m = 0; m < Z*M; m++)
 	{
-		static int pi;
-		pi = 1;	// Multiplicative identity
+		functor_r_offms_pi::pi = 1;	// Multiplicative identity
 
 		// Min function identities
 		// Assume a very large value so that it may be overwritten on the first
 		// iteration.
-		static long double min0, min1;
-		min0 = numeric_limits<long double>::max();
-		min1 = min0;
+		functor_r_offms_pi::min0 = numeric_limits<long double>::max();
+		functor_r_offms_pi::min1 = numeric_limits<long double>::max();
 
-		// Do the graph iteration to calculate the pi and min
-		// terms without exclusion
-		struct functor_r_offms_pi {
-			static inline void callback(long double &q) {
-				long double qv = q;
-				if (qv < 0)
-					pi = -pi;
-				qv = fabs(qv);
-				if (min0 >= qv)
-				{
-					min1 = min0;
-					min0 = qv;
-				}
-				else if (min1 > qv)
-					min1 = qv;
-			}
-		};
 		mq.iterY<functor_r_offms_pi>(m);
 
-		struct functor_r_offms_update {
-			static inline void callback(long double &r, long double &q) {
-				int pir = pi;
-
-				const long double qv = q;
-				// Perform exclusion on the pi term
-				if (qv < 0)
-					pir = -pir;
-				// Perform exclusion on the min term
-				const long double qvmin = (fabs(qv) == min0) ? min1 : min0;
-
-				// Offset min sum calculation for r^(i)_(m,n)
-				r = pir * max((long double)0.0, qvmin - beta);
-			}
-		};
 		mr.iterY2<functor_r_offms_update>(m,mq);
 	}
 }
@@ -540,28 +583,15 @@ void qlupdate()
 	// Update mq and ml
 	for (int n = 0; n < Z*N; n++)
 	{
-		static long double rsigma;
-		rsigma = 0;
-		static long double q0;
-		q0 = ml0[n];
+		functor_sigmar::rsigma = 0;
 
-		struct functor_sigmar {
-			static inline void callback(long double &r) {
-				// Calculates the sigma term without exclusion
-				rsigma += r;
-			}
-		};
 		mr.iterX<functor_sigmar>(n);
 
-		struct functor_updateq {
-			static inline void callback(long double &q, long double &r) {
-				// Performs exclusion and sets Q
-				q = q0 + rsigma - r;
-			}
-		};
+		functor_updateq::q0 = ml0[n];
+
 		mq.iterX2<functor_updateq>(n,mr);
 
-		ml[n] = ml0[n] + rsigma;
+		ml[n] = ml0[n] + functor_sigmar::rsigma;
 
 		mxhat[n] = ml[n] < 0; // Hard decision
 	}

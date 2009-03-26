@@ -9,6 +9,14 @@
 #include "preaching.hpp"
 
 
+// An element structure containing the value at certain coordinates
+// as well as a pointer to the next value in the y direction.
+template <typename Elm>
+struct LinkedElm
+{
+	Elm val;
+	LinkedElm *nexty;
+};
 
 //////////////////////////////////////////////////////////////////////////////
 
@@ -19,13 +27,7 @@ template <typename Elm, int Y, int X, int YRHO, int XRHO>
 class PreachingBased
 {
 public:
-	// An element structure containing the value at certain coordinates
-	// as well as a pointer to the next value in the y direction.
-	struct LinkedElm
-	{
-		Elm val;
-		LinkedElm *nexty;
-	};
+	typedef ::LinkedElm<Elm> LinkedElm;
 
 public:
 	// The constructor. Takes a reference to an existing Preaching object.
@@ -55,6 +57,33 @@ public:
 	template <typename Functor>
 	inline void iterY2(int y, PreachingBased &p2) const;
 
+	// The functor called for every element in the column during construction.
+	struct functor_setlinks {
+		static LinkedElm *prev;
+		static LinkedElm **rVyc, **rVxc;
+		static const int (*rHyc)[Z*Y][YRHO+1];
+
+		static inline void callbackX(int y, int x) {
+			// A pointer to the current element in the row.
+			LinkedElm *currentelm = rVyc[y];
+			// A pointer to the current element in the compressed Preaching
+			// matrix row.
+			const int *currenth = (*rHyc)[y];
+			// Find the element at (y,x).
+			while (*currenth != x)
+			{
+				// Increment both the Preaching and PreachingBased pointers.
+				currenth++;
+				currentelm++;
+			}
+			if (prev)						// We're not at the beginning of the column.
+				prev->nexty = currentelm;	// Set the previous link.
+			else							// We're at the beginning of the column.
+				rVxc[x] = currentelm;		// Set the column's beginning.
+			prev = currentelm;				// Update the prev pointer.
+		}
+	};
+
 public:
 	// The main data array. This is stored in order of occurrence from left to
 	// right, then top to bottom.
@@ -68,6 +97,19 @@ public:
 	const Preaching<Y,X,YRHO,XRHO> &preaching;
 };
 
+template <typename Elm, int Y, int X, int YRHO, int XRHO>
+LinkedElm<Elm> *PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::prev;
+
+template <typename Elm, int Y, int X, int YRHO, int XRHO>
+LinkedElm<Elm> **PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rVyc;
+
+template <typename Elm, int Y, int X, int YRHO, int XRHO>
+LinkedElm<Elm> **PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rVxc;
+
+template <typename Elm, int Y, int X, int YRHO, int XRHO>
+const int (*PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rHyc)[Z*Y][YRHO+1];
+
+
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO> &preachingInit) :
@@ -77,23 +119,21 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO>
 	data = new LinkedElm[preaching.ones];
 
 	// Store static pointers to the Vyc and Vxc members for use in the functor.
-	static LinkedElm **rVyc, **rVxc;
-	rVyc = Vyc;
-	rVxc = Vxc;
+	functor_setlinks::rVyc = Vyc;
+	functor_setlinks::rVxc = Vxc;
 	// Store a static pointer to the Preaching instance's Hyc array for use in
 	// the functor.
-	static const int (*rHyc)[Z*Y][YRHO+1];
-	rHyc = &preaching.Hyc;
+	functor_setlinks::rHyc = &preaching.Hyc;
 
 	// A pointer to the current data element.
 	LinkedElm *dati = data;
 	for (int y = 0;; y++)	// Iterate over the rows.
 	{
-		rVyc[y] = dati;		// Store the start of the row.
+		functor_setlinks::rVyc[y] = dati;		// Store the start of the row.
 		if (y >= Z*Y)
 			break;
 		// A pointer to the compressed row in the Preaching matrix.
-		const int *pHyc = (*rHyc)[y];
+		const int *pHyc = (*functor_setlinks::rHyc)[y];
 		while (*pHyc++ >= 0)	// Find the end of the row.
 			dati++;
 	}
@@ -101,35 +141,12 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO>
 	for (int x = 0; x < Z*X; x++)	// Iterate over the columns.
 	{
 		// Remember the element previous to this one in the column.
-		static LinkedElm *prev;
-		prev = 0;
+		functor_setlinks::prev = 0;
 
-		// The functor called for every element in the column.
-		struct functor_setlinks {
-			static inline void callbackX(int y, int x) {
-				// A pointer to the current element in the row.
-				LinkedElm *currentelm = rVyc[y];
-				// A pointer to the current element in the compressed Preaching
-				// matrix row.
-				const int *currenth = (*rHyc)[y];
-				// Find the element at (y,x).
-				while (*currenth != x)
-				{
-					// Increment both the Preaching and PreachingBased pointers.
-					currenth++;
-					currentelm++;
-				}
-				if (prev)						// We're not at the beginning of the column.
-					prev->nexty = currentelm;	// Set the previous link.
-				else							// We're at the beginning of the column.
-					rVxc[x] = currentelm;		// Set the column's beginning.
-				prev = currentelm;				// Update the prev pointer.
-			}
-		};
 		// Iterate through every element in the column.
 		preaching.iterX<functor_setlinks>(x);
 		// Terminate the column.
-		prev->nexty = 0;
+		functor_setlinks::prev->nexty = 0;
 	}
 }
 
