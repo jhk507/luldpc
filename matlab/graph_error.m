@@ -4,7 +4,7 @@
 
 function graph_error(file, error, nplot)
     % Load the histogram data.
-    hist = load(['hist_surf_', file, '.tsv']);
+    hist = load(['hist_err_', file, '.tsv']);
 
     % Calculate the histogram dimensions.
     niters   = size(hist,1)-1;

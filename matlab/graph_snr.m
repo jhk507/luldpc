@@ -20,7 +20,7 @@ function graph_snr(file, error, nplot)
     surf(snrs, iters, freqs)
 
     % Make the labels.
-    title(['Zero-', error, '-error SNR histogram'])
+    title([error, ' zero-error SNR histogram'])
     xlabel('SNR (dB)')
     ylabel('Iteration number')
     zlabel('Frequency')
