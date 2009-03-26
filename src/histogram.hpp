@@ -6,8 +6,6 @@
 
 #pragma once
 
-#include <ostream>
-
 template <int nBuckets, int valMax, int valSection, int nTrials>
 class Histogram
 {
@@ -20,24 +18,11 @@ public:
 		buckets[bucket]++;
 	}
 
-	static void outputHeader(std::ostream &out)
-	{
-		out << '0';
-		for (int b = 1; b < nBuckets; b++)
-			out << '\t' << getNormalizedBucket(b);
-		out << '\n';
-	}
-
-	void output(std::ostream &out) const
-	{
-		for (int b = 0; b < nBuckets; b++)
-			out << getNormalizedFreq(b) << '\t';
-		out << '\n';
-	}
-
 	static inline double getNormalizedBucket(int b)
 	{
-		return (valSection*(b-1)/(double)(nBuckets-1) + 1)/valMax;
+		if (b)
+			return (valSection*(b-1)/(double)(nBuckets-1) + 1)/valMax;
+		return 0;
 	}
 
 	inline double getNormalizedFreq(int b) const
