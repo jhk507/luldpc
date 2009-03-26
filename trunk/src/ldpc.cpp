@@ -81,13 +81,13 @@ const int imax = 30;
 // The number of histogram buckets
 const int nbuckets = 20;
 // The number of blocks to run
-const int nblocks = 1000;
+const int nblocks = 500;
 
-// The orthagonality error and output difference error histograms.
+// The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
 Histogram<nbuckets, M*Z, (int)(M*Z*0.33), nblocks> orthhist[imax];
-Histogram<nbuckets, N*Z, (int)(N*Z*0.06), nblocks> diffhist[imax];
+Histogram<nbuckets, N*Z, (int)(N*Z*0.06), nblocks> messhist[imax];
 
 // The Gaussian distribution random number generator
 MTRand_gaussian grand(0);	//((unsigned long)time(0));
@@ -375,9 +375,10 @@ void execute()
 	}
 
 	// Output the error histograms.
-	ofstream hist("histogram.tsv");
-
 	// i is on the vertical axis, buckets are on the horizontal axis.
+
+	// Orthagonal error histogram
+	ofstream hist("hist_orth.tsv");
 	hist << "-0\t";
 	orthhist->outputHeader(hist);
 	for (int i = 0; i < imax; i++)
@@ -385,14 +386,18 @@ void execute()
 		hist << i << '\t';
 		orthhist[i].output(hist);
 	}
-/*
-	hist << "\n\n\t";
-	diffhist->outputHeader(hist);
+	hist.close();
+
+	// Message error histogram
+	hist.open("hist_mess.tsv");
+	hist << "-0\t";
+	messhist->outputHeader(hist);
 	for (int i = 0; i < imax; i++)
 	{
 		hist << i << '\t';
-		diffhist[i].output(hist);
-	}*/
+		messhist[i].output(hist);
+	}
+	hist.close();
 }
 
 
@@ -443,9 +448,9 @@ void setParity()
 	// Determine v(1)
 	for (int mi = 0; mi < Z; mi++)
 	{
-		functor_summsy::sum = Hp.pshift(0,0,mp,mi);		// P(i,k)v(0)
-		Hs.iterY<functor_summsy>(mi);	// sigma P(i,j)u(j)
-		mp[Z+mi] = functor_summsy::sum;					// p(1)
+		functor_summsy::sum = Hp.pshift(0,0,mp,mi);	// P(i,k)v(0)
+		Hs.iterY<functor_summsy>(mi);				// sigma P(i,j)u(j)
+		mp[Z+mi] = functor_summsy::sum;				// p(1)
 	}
 
 	// Determine v(i)
@@ -455,7 +460,7 @@ void setParity()
 		for (int mi = 0; mi < Z; mi++, pmp++)
 		{
 			functor_summsy::sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
-			Hs.iterY<functor_summsy>(Z*i+mi);	// sigma P(i,j)u(j)
+			Hs.iterY<functor_summsy>(Z*i+mi);					// sigma P(i,j)u(j)
 			pmp[Z] = functor_summsy::sum;						// p(i+1)
 		}
 	}
@@ -515,7 +520,7 @@ bool decode()
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
-		diffhist[i].report(diff);
+		messhist[i].report(diff);
 
 		if (!functor_multhxhat::nerrs)
 		{
@@ -527,7 +532,7 @@ bool decode()
 			for (++i; i < imax; i++)
 			{
 				orthhist[i].report(0);
-				diffhist[i].report(0);
+				messhist[i].report(0);
 			}
 			return true;
 		}
