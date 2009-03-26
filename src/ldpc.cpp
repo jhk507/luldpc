@@ -360,7 +360,7 @@ void execute()
 		if (!decode())
 			nerrs++;
 
-		if (!(b%10))
+		//if (!(b%10))
 		{
 			cout << "Block errors: " << nerrs << " / " << b << "\tBLER=" << 100.0*nerrs/b << '%' << endl;
 #if OUTPUT_DEBUGFILE
