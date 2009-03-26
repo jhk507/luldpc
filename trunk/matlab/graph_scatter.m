@@ -10,7 +10,7 @@ function graph_scatter(file, error, nplot)
     snrs    = hist(:,1);
     iters   = hist(:,2);
     buckets = hist(:,3);
-    sizes   = hist(:,4)*40 + 1;
+    sizes   = hist(:,4)*30 + 1;
     colours = hist(:,4);
 
     % Do the scatterplot.
