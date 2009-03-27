@@ -2,25 +2,17 @@
 % $Date$
 % $Rev$
 
-function graph_snr(file, error, nplot)
+function graph_snr(filename, titlename, nplot, axis_snr)
     % Load the histogram data.
-    hist = load(['hist_snr_', file, '.tsv']);
-
-    % Calculate the histogram dimensions.
-    niters = size(hist,1)-1;
-    nsnrs  = size(hist,2)-1;
-
-    % Extract the histogram matrices.
-    iters = hist(2:(niters+1),1);
-    snrs  = hist(1,2:(nsnrs+1));
-    freqs = hist(2:(niters+1),2:(nsnrs+1));
+    hist = load(['hist_snr_', filename, '.tsv']);
+    axis_iters = 1:size(hist,1);
 
     % Plot the surface.
     subplot(2,2,nplot)
-    surf(snrs, iters, freqs)
+    surf(axis_snr, axis_iters, hist)
 
     % Make the labels.
-    title([error, ' zero-error SNR histogram'])
+    title([titlename, ' zero-error SNR histogram'])
     xlabel('SNR (dB)')
     ylabel('Iteration number')
     zlabel('Frequency')
