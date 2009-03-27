@@ -77,9 +77,9 @@ double ml[N*Z];		// L column
 double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];	// xhat column
 
-#define IMAX 20		// The maximum number of decode iterations
+#define IMAX 50		// The maximum number of decode iterations
 #define NBUCKETS 25	// The number of histogram buckets
-#define NBLOCKS 50	// The number of blocks to run
+#define NBLOCKS 200	// The number of blocks to run
 
 // The decode method.
 const enum DecodeMethod
@@ -352,7 +352,7 @@ void outputHistogram(
 	ofstream fhist;
 	fhist << setprecision(10);
 
-	// Surface histogram
+	// Error surface histogram
 	// x - error buckets
 	// y - iterations
 	// z - frequency
@@ -369,7 +369,7 @@ void outputHistogram(
 	fhist.close();
 
 	// SNR surface histogram at zero error
-	// x - snr
+	// x - SNR
 	// y - iterations
 	// z - frequency
 	filename = "hist_snr_";
@@ -383,10 +383,26 @@ void outputHistogram(
 		fhist << '\n';
 	}
 	fhist.close();
+
+	// SNR surface histogram at maximum iteration
+	// x - error buckets
+	// y - SNR
+	// z - frequency
+	filename = "hist_maxiter_";
+	filename += name;
+	filename += ".tsv";
+	fhist.open(filename.c_str());
+	for (int b = 0; b < NBUCKETS; b++)
+	{
+		for (snrindex = 0; snrindex < NSNRS; snrindex++)
+			fhist << hists[snrindex][IMAX-1].getNormalizedFreq(b) << '\t';
+		fhist << '\n';
+	}
+	fhist.close();
 	
 	// Giant 4D slice histogram
-	// x - snr
-	// y - iterations
+	// x - iterations
+	// y - SNR
 	// z - error buckets
 	// size, colour - frequency
 	filename = "hist_slice_";
@@ -459,7 +475,7 @@ void execute()
 
 				if (!(b%10))
 					cout << "Block " << b << '/' << NBLOCKS
-						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%\t\r";
+						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%    \r";
 			}
 			cout << '\n';
 		}
