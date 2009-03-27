@@ -295,6 +295,22 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\decode.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\decode.hpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\encode.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\encode.hpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\histogram.hpp"
 			>
 		</File>
