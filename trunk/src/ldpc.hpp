@@ -37,6 +37,10 @@ namespace LDPC
 	// Update the R matrix (offset minsum method)
 	void rupdate_offms();
 
+	//update the R matrix (normalized minsum)
+	//void rupdate_nmms(); 
+	//update the R matrix (minsum) 
+	//void rupdate_ms(); 
 	// Update the Q and L matrices
 	void qlupdate();
 }
