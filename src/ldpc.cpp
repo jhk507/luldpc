@@ -399,7 +399,7 @@ void outputHistogram(
 		fhist << '\n';
 	}
 	fhist.close();
-	
+
 	// Giant 4D slice histogram
 	// x - iterations
 	// y - SNR
@@ -443,7 +443,8 @@ void execute()
 #endif
 
 	// The decode method loop
-	for (method = (DecodeMethod)0; method < ndecodes; ((int&)method)++)
+	int &imethod = (int&)method;
+	for (imethod = 0; method < ndecodes; imethod++)
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
@@ -500,7 +501,7 @@ void execute()
 	orthaxis.close();
 	messaxis.close();
 
-	for (method = (DecodeMethod)0; method < ndecodes; ((int&)method)++)
+	for (imethod = 0; method < ndecodes; imethod++)
 	{
 		string name = decodeNames[method];
 		name += "_orth";
