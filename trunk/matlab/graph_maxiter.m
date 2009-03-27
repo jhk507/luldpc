@@ -8,11 +8,11 @@ function graph_maxiter(filename, titlename, nplot, axis_err, axis_snr)
 
     % Plot the surface.
     subplot(2,2,nplot)
-    surf(axis_err, axis_snr, hist)
+    surf(axis_snr, axis_err, hist)
 
     % Make the labels.
     title([titlename, ' maximal iteration error histogram'])
-    xlabel([titlename, ' error'])
-    ylabel('SNR (dB)')
+    xlabel('SNR (dB)')
+    ylabel([titlename, ' error'])
     zlabel('Frequency')
 end
