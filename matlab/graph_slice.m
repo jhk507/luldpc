@@ -7,9 +7,9 @@ function graph_slice(filename, titlename, nplot, axis_snr, axis_err)
     hist = load(['hist_slice_', filename, '.tsv']);
     
     % Calculate dimensions.
-    nsnrs = size(axis_snr,1);
+    nsnrs = length(axis_snr);
     niters = size(hist,1)/nsnrs;
-    nerrs = size(axis_err,1);
+    nerrs = length(axis_err);
     
     % Generate the iterator column.
     axis_iter = (0:(niters-1)).';
