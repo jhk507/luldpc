@@ -422,11 +422,8 @@ void outputHistogram(
 	fhist.close();
 }
 
-
-
 void execute()
 {
-
 #if OUTPUT_DEBUGFILE
 	debugfile << "Unexpanded half-rate Preaching matrix" << endl;
 	for (int m = 0; m < M; m++)
@@ -476,8 +473,11 @@ void execute()
 					nerrs++;
 
 				if (!(b%10))
+				{
 					cout << "Block " << b << '/' << NBLOCKS
 						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%    \r";
+					cout.flush();
+				}
 			}
 			cout << '\n';
 		}
@@ -645,7 +645,7 @@ bool decode()
 #endif
 				return false;
 			}
-			for (++i; i < IMAX; i++)
+			for (i++; i < IMAX; i++)
 			{
 				orthhist[method][snrindex][i].report(0);
 				messhist[method][snrindex][i].report(0);
@@ -653,7 +653,7 @@ bool decode()
 			return true;
 		}
 
-		if (++i > IMAX)
+		if (++i >= IMAX)
 			return false;
 	}
 }
