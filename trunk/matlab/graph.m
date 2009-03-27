@@ -25,11 +25,18 @@ function graph
     graph_snr('offms_orth', 'OFFMS Orthagonal', 3, axis_snr);
     graph_snr('offms_mess', 'OFFMS Message',    4, axis_snr);
     
-    % Display the snr/iteration/error/frequency surface
+    % Display the error/snr/frequency surface
     figure(3);
+    graph_maxiter('bp_orth',    'BP Orthagonal',    1, axis_err_orth, axis_snr);
+    graph_maxiter('bp_mess',    'BP Message',       2, axis_err_mess, axis_snr);
+    graph_maxiter('offms_orth', 'OFFMS Orthagonal', 3, axis_err_orth, axis_snr);
+    graph_maxiter('offms_mess', 'OFFMS Message',    4, axis_err_mess, axis_snr);
+    
+    % Display the snr/iteration/error/frequency volumetric slices
+    figure(4);
     graph_slice('bp_orth',    'BP Orthagonal',    1, axis_snr, axis_err_orth);
     graph_slice('offms_orth', 'OFFMS Orthagonal', 2, axis_snr, axis_err_orth);
-    figure(4);
+    figure(5);
     graph_slice('bp_mess',    'BP Message',    1, axis_snr, axis_err_mess);
     graph_slice('offms_mess', 'OFFMS Message', 2, axis_snr, axis_err_mess);
 end
