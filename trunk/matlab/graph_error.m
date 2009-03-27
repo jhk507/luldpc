@@ -5,7 +5,7 @@
 function graph_error(filename, titlename, nplot, axis_err)
     % Load the histogram data.
     hist = load(['hist_err_', filename, '.tsv']);
-    axis_iters = 1:size(hist,1);
+    axis_iters = 0:(size(hist,1)-1);
 
     % Plot the surface.
     subplot(2,2,nplot)
