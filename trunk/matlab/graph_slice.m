@@ -22,19 +22,16 @@ function graph_slice(filename, titlename, nplot, axis_snr, axis_err)
             1:nerrs);
     end
     
-    % Create the stupidly redundant coordinate system.
-    [cx, cy, cz] = meshgrid( ...
-        axis_iter, ...
-        axis_snr, ...
-        axis_err);
+    % Create the stupidly redundant and inexplicably reversed coordinate system.
+    [cx, cy, cz] = meshgrid(axis_iter, axis_snr, axis_err);
 
     % Do the slice plot.
     subplot(2,1,nplot)
-    slice(cx, cy, cz, vol, axis_snr, niters-1, 0);
+    slice(cx, cy, cz, vol, niters-1, axis_snr, 0)
 
     % Make the labels.
     title([titlename, ' error histogram'])
-    xlabel('SNR (dB)')
-    ylabel('Iteration number')
+    xlabel('Iteration number')
+    ylabel('SNR (dB)')
     zlabel([titlename, ' error'])
 end
