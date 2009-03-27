@@ -82,12 +82,13 @@ bool mxhat[N*Z];	// xhat column
 #define NBLOCKS 200	// The number of blocks to run
 
 // The decode method.
-const enum DecodeMethod
+enum DecodeMethod
 {
-	bp = 0,		// Belief propagation
-	offms,		// Offset min sum
-	ndecodes	// (The number of decoding algorithms)
-} method = offms;
+	firstMethod = 0,	// (The first method available)
+	bp = 0,				// Belief propagation
+	offms,				// Offset min sum
+	ndecodes			// (The number of decoding algorithms)
+} method;
 
 const char *const decodeNames[ndecodes] =
 {
@@ -444,7 +445,7 @@ void execute()
 
 	// The decode method loop
 	int &imethod = (int&)method;
-	for (imethod = 0; method < ndecodes; imethod++)
+	for (method = firstMethod; method < ndecodes; imethod++)
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
@@ -501,7 +502,7 @@ void execute()
 	orthaxis.close();
 	messaxis.close();
 
-	for (imethod = 0; method < ndecodes; imethod++)
+	for (method = firstMethod; method < ndecodes; imethod++)
 	{
 		string name = decodeNames[method];
 		name += "_orth";
