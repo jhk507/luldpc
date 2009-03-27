@@ -6,13 +6,26 @@
 
 #pragma once
 
-template <int nBuckets, int valMax, int valSection, int nTrials>
+template <int nBuckets, int valMax, int valSection>
 class Histogram
 {
 public:
+	Histogram()
+	{
+		reset();
+	}
+
+	void reset()
+	{
+		ntrials = 0;
+		for (int b = 0; b < nBuckets; b++)
+			buckets[b] = 0;
+	}
+
 	inline void report(int val)
 	{
 		buckets[getBucket(val)]++;
+		ntrials++;
 	}
 
 	static inline double getNormalizedValFloor(int b)
@@ -39,4 +52,5 @@ public:
 
 private:
 	int buckets[nBuckets];
+	int ntrials;
 };

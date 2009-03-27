@@ -6,41 +6,52 @@
 
 #pragma once
 
+#include "histogram.hpp"
+#include "preaching.hpp"
+#include "decode.hpp"
+
+namespace LDPC
+{
+///////////////////////////////////////////////////////////////////////////////
+// Globals ////////////////////////////////////////////////////////////////////
+
 // Presets for half-rate
 #define M 12	// Height of the unexpanded Preaching matrix
 #define N 24	// Width of the unexpanded Preaching matrix
 
-namespace LDPC
-{
-	// Initialize the simulation parameters
-	void setSnrDB(double snrdbInit);
+// Matrix sparsity parameters
+#define RHO_H_Y  7
+#define RHO_H_X  6
+#define RHO_HS_Y 5
+#define RHO_HS_X 6
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
 
-	// Run the simulation
-	void execute();
+#define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
-	// Computer the output of the encoder
-	void encode();
+#define NBUCKETS 25	// The number of histogram buckets
 
-	// Set the parity matrix based on the message
-	void setParity();
+const extern Preaching<M,N,RHO_H_Y, RHO_H_X> H;	// Unexpanded half-rate Preaching matrix H
 
-	// Compute the output of the decoder
-	// Returns true if no error
-	bool decode();
+extern bool mx[N*Z];	// (col) Combination of ms and mp
 
-	// Set the initial decoder state
-	void decode_initial();
+// Set the aliases into mx
+extern bool (&ms)[K*Z];	// (col) Message
+extern bool (&mp)[M*Z];	// (col) Generated parity
 
-	// Update the R matrix (belief propagation method)
-	void rupdate_bp();
+// The orthagonality error and message error histograms.
+// The template parameters are the number of histogram buckets, the full size
+// of the data range, and the desired portion of the data range to examine.
+extern Histogram<NBUCKETS, M*Z, (int)(M*Z*0.33)> orthhist[IMAX];
+extern Histogram<NBUCKETS, N*Z, (int)(N*Z*0.06)> messhist[IMAX];
 
-	// Update the R matrix (offset minsum method)
-	void rupdate_offms();
+///////////////////////////////////////////////////////////////////////////////
+// Functions //////////////////////////////////////////////////////////////////
 
-	//update the R matrix (normalized minsum)
-	//void rupdate_nmms(); 
-	//update the R matrix (minsum) 
-	//void rupdate_ms(); 
-	// Update the Q and L matrices
-	void qlupdate();
+// Initialize the simulation parameters
+void setSnrDB(double snrdbInit);
+
+// Run the simulation
+void execute();
+
 }
