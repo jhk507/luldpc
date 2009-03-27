@@ -77,9 +77,9 @@ double ml[N*Z];		// L column
 double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];	// xhat column
 
-#define IMAX 50		// The maximum number of decode iterations
+#define IMAX 20		// The maximum number of decode iterations
 #define NBUCKETS 25	// The number of histogram buckets
-#define NBLOCKS 500	// The number of blocks to run
+#define NBLOCKS 50	// The number of blocks to run
 
 // The decode method.
 const enum DecodeMethod
@@ -474,9 +474,9 @@ void execute()
 		snraxis << snrs[snrindex] << '\n';
 	snraxis.close();
 
-	ofstream orthaxis("axis_ortherr.tsv");
-	ofstream messaxis("axis_messerr.tsv");
-	for (int b = 0; b < NBLOCKS; b++)
+	ofstream orthaxis("axis_err_orth.tsv");
+	ofstream messaxis("axis_err_mess.tsv");
+	for (int b = 0; b < NBUCKETS; b++)
 	{
 		orthaxis << (**orthhist)->getNormalizedValFloor(b) << '\n';
 		messaxis << (**messhist)->getNormalizedValFloor(b) << '\n';

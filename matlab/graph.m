@@ -27,9 +27,9 @@ function graph
     
     % Display the snr/iteration/error/frequency surface
     figure(3);
-    graph_scatter('bp_orth',    'BP Orthagonal',    1, axis_snr, axis_err_orth);
-    graph_scatter('offms_orth', 'OFFMS Orthagonal', 2, axis_snr, axis_err_orth);
+    graph_slice('bp_orth',    'BP Orthagonal',    1, axis_snr, axis_err_orth);
+    graph_slice('offms_orth', 'OFFMS Orthagonal', 2, axis_snr, axis_err_orth);
     figure(4)
-    graph_scatter('bp_mess',    'BP Message',    1, axis_snr, axis_err_mess);
-    graph_scatter('offms_mess', 'OFFMS Message', 2, axis_snr, axis_err_mess);
+    graph_slice('bp_mess',    'BP Message',    1, axis_snr, axis_err_mess);
+    graph_slice('offms_mess', 'OFFMS Message', 2, axis_snr, axis_err_mess);
 end
