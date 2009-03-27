@@ -2,26 +2,18 @@
 % $Date$
 % $Rev$
 
-function graph_error(file, error, nplot)
+function graph_error(filename, titlename, nplot, axis_err)
     % Load the histogram data.
-    hist = load(['hist_err_', file, '.tsv']);
-
-    % Calculate the histogram dimensions.
-    niters   = size(hist,1)-1;
-    nbuckets = size(hist,2)-1;
-
-    % Extract the histogram matrices.
-    iters   = hist(2:(niters+1),1);
-    buckets = hist(1,2:(nbuckets+1));
-    freqs   = hist(2:(niters+1),2:(nbuckets+1));
+    hist = load(['hist_err_', filename, '.tsv']);
+    axis_iters = 1:size(hist,1);
 
     % Plot the surface.
     subplot(2,2,nplot)
-    surf(buckets, iters, freqs)
+    surf(axis_err, axis_iters, hist)
 
     % Make the labels.
-    title([error, ' error histogram'])
-    xlabel([error, ' error'])
+    title([titlename, ' error histogram'])
+    xlabel([titlename, ' error'])
     ylabel('Iteration number')
     zlabel('Frequency')
 end

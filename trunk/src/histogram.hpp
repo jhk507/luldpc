@@ -12,17 +12,24 @@ class Histogram
 public:
 	inline void report(int val)
 	{
-		int bucket = val ? 1+(nBuckets-1)*(val-1)/valSection: 0;
-		if (bucket >= nBuckets)
-			bucket = nBuckets-1;
-		buckets[bucket]++;
+		buckets[getBucket(val)]++;
 	}
 
-	static inline double getNormalizedBucket(int b)
+	static inline double getNormalizedValFloor(int b)
 	{
 		if (b)
 			return (valSection*(b-1)/(double)(nBuckets-1) + 1)/valMax;
 		return 0;
+	}
+
+	static inline int getBucket(int val)
+	{
+		if (!val)
+			return 0;
+		const int bucket = 1+(nBuckets-1)*(val-1)/valSection;
+		if (bucket < nBuckets)
+			return bucket;
+		return nBuckets-1;
 	}
 
 	inline double getNormalizedFreq(int b) const

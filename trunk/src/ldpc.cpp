@@ -360,15 +360,10 @@ void outputHistogram(
 	filename += name;
 	filename += ".tsv";
 	fhist.open(filename.c_str());
-	fhist << "-0";
-	for (int b = 0; b < NBUCKETS; b++)
-		fhist << '\t' << (*hists)->getNormalizedBucket(b);
-	fhist << '\n';
 	for (int i = 0; i < IMAX; i++)
 	{
-		fhist << i;
 		for (int b = 0; b < NBUCKETS; b++)
-			fhist << '\t' << hists[DEFAULTSNR][i].getNormalizedFreq(b);
+			fhist << hists[DEFAULTSNR][i].getNormalizedFreq(b) << '\t';
 		fhist << '\n';
 	}
 	fhist.close();
@@ -381,25 +376,20 @@ void outputHistogram(
 	filename += name;
 	filename += ".tsv";
 	fhist.open(filename.c_str());
-	fhist << "-0";
-	for (snrindex = 0; snrindex < NSNRS; snrindex++)
-		fhist << '\t' << snrs[snrindex];
-	fhist << '\n';
 	for (int i = 0; i < IMAX; i++)
 	{
-		fhist << i;
 		for (snrindex = 0; snrindex < NSNRS; snrindex++)
-			fhist << '\t' << hists[snrindex][i].getNormalizedFreq(0);
+			fhist << hists[snrindex][i].getNormalizedFreq(0) << '\t';
 		fhist << '\n';
 	}
 	fhist.close();
 	
-	// Giant scatterplot histogram
+	// Giant 4D slice histogram
 	// x - snr
 	// y - iterations
 	// z - error buckets
 	// size, colour - frequency
-	filename = "hist_scat_";
+	filename = "hist_slice_";
 	filename += name;
 	filename += ".tsv";
 	fhist.open(filename.c_str());
@@ -408,16 +398,8 @@ void outputHistogram(
 		for (int i = 0; i < IMAX; i++)
 		{
 			for (int b = 0; b < NBUCKETS; b++)
-			{
-				const double freq =
-					hists[snrindex][i].getNormalizedFreq(b);
-				if (freq)
-					fhist
-						<< snrs[snrindex] << '\t'
-						<< i << '\t'
-						<< (*hists)->getNormalizedBucket(b) << '\t'
-						<< freq << "\t\n";
-			}
+				fhist << hists[snrindex][i].getNormalizedFreq(b) << '\t';
+			fhist << '\n';
 		}
 	}
 	fhist.close();
@@ -477,7 +459,7 @@ void execute()
 
 				if (!(b%10))
 					cout << "Block " << b << '/' << NBLOCKS
-						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%\r";
+						<< "\tBLER=" << nerrs*100.0/NBLOCKS << "%\t\r";
 			}
 			cout << '\n';
 		}
@@ -486,6 +468,21 @@ void execute()
 
 	// Output the error histograms.
 	cout << "Generating histogram files...\n";
+
+	ofstream snraxis("axis_snr.tsv");
+	for (snrindex = 0; snrindex < NSNRS; snrindex++)
+		snraxis << snrs[snrindex] << '\n';
+	snraxis.close();
+
+	ofstream orthaxis("axis_ortherr.tsv");
+	ofstream messaxis("axis_messerr.tsv");
+	for (int b = 0; b < NBLOCKS; b++)
+	{
+		orthaxis << (**orthhist)->getNormalizedValFloor(b) << '\n';
+		messaxis << (**messhist)->getNormalizedValFloor(b) << '\n';
+	}
+	orthaxis.close();
+	messaxis.close();
 
 	for (method = (DecodeMethod)0; method < ndecodes; ((int&)method)++)
 	{
