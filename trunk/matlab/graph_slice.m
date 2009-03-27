@@ -12,7 +12,7 @@ function graph_slice(filename, titlename, nplot, axis_snr, axis_err)
     nerrs = size(axis_err,1);
     
     % Generate the iterator column.
-    axis_iters = (0:(niters-1)).';
+    axis_iter = (0:(niters-1)).';
     
     % Extract the slice matrices.
     vol = zeros(nsnrs, niters, nerrs);
@@ -21,10 +21,16 @@ function graph_slice(filename, titlename, nplot, axis_snr, axis_err)
             (1+(s-1)*niters):(s*niters), ...
             1:nerrs);
     end
+    
+    % Create the stupidly redundant coordinate system.
+    [cx, cy, cz] = meshgrid( ...
+        axis_iter, ...
+        axis_snr, ...
+        axis_err);
 
     % Do the slice plot.
     subplot(2,1,nplot)
-    slice(vol, axis_snr, niters-1, 0);
+    slice(cx, cy, cz, vol, axis_snr, niters-1, 0);
 
     % Make the labels.
     title([titlename, ' error histogram'])
