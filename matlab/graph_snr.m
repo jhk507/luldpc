@@ -9,7 +9,7 @@ function graph_snr(filename, titlename, nplot, axis_snr)
 
     % Plot the surface.
     subplot(2,2,nplot);
-    surf(axis_snr, axis_iters, hist);
+    surf(axis_iters, axis_snr, hist);
 
     % Make the labels.
     title([titlename, ' zero-error SNR histogram']);

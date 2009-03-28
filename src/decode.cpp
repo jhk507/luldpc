@@ -12,6 +12,35 @@ namespace LDPC
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
 
+// Data for unexpanded half-rate Preaching matrix H
+const int Ha[M][N] =
+{
+	{-1,94,73,-1,-1,-1,-1,-1,55,83,-1,-1, 7, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1},
+	{-1,27,-1,-1,-1,22,79, 9,-1,-1,-1,12,-1, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,24,22,81,-1,33,-1,-1,-1, 0,-1,-1, 0, 0,-1,-1,-1,-1,-1,-1,-1,-1},
+	{61,-1,47,-1,-1,-1,-1,-1,65,25,-1,-1,-1,-1,-1, 0, 0,-1,-1,-1,-1,-1,-1,-1},
+	{-1,-1,39,-1,-1,-1,84,-1,-1,41,72,-1,-1,-1,-1,-1, 0, 0,-1,-1,-1,-1,-1,-1},
+	{-1,-1,-1,-1,46,40,-1,82,-1,-1,-1,79, 0,-1,-1,-1,-1, 0, 0,-1,-1,-1,-1,-1},
+	{-1,-1,95,53,-1,-1,-1,-1,-1,14,18,-1,-1,-1,-1,-1,-1,-1, 0, 0,-1,-1,-1,-1},
+	{-1,11,73,-1,-1,-1, 2,-1,-1,47,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0,-1,-1,-1},
+	{12,-1,-1,-1,83,24,-1,43,-1,-1,-1,51,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0,-1,-1},
+	{-1,-1,-1,-1,-1,94,-1,59,-1,-1,70,72,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0,-1},
+	{-1,-1, 7,65,-1,-1,-1,-1,39,49,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0, 0},
+	{43,-1,-1,-1,-1,66,-1,41,-1,-1,-1,26, 7,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1, 0}
+};
+
+const Preaching<M,N,RHO_H_Y, RHO_H_X>	H(Ha, 0);	// Half-rate Preaching matrix H
+const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Half-rate Preaching matrix H (first half)
+const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Half-rate Preaching matrix H (second half, for parity)
+
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);	// R matrix
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
+
+// Decoding matrices
+double ml[N*Z];		// L column
+double ml0[N*Z];	// L column (iteration 0)
+bool mxhat[N*Z];	// xhat column
+
 DecodeMethod method;
 
 const char *const decodeNames[ndecodes] =
@@ -19,11 +48,6 @@ const char *const decodeNames[ndecodes] =
 	"bp",
 	"offms"
 };
-
-// Decoding matrices
-double ml[N*Z];		// L column
-double ml0[N*Z];	// L column (iteration 0)
-bool mxhat[N*Z];	// xhat column
 
 // Beta (for minsum decoding)
 const double beta = 0.15;
