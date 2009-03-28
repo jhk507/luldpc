@@ -15,6 +15,7 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 #include <string>
 
 #include "encode.hpp"
+#include "histset.hpp"
 #include "ldpc.hpp"
 
 using namespace std;
@@ -57,8 +58,8 @@ bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-Histogram<NBUCKETS, M*Z, (int)(M*Z*0.33)> orthhist[IMAX];
-Histogram<NBUCKETS, N*Z, (int)(N*Z*0.06)> messhist[IMAX];
+OrthHistType orthhist[IMAX];
+MessHistType messhist[IMAX];
 
 #if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
@@ -109,83 +110,6 @@ void calculateRho()
 }
 
 
-template <int valMax, int valSection>
-void outputHistogram(
-	Histogram<NBUCKETS, valMax, valSection> (&hists)[IMAX],
-	const char *const name)
-{
-	// Output the error histograms.
-	ofstream fhist;
-	fhist << setprecision(10);
-
-	// Error surface histogram
-	// x - error buckets
-	// y - iterations
-	// z - frequency
-	string filename = "hist_err_";
-	filename += name;
-	filename += ".tsv";
-	fhist.open(filename.c_str());
-	for (int i = 0; i < IMAX; i++)
-	{
-		for (int b = 0; b < NBUCKETS; b++)
-			fhist << hists[DEFAULTSNR][i].getNormalizedFreq(b) << '\t';
-		fhist << '\n';
-	}
-	fhist.close();
-
-	// SNR surface histogram at zero error
-	// x - SNR
-	// y - iterations
-	// z - frequency
-	filename = "hist_snr_";
-	filename += name;
-	filename += ".tsv";
-	fhist.open(filename.c_str());
-	for (int i = 0; i < IMAX; i++)
-	{
-		for (snrindex = 0; snrindex < NSNRS; snrindex++)
-			fhist << hists[snrindex][i].getNormalizedFreq(0) << '\t';
-		fhist << '\n';
-	}
-	fhist.close();
-
-	// SNR surface histogram at maximum iteration
-	// x - error buckets
-	// y - SNR
-	// z - frequency
-	filename = "hist_maxiter_";
-	filename += name;
-	filename += ".tsv";
-	fhist.open(filename.c_str());
-	for (int b = 0; b < NBUCKETS; b++)
-	{
-		for (snrindex = 0; snrindex < NSNRS; snrindex++)
-			fhist << hists[snrindex][IMAX-1].getNormalizedFreq(b) << '\t';
-		fhist << '\n';
-	}
-	fhist.close();
-
-	// Giant 4D slice histogram
-	// x - iterations
-	// y - SNR
-	// z - error buckets
-	// size, colour - frequency
-	filename = "hist_slice_";
-	filename += name;
-	filename += ".tsv";
-	fhist.open(filename.c_str());
-	for (snrindex = 0; snrindex < NSNRS; snrindex++)
-	{
-		for (int i = 0; i < IMAX; i++)
-		{
-			for (int b = 0; b < NBUCKETS; b++)
-				fhist << hists[snrindex][i].getNormalizedFreq(b) << '\t';
-			fhist << '\n';
-		}
-	}
-	fhist.close();
-}
 
 void execute()
 {
@@ -205,8 +129,17 @@ void execute()
 	debugfile.flush();
 #endif
 
-	// The decode method loop
+	HistogramSet<OrthHistType> orthsets[ndecodes];
+	HistogramSet<MessHistType> messsets[ndecodes];
+
 	int &imethod = (int&)method;
+	for (method = firstMethod; method < ndecodes; imethod++)
+	{
+		orthsets[method].init(decodeNames[method], "orth", orthhist);
+		messsets[method].init(decodeNames[method], "mess", messhist);
+	}
+
+	// The decode method loop
 	for (method = firstMethod; method < ndecodes; imethod++)
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
@@ -245,6 +178,15 @@ void execute()
 				}
 			}
 			cout << '\n';
+
+			orthsets[method].writeLine();
+			messsets[method].writeLine();
+
+			for (int i = 0; i < IMAX; i++)
+			{
+				orthhist[i].reset();
+				messhist[i].reset();
+			}
 		}
 		cout << '\n';
 	}
@@ -266,17 +208,6 @@ void execute()
 	}
 	orthaxis.close();
 	messaxis.close();
-
-	for (method = firstMethod; method < ndecodes; imethod++)
-	{
-		string name = decodeNames[method];
-		name += "_orth";
-		outputHistogram(orthhist, name.c_str());
-
-		name = decodeNames[method];
-		name += "_mess";
-		outputHistogram(messhist, name.c_str());
-	}
 }
 
 }

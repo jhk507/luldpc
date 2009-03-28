@@ -44,8 +44,10 @@ extern bool (&mp)[M*Z];	// (col) Generated parity
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size
 // of the data range, and the desired portion of the data range to examine.
-extern Histogram<NBUCKETS, M*Z, (int)(M*Z*0.33)> orthhist[IMAX];
-extern Histogram<NBUCKETS, N*Z, (int)(N*Z*0.06)> messhist[IMAX];
+typedef Histogram<NBUCKETS, M*Z, (int)(M*Z*0.33)> OrthHistType;
+typedef Histogram<NBUCKETS, N*Z, (int)(N*Z*0.06)> MessHistType;
+extern OrthHistType orthhist[IMAX];
+extern MessHistType messhist[IMAX];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
