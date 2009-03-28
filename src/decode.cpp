@@ -1,5 +1,6 @@
 #include <cmath>
 #include <limits>
+#include <iostream>
 
 #include "preachingbased.hpp"
 #include "ldpc.hpp"
@@ -14,14 +15,7 @@ namespace LDPC
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
 
-// The decode method.
-enum DecodeMethod
-{
-	firstMethod = 0,	// (The first method available)
-	bp = 0,				// Belief propagation
-	offms,				// Offset min sum
-	ndecodes			// (The number of decoding algorithms)
-} method;
+DecodeMethod method;
 
 const char *const decodeNames[ndecodes] =
 {
