@@ -111,7 +111,7 @@ void calculateRho()
 
 template <int valMax, int valSection>
 void outputHistogram(
-	Histogram<NBUCKETS, valMax, valSection, NBLOCKS> (&hists)[NSNRS][IMAX],
+	Histogram<NBUCKETS, valMax, valSection> (&hists)[IMAX],
 	const char *const name)
 {
 	// Output the error histograms.
@@ -271,11 +271,11 @@ void execute()
 	{
 		string name = decodeNames[method];
 		name += "_orth";
-		outputHistogram(orthhist[method], name.c_str());
+		outputHistogram(orthhist, name.c_str());
 
 		name = decodeNames[method];
 		name += "_mess";
-		outputHistogram(messhist[method], name.c_str());
+		outputHistogram(messhist, name.c_str());
 	}
 }
 
