@@ -22,7 +22,10 @@ public:
 	void init(const char *methodName, const char *errorType,
 		const HistType *histsInit)
 	{
+		hists = histsInit;
+
 		std::string name = methodName;
+		name += '_';
 		name += errorType;
 
 		std::string filename = "hist_err_";
@@ -102,7 +105,7 @@ private:
 	std::ofstream fmaxiter;
 	std::ofstream fslice;
 
-	HistType *hists;
+	const HistType *hists;
 };
 
 }

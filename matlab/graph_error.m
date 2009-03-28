@@ -5,15 +5,15 @@
 function graph_error(filename, titlename, nplot, axis_err)
     % Load the histogram data.
     hist = load(['hist_err_', filename, '.tsv']);
-    axis_iters = 0:(size(hist,1)-1);
+    axis_iters = 0:(size(hist,2)-1);
 
     % Plot the surface.
-    subplot(2,2,nplot)
-    surf(axis_err, axis_iters, hist)
+    subplot(2,2,nplot);
+    surf(axis_iters, axis_err, hist);
 
     % Make the labels.
-    title([titlename, ' error histogram'])
-    xlabel([titlename, ' error'])
-    ylabel('Iteration number')
-    zlabel('Frequency')
+    title([titlename, ' error histogram']);
+    xlabel('Iteration number');
+    ylabel([titlename, ' error']);
+    zlabel('Frequency');
 end

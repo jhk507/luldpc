@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
+#include <ctime>
 
 #include "mtrand/MTRand_gaussian.hpp"
 
-#include "ldpc.hpp"
 #include "encode.hpp"
 
 using namespace std;
@@ -20,7 +20,12 @@ MTRand_gaussian grand(0);	//((unsigned long)time(0));
 // Discrete value random number generator
 MTRand_int32 irand(1);		//((unsigned long)~time(0));
 
-double my[N*Z];		// (col) Encoder output after AWGN
+bool mx[N*Z];	// (col) Combination of ms and mp
+double my[N*Z];	// (col) Encoder output after AWGN
+
+// Set the aliases into mx
+bool (&ms)[K*Z] = (bool(&)[K*Z])mx;			// (col) Message
+bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 
 bool msprod[M*Z];	// Encoding verification column
 
