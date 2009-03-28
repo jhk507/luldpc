@@ -2,10 +2,7 @@
 #include <limits>
 #include <iostream>
 
-#include "preachingbased.hpp"
-#include "ldpc.hpp"
 #include "encode.hpp"
-#include "decode.hpp"
 
 using namespace std;
 
@@ -24,8 +21,6 @@ const char *const decodeNames[ndecodes] =
 };
 
 // Decoding matrices
-PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);	// R matrix
-PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
 double ml[N*Z];		// L column
 double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];	// xhat column

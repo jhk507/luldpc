@@ -8,15 +8,10 @@ access to variables from functors and to greatly increase performance by
 cutting down on frame pointer generation. In short, no multithreading allowed.
 */
 
-#include <ctime>
 #include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <string>
 
 #include "encode.hpp"
 #include "histset.hpp"
-#include "ldpc.hpp"
 
 using namespace std;
 
@@ -26,7 +21,7 @@ namespace LDPC
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
 
-#define NBLOCKS 200	// The number of blocks to run
+#define NBLOCKS 100	// The number of blocks to run
 
 // Data for unexpanded half-rate Preaching matrix H
 const int Ha[M][N] =
@@ -49,11 +44,8 @@ const Preaching<M,N,RHO_H_Y, RHO_H_X>	H(Ha, 0);	// Half-rate Preaching matrix H
 const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Half-rate Preaching matrix H (first half)
 const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Half-rate Preaching matrix H (second half, for parity)
 
-bool mx[N*Z];	// (col) Combination of ms and mp
-
-// Set the aliases into mx
-bool (&ms)[K*Z] = (bool(&)[K*Z])mx;			// (col) Message
-bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);	// R matrix
+PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
 
 // The orthagonality error and message error histograms.
 // The template parameters are the number of histogram buckets, the full size

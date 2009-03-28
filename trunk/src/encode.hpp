@@ -18,7 +18,12 @@ namespace LDPC
 
 extern double sigma;
 
+extern bool mx[N*Z];	// (col) Combination of ms and mp
 extern double my[N*Z];	// (col) Encoder output after AWGN
+
+// Set the aliases into mx
+extern bool (&ms)[K*Z];	// (col) Message
+extern bool (&mp)[M*Z];	// (col) Generated parity
 
 // The SNRs to try.
 extern const double snrs[NSNRS];
