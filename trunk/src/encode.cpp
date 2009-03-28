@@ -1,3 +1,9 @@
+/*
+* $URL$
+* $Date$
+* $Rev$
+*/
+
 #include <iostream>
 #include <cstdlib>
 #include <cmath>
