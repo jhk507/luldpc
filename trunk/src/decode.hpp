@@ -14,6 +14,18 @@ namespace LDPC
 
 #define IMAX 50		// The maximum number of decode iterations
 
+// The decode method.
+enum DecodeMethod
+{
+	firstMethod = 0,	// (The first method available)
+	bp = 0,				// Belief propagation
+	offms,				// Offset min sum
+	ndecodes			// (The number of decoding algorithms)
+};
+extern DecodeMethod method;
+
+extern const char *const decodeNames[ndecodes];
+
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
 

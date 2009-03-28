@@ -47,7 +47,7 @@ public:
 
 	inline double getNormalizedFreq(int b) const
 	{
-		return buckets[b]/(double)nTrials;
+		return buckets[b]/(double)ntrials;
 	}
 
 private:

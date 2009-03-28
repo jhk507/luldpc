@@ -31,7 +31,9 @@ namespace LDPC
 
 #define NBUCKETS 25	// The number of histogram buckets
 
-const extern Preaching<M,N,RHO_H_Y, RHO_H_X> H;	// Unexpanded half-rate Preaching matrix H
+const extern Preaching<M,N,RHO_H_Y, RHO_H_X>  H;	// Unexpanded half-rate Preaching matrix H
+const extern Preaching<M,K,RHO_HS_Y,RHO_HS_X> Hs;	// Half-rate Preaching matrix H (first half)
+const extern Preaching<M,M,RHO_HP_Y,RHO_HP_X> Hp;	// Half-rate Preaching matrix H (second half, for parity)
 
 extern bool mx[N*Z];	// (col) Combination of ms and mp
 

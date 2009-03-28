@@ -9,12 +9,12 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 */
 
 #include <ctime>
-#include <cstdlib>
 #include <iostream>
 #include <iomanip>
 #include <fstream>
 #include <string>
 
+#include "encode.hpp"
 #include "ldpc.hpp"
 
 using namespace std;
@@ -261,8 +261,8 @@ void execute()
 	ofstream messaxis("axis_err_mess.tsv");
 	for (int b = 0; b < NBUCKETS; b++)
 	{
-		orthaxis << (**orthhist)->getNormalizedValFloor(b) << '\n';
-		messaxis << (**messhist)->getNormalizedValFloor(b) << '\n';
+		orthaxis << orthhist->getNormalizedValFloor(b) << '\n';
+		messaxis << messhist->getNormalizedValFloor(b) << '\n';
 	}
 	orthaxis.close();
 	messaxis.close();
