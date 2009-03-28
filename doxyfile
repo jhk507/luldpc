@@ -1,5 +1,8 @@
+# $URL$
+# $Date$
+# $Rev$
 
-PROJECT_NAME         = ldpc2
+PROJECT_NAME         = ldpc
 
 INPUT                = .
 RECURSIVE            = YES
