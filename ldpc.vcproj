@@ -315,6 +315,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\histset.hpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\ldpc.cpp"
 			>
 		</File>

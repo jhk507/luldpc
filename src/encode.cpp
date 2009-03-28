@@ -25,7 +25,7 @@ double my[N*Z];		// (col) Encoder output after AWGN
 bool msprod[M*Z];	// Encoding verification column
 
 // The SNRs to try.
-//const double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
+const double snrs[] = { 0.7, 0.8, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6 };
 
 int snrindex;								// The current SNR index
 
