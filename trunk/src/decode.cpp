@@ -207,6 +207,11 @@ double functor_updateq::q0;
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
 
+void operator++(DecodeMethod &incmethod, int)
+{
+	incmethod = (DecodeMethod)((int)incmethod + 1);
+}
+
 bool decode()
 {
 	// Set the initial state of the decoder
