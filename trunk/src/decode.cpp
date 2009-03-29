@@ -43,8 +43,6 @@ PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);	// R matrix
 PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
 
 // Decoding matrices
-double ml[N*Z];		// L column
-double ml0[N*Z];	// L column (iteration 0)
 bool mxhat[N*Z];	// xhat column
 
 DecodeMethod method;
@@ -306,15 +304,10 @@ void decode_initial()
 	// Set initial state
 	for (int n = 0; n < N*Z; n++)
 	{
-
 		if (method == bp)
-			functor_setq::l = 2.0/sigma/sigma*my[n]; // Required for BP algorithm
-		else
-			functor_setq::l = my[n];
+			my[n] *= 2.0/sigma/sigma; // Required for BP algorithm
 
-		ml0[n] = functor_setq::l;
-		ml[n] = functor_setq::l;
-
+		functor_setq::l = my[n];
 		mq.iterX<functor_setq>(n);
 	}
 }
@@ -363,13 +356,13 @@ void qlupdate()
 
 		mr.iterX<functor_sigmar>(n);
 
-		functor_updateq::q0 = ml0[n];
+		functor_updateq::q0 = my[n];
 
 		mq.iterX2<functor_updateq>(n,mr);
 
-		ml[n] = ml0[n] + functor_sigmar::rsigma;
+		const double ml = functor_updateq::q0 + functor_sigmar::rsigma;
 
-		mxhat[n] = ml[n] < 0; // Hard decision
+		mxhat[n] = ml < 0; // Hard decision
 	}
 }
 
