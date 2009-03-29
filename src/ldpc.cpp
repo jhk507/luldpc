@@ -98,15 +98,14 @@ void execute()
 	HistogramSet<OrthHistType> orthsets[ndecodes];
 	HistogramSet<MessHistType> messsets[ndecodes];
 
-	int &imethod = (int&)method;
-	for (method = firstMethod; method < ndecodes; imethod++)
+	for (method = firstMethod; method < ndecodes; method++)
 	{
 		orthsets[method].init(decodeNames[method], "orth", orthhist);
 		messsets[method].init(decodeNames[method], "mess", messhist);
 	}
 
 	// The decode method loop
-	for (method = firstMethod; method < ndecodes; imethod++)
+	for (method = firstMethod; method < ndecodes; method++)
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 

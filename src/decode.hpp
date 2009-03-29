@@ -46,6 +46,8 @@ enum DecodeMethod
 };
 extern DecodeMethod method;
 
+void operator++(DecodeMethod &incmethod, int);
+
 extern const char *const decodeNames[ndecodes];
 
 ///////////////////////////////////////////////////////////////////////////////
