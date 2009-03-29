@@ -62,9 +62,11 @@ const double beta = 0.15;
 // Functors ///////////////////////////////////////////////////////////////////
 
 // The matrix multiplication functor for decoding orthagonality verification.
-struct functor_multhxhat {
+struct functor_multhxhat
+{
 	static int nerrs;		// The number of orthagonality errors.
-	static inline void callbackProduct(int y, bool p) {
+	static inline void callbackProduct(int y, bool p)
+	{
 		// There is an error every time there is a 1 in the product.
 		nerrs += p;
 	}
@@ -72,26 +74,29 @@ struct functor_multhxhat {
 int functor_multhxhat::nerrs;
 
 // The functor to set the initial values for Q.
-struct functor_setq {
+struct functor_setq
+{
 	static double l;	// The L-matrix value to take.
-	static inline void callback(double &q) {
+	static inline void callback(double &q)
+	{
 		q = l;
 	}
 };
 double functor_setq::l;
 
-
 // Calculate the BP decoding pi term without exclusion. Keeps a cache of tanh
 // values as these take a while to get.
-struct functor_r_bp_pi {
+struct functor_r_bp_pi
+{
 	static double pi;					// The pi term (without exclusion)
 	static double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
-	static int xi;							// The current index in the row
+	static int xi;						// The current index in the row
 
-	static inline void callback(double &q) {
+	static inline void callback(double &q)
+	{
 		const double tanhval = tanh(q/2.0);	// Calculate the tanh term.
-		pi *= tanhval;								// Multiply it into pi.
-		tanh_cache[xi++] = tanhval;					// Cache it.
+		pi *= tanhval;						// Multiply it into pi.
+		tanh_cache[xi++] = tanhval;			// Cache it.
 	}
 };
 double functor_r_bp_pi::pi;
@@ -99,8 +104,10 @@ double functor_r_bp_pi::tanh_cache[RHO_H_Y];
 int functor_r_bp_pi::xi;
 
 // The functor to update the R matrix, using BP decoding. Performs exclusion.
-struct functor_r_bp_update {
-	static inline void callback(double &r, double &q) {
+struct functor_r_bp_update
+{
+	static inline void callback(double &r)
+	{
 		double pir = functor_r_bp_pi::pi;		// The pi term to use.
 		// Retrieve the appropriate cached tanh.
 		const double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
@@ -113,7 +120,6 @@ struct functor_r_bp_update {
 #ifdef _DEBUG
 			cerr << "Warning: Divide by 0 in BP for pir!\n";
 #endif
-//			exit(-1);	// Divide by 0
 		}
 		if (pir == 1)
 		{
@@ -121,7 +127,6 @@ struct functor_r_bp_update {
 #ifdef _DEBUG
 			cerr << "Warning: Divide by 0 in BP for r!\n";
 #endif
-//			exit(-1);	// Divide by 0
 		}
 		else
 		{
@@ -133,7 +138,6 @@ struct functor_r_bp_update {
 #ifdef _DEBUG
 				cerr << "Warning: Negative log in BP!\n";
 #endif
-//				exit(-1);	// Negative log
 			}
 			else
 				// Update R.
@@ -143,10 +147,12 @@ struct functor_r_bp_update {
 };
 
 // Calculate the minsum decoding pi and min terms without exclusion.
-struct functor_r_offms_pi {
+struct functor_r_offms_pi
+{
 	static double min0, min1;	// The lowest and second-lowest minima, respectively
 	static int pi;				// The pi term, without exclusion.
-	static inline void callback(double &q) {
+	static inline void callback(double &q)
+	{
 		double qv = q;
 		if (qv < 0)
 			pi = -pi;			// This effectively does the sign function.
@@ -165,8 +171,10 @@ double functor_r_offms_pi::min1;
 int functor_r_offms_pi::pi;
 
 // Updates the R matrix with minsum decoding. Performs exclusion.
-struct functor_r_offms_update {
-	static inline void callback(double &r, double &q) {
+struct functor_r_offms_update
+{
+	static inline void callback(double &r, double &q)
+	{
 		int pir = functor_r_offms_pi::pi;	// The pi term to use.
 
 		const double qv = q;				// The Q term to use.
@@ -175,7 +183,7 @@ struct functor_r_offms_update {
 			pir = -pir;
 		// Perform exclusion on the min term.
 		const double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
-				functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
+			functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
 
 		// Offset min sum calculation for r^(i)_(m,n)
 		r = pir * max((double)0.0, qvmin - beta);
@@ -184,20 +192,24 @@ struct functor_r_offms_update {
 
 // Calculates the sigma term without exclusion, for use in updating Q and L
 // during decoding.
-struct functor_sigmar {
+struct functor_sigmar
+{
 	static double rsigma;
-	static inline void callback(double &r) {
+	static inline void callback(double &r)
+	{
 		rsigma += r;
 	}
 };
 double functor_sigmar::rsigma;
 
 // Update Q during decoding. Performs exclusion.
-struct functor_updateq {
+struct functor_updateq
+{
 	// The value of Q for all elements in this column at iteration 0
 	static double q0;
 
-	static inline void callback(double &q, double &r) {
+	static inline void callback(double &q, double &r)
+	{
 		// Performs exclusion and sets Q.
 		q = q0 + functor_sigmar::rsigma - r;
 	}
@@ -318,7 +330,7 @@ void rupdate_bp()
 
 		// Reset the row index
 		functor_r_bp_pi::xi = 0;
-		mr.iterY2<functor_r_bp_update>(m,mq);
+		mr.iterY<functor_r_bp_update>(m);
 	}
 }
 

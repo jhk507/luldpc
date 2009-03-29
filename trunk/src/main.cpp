@@ -58,26 +58,29 @@ int main()
 	enableFPEs();
 #endif
 
-#if defined(WIN32) && !defined(_DEBUG)
+
+#ifdef WIN32
+#ifndef _DEBUG
 	SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-
+#endif
 	LARGE_INTEGER freq;
 	QueryPerformanceFrequency(&freq);
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
 #else
+#ifndef _DEBUG
 	cout << "Boosting process priority... "
 	     << ((nice(-10) != -10) ? "Failed" : "Succeeded")
 		 << endl;
-
+#endif
 	timeval start;
 	gettimeofday(&start, 0);
 #endif
 
 	LDPC::execute();
 
-#if defined(WIN32) && !defined(_DEBUG)
+#ifdef WIN32
 	LARGE_INTEGER end;
 	QueryPerformanceCounter(&end);
 	end.QuadPart -= start.QuadPart;
