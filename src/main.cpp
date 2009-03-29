@@ -7,6 +7,9 @@
 #include <iostream>
 #if defined(_MSC_VER)
 #include <windows.h>
+#else
+#include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #include "ldpc.hpp"
@@ -63,6 +66,13 @@ int main()
 	QueryPerformanceFrequency(&freq);
 	LARGE_INTEGER start;
 	QueryPerformanceCounter(&start);
+#else
+	cout << "Boosting process priority... "
+	     << ((nice(-10) != -10) ? "Failed" : "Succeeded")
+		 << endl;
+
+	timeval start;
+	gettimeofday(&start, 0);
 #endif
 
 	LDPC::execute();
@@ -71,8 +81,13 @@ int main()
 	LARGE_INTEGER end;
 	QueryPerformanceCounter(&end);
 	end.QuadPart -= start.QuadPart;
-	cout << "\n\nRuntime: " << ((double)end.QuadPart)/freq.QuadPart << "s\n";
+	const double runtime = end.QuadPart/(double)freq.QuadPart;
+#else
+	timeval end;
+	gettimeofday(&end, 0);
+	const double runtime = end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec)/1000000.0;
 #endif
+	cout << "\n\nRuntime: " << runtime << "s\n";
 
 	return 0;
 }
