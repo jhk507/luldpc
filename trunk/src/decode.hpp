@@ -16,7 +16,7 @@ namespace LDPC
 #define M 12	// Height of the unexpanded Preaching matrix
 #define N 24	// Width of the unexpanded Preaching matrix
 
-#define IMAX 50	// The maximum number of decode iterations
+#define IMAX 30	// The maximum number of decode iterations
 
 // Matrix sparsity parameters
 #define RHO_H_Y  7
@@ -46,12 +46,15 @@ enum DecodeMethod
 };
 extern DecodeMethod method;
 
-void operator++(DecodeMethod &incmethod, int);
-
 extern const char *const decodeNames[ndecodes];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
+
+inline void operator++(DecodeMethod &incmethod, int)
+{
+	incmethod = (DecodeMethod)((int)incmethod + 1);
+}
 
 // Compute the output of the decoder
 // Returns true if no error
