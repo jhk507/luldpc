@@ -13,8 +13,8 @@ namespace LDPC
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
 
-#define NSNRS 10		// The number of SNRs to try
-#define DEFAULTSNR 5	// The index of the default SNR.
+#define NSNRS 4			// The number of SNRs to try
+#define DEFAULTSNR 2	// The index of the default SNR.
 
 extern double sigma;
 
