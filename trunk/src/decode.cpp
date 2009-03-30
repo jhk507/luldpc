@@ -88,18 +88,19 @@ struct functor_r_bp_pi
 {
 	static double pi;					// The pi term (without exclusion)
 	static double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
-	static int xi;						// The current index in the row
+	static double *pcache;				// The current index in the row
 
 	static inline void callback(double &q)
 	{
 		const double tanhval = tanh(q/2.0);	// Calculate the tanh term.
 		pi *= tanhval;						// Multiply it into pi.
-		tanh_cache[xi++] = tanhval;			// Cache it.
+		*pcache = tanhval;					// Cache it.
+		pcache++;
 	}
 };
 double functor_r_bp_pi::pi;
 double functor_r_bp_pi::tanh_cache[RHO_H_Y];
-int functor_r_bp_pi::xi;
+double *functor_r_bp_pi::pcache;
 
 // The functor to update the R matrix, using BP decoding. Performs exclusion.
 struct functor_r_bp_update
@@ -108,39 +109,49 @@ struct functor_r_bp_update
 	{
 		double pir = functor_r_bp_pi::pi;		// The pi term to use.
 		// Retrieve the appropriate cached tanh.
-		const double tanhr = functor_r_bp_pi::tanh_cache[functor_r_bp_pi::xi++];
-		if (tanhr)
-			// Perform exclusion.
-			pir /= tanhr;
-		else
+		const double tanhr = *functor_r_bp_pi::pcache;
+		functor_r_bp_pi::pcache++;
+
+		if (!tanhr)
 		{
-			pir = numeric_limits<double>::max();
 #ifdef _DEBUG
-			cerr << "Warning: Divide by 0 in BP for pir!\n";
+			cerr << "Warning: Divide by 0; tanhr=0 in BP!\n";
 #endif
+			// lim p->inf ln((1+p)/(1-p))
+			//          = ln(-1)
+			r = -numeric_limits<double>::max();
+			return;
 		}
+
+		// Perform exclusion.
+		pir /= tanhr;
+
 		if (pir == 1)
 		{
+#ifdef _DEBUG
+			cerr << "Warning: Divide by 0; pir=1 in BP!\n";
+#endif
+			// lim p->1 ln((1+p)/(1-p))
+			//        = ln(2/0)
+			//        = inf
 			r = numeric_limits<double>::max();
-#ifdef _DEBUG
-			cerr << "Warning: Divide by 0 in BP for r!\n";
-#endif
+			return;
 		}
-		else
+
+		// Calculate the argument for ln.
+		const double lnarg = (1+pir)/(1-pir);
+
+		if (lnarg <= 0)
 		{
-			// Calculate the argument for ln.
-			const double lnarg = (1+pir)/(1-pir);
-			if (lnarg <= 0)
-			{
-				r = -numeric_limits<double>::max();
 #ifdef _DEBUG
-				cerr << "Warning: Negative log in BP!\n";
+			cerr << "Warning: Negative log in BP!\n";
 #endif
-			}
-			else
-				// Update R.
-				r = log(lnarg);
+			r = -numeric_limits<double>::max();
+			return;
 		}
+
+		// Update R.
+		r = log(lnarg);
 	}
 };
 
@@ -318,11 +329,11 @@ void rupdate_bp()
 	for (int m = 0; m < Z*M; m++)
 	{
 		functor_r_bp_pi::pi = 1;
-		functor_r_bp_pi::xi = 0;
+		functor_r_bp_pi::pcache = functor_r_bp_pi::tanh_cache;
 		mq.iterY<functor_r_bp_pi>(m);
 
 		// Reset the row index
-		functor_r_bp_pi::xi = 0;
+		functor_r_bp_pi::pcache = functor_r_bp_pi::tanh_cache;
 		mr.iterY<functor_r_bp_update>(m);
 	}
 }

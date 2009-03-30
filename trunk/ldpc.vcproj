@@ -205,7 +205,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				Optimization="4"
+				Optimization="3"
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"

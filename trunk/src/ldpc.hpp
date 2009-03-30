@@ -19,7 +19,7 @@ namespace LDPC
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
-#define NBLOCKS 100			// The number of blocks to run
+#define NBLOCKS 500			// The number of blocks to run
 #define NBUCKETS 25			// The number of histogram buckets
 
 // The orthagonality error and message error histograms.
