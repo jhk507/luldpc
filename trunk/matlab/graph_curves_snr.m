@@ -4,25 +4,34 @@
 
 function graph_curves_snr(filename, titlename, axis_snr, nplot)
 	% Load the histogram data.
-	hist = load(['hist_snr_', filename, '.tsv']);
+	hist = 1 - load(['hist_snr_', filename, '.tsv']);
 	
 	% Set up the sizes and iteration axis.
-	nsnrs = size(hist,1);
+	nsnrs = length(axis_snr);
 	niters = size(hist,2);
 	axis_iters = 0:niters-1;
-	
+
 	% Plot the curves.
 	subplot(2,1,nplot);
 	for s = 1:nsnrs
-		semilogy(axis_iters, 1 - hist(s,:));
-		hold on;
+		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.1f'),'dB'];
+
+		semilogy(axis_iters, hist(s,:));
+		if (s < nsnrs)
+			hold all;
+		end
 	end
+	
+	% Create the legend.
+	hlegend = legend(axis_snr_text);
+	set(hlegend, 'Position', [0 0.5 0.05 0.05]);
 
 	% Make the labels.
 	title([titlename, ' block error rate vs. maximum iterations']);
 	xlabel('Iteration number');
 	ylabel('BLER');
 	
+	% Set the axes and grids.
 	grid on;
 	axis tight;
 end
