@@ -53,6 +53,9 @@ using namespace std;
 
 int main()
 {
+//	LDPC::makeluts();
+//	return 0;
+
 #if defined(_MSC_VER) && defined(_DEBUG)
 	// Enable floating-point exceptions for debugging purposes
 	enableFPEs();
