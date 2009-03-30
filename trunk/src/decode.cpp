@@ -94,7 +94,6 @@ struct functor_r_bp_pi
 	static inline void callback(double &q)
 	{
 		const double tanhval = tanhapp(q/2.0);	// Calculate the tanh term.
-		const double realtan = tanh(q/2.0);
 		pi *= tanhval;							// Multiply it into pi.
 		*pcache = tanhval;						// Cache it.
 		pcache++;
