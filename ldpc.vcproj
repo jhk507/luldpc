@@ -332,6 +332,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\mathfun.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\mathfun.hpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\preaching.hpp"
 			>
 		</File>

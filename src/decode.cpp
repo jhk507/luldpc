@@ -8,6 +8,7 @@
 #include <limits>
 #include <iostream>
 
+#include "mathfun.hpp"
 #include "encode.hpp"
 
 using namespace std;
@@ -92,9 +93,10 @@ struct functor_r_bp_pi
 
 	static inline void callback(double &q)
 	{
-		const double tanhval = tanh(q/2.0);	// Calculate the tanh term.
-		pi *= tanhval;						// Multiply it into pi.
-		*pcache = tanhval;					// Cache it.
+		const double tanhval = tanhapp(q/2.0);	// Calculate the tanh term.
+		const double realtan = tanh(q/2.0);
+		pi *= tanhval;							// Multiply it into pi.
+		*pcache = tanhval;						// Cache it.
 		pcache++;
 	}
 };
@@ -119,7 +121,7 @@ struct functor_r_bp_update
 #endif
 			// lim p->inf ln((1+p)/(1-p))
 			//          = ln(-1)
-			r = -numeric_limits<double>::max();
+			r = -1e20; // -numeric_limits<double>::max();
 			return;
 		}
 
@@ -134,7 +136,7 @@ struct functor_r_bp_update
 			// lim p->1 ln((1+p)/(1-p))
 			//        = ln(2/0)
 			//        = inf
-			r = numeric_limits<double>::max();
+			r = 1e20; // numeric_limits<double>::max();
 			return;
 		}
 
@@ -146,7 +148,7 @@ struct functor_r_bp_update
 #ifdef _DEBUG
 			cerr << "Warning: Negative log in BP!\n";
 #endif
-			r = -numeric_limits<double>::max();
+			r = -1e20; // -numeric_limits<double>::max();
 			return;
 		}
 
