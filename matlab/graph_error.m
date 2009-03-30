@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_error(filename, titlename, nplot, axis_err)
+function graph_error(filename, titlename, axis_err, cam, nplot)
     % Load the histogram data.
     hist = load(['hist_err_', filename, '.tsv']);
     axis_iters = 0:(size(hist,2)-1);
@@ -16,4 +16,7 @@ function graph_error(filename, titlename, nplot, axis_err)
     xlabel('Iteration number');
     ylabel([titlename, ' error']);
     zlabel('Frequency');
+    
+    axis tight;
+    campos(cam);
 end

@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_snr(filename, titlename, nplot, axis_snr)
+function graph_snr(filename, titlename, axis_snr, nplot)
     % Load the histogram data.
     hist = load(['hist_snr_', filename, '.tsv']);
     axis_iters = 0:(size(hist,2)-1);
@@ -16,4 +16,6 @@ function graph_snr(filename, titlename, nplot, axis_snr)
     xlabel('Iteration number');
     ylabel('SNR (dB)');
     zlabel('Frequency');
+
+    axis tight;
 end

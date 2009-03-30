@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_maxiter(filename, titlename, nplot, axis_err, axis_snr)
+function graph_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
     % Load the histogram data.
     hist = load(['hist_maxiter_', filename, '.tsv']);
 
@@ -15,4 +15,7 @@ function graph_maxiter(filename, titlename, nplot, axis_err, axis_snr)
     xlabel([titlename, ' error']);
     ylabel('SNR (dB)');
     zlabel('Frequency');
+    
+    axis tight;
+    campos(cam);
 end
