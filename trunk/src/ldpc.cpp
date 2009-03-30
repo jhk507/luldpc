@@ -159,6 +159,11 @@ void execute()
 	// Output the error histograms.
 	cout << "Generating histogram files...\n";
 
+	ofstream decodeaxis("axis_decode.tsv");
+	for (method = firstMethod; method < ndecodes; method++)
+		decodeaxis << decodeNames[method] << '\n';
+	decodeaxis.close();
+
 	ofstream snraxis("axis_snr.tsv");
 	for (snrindex = 0; snrindex < NSNRS; snrindex++)
 		snraxis << snrs[snrindex] << '\n';
