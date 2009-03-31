@@ -11,50 +11,60 @@ function graph
 	axis_err_orth = load('axis_err_orth.tsv');
 	axis_err_mess = load('axis_err_mess.tsv');
 	
-	hdecodes = fopen('axis_decodes.tsv', 'r');
+	hdecodes = fopen('axis_decode.tsv', 'r');
+	d = 1;
+	while 1
+		line = {fgetl(hdecodes)}
+		if line{1} == -1
+			break;
+		end
+		axis_decode(d) = line;
+		d = d + 1;
+	end
+	fclose(hdecodes);
+	
+	ndecodes = length(axis_decode);
 	
 	
-	% Display the iteration/BLER multiple SNR curves
-	figure(1);
-	graph_curves_snr('bp_orth',    'BP',    axis_snr, 1);
-	graph_curves_snr('offms_orth', 'OFFMS', axis_snr, 2);
+	for d = 1:ndecodes
+		orthfile = [axis_decode{d}, '_orth'];
+		messfile = [axis_decode{d}, '_mess'];
+		title = upper(axis_decode{d});
+		
+		f = d;
+		
+		% Display the iteration/BLER multiple SNR curves
+		figure(f); f = f+ndecodes;
+		graph_curves_snr(orthfile, title, axis_snr);
 
-	% Display the SNR/BLER multiple iteration curves
-	figure(2);
-	graph_curves_iter('bp_orth',    'BP',    axis_snr, 1);
-	graph_curves_iter('offms_orth', 'OFFMS', axis_snr, 2);
-	
-	% Display the maxiter/aveiter multiple SNR curves
-	figure(3);
-	graph_curves_aveiter('bp_orth',    'BP',    axis_snr, 1);
-	graph_curves_aveiter('offms_orth', 'OFFMS', axis_snr, 2);
+		% Display the SNR/BLER multiple iteration curves
+		figure(f); f = f+ndecodes;
+		graph_curves_iter(orthfile, title, axis_snr);
 
-	% Display the error/iteration/frequency surface
-	figure(4);
-	graph_surf_error('bp_orth',    'BP Orthagonal',    axis_err_orth, [-180 2    4.5], 1);
-	graph_surf_error('offms_orth', 'OFFMS Orthagonal', axis_err_orth, [-180 2    4.5], 2);
-	graph_surf_error('bp_mess',    'BP Message',       axis_err_mess, [-180 0.35 4.5], 3);
-	graph_surf_error('offms_mess', 'OFFMS Message',    axis_err_mess, [-180 0.35 4.5], 4);
+		% Display the maxiter/aveiter multiple SNR curves
+		figure(f); f = f+ndecodes;
+		graph_curves_aveiter(orthfile, title, axis_snr);
+		
+		orthtitle = [title, ' Orthagonal'];
+		messtitle = [title, ' Message'];
+		
+		% Display the error/iteration/frequency surface
+		figure(f); f = f+ndecodes;
+		graph_surf_error(orthfile, orthtitle, axis_err_orth, [-180 2    4.5], 1);
+		graph_surf_error(messfile, messtitle, axis_err_mess, [-180 0.35 4.5], 2);
 
-	% Display the snr/iteration/frequency surface
-	figure(5);
-	graph_surf_snr('bp_orth',    'BP Orthagonal',    axis_snr, 1);
-	graph_surf_snr('bp_mess',    'BP Message',       axis_snr, 2);
-	graph_surf_snr('offms_orth', 'OFFMS Orthagonal', axis_snr, 3);
-	graph_surf_snr('offms_mess', 'OFFMS Message',    axis_snr, 4);
-	
-	% Display the error/snr/frequency surface
-	figure(6);
-	graph_surf_maxiter('bp_orth',    'BP Orthagonal',    axis_err_orth, axis_snr, [2	-4 4], 1);
-	graph_surf_maxiter('offms_orth', 'OFFMS Orthagonal', axis_err_orth, axis_snr, [2	-4 4], 2);
-	graph_surf_maxiter('bp_mess',    'BP Message',       axis_err_mess, axis_snr, [0.35 -4 4], 3);
-	graph_surf_maxiter('offms_mess', 'OFFMS Message',    axis_err_mess, axis_snr, [0.35 -4 4], 4);
-	
-	% Display the snr/iteration/error/frequency volumetric slices
-	figure(7);
-	graph_slice('bp_orth',    'BP Orthagonal',    axis_snr, axis_err_orth, [-450 5 2.5], 1);
-	graph_slice('offms_orth', 'OFFMS Orthagonal', axis_snr, axis_err_orth, [-450 5 2.5], 2);
-	figure(8);
-	graph_slice('bp_mess',    'BP Message',    axis_snr, axis_err_mess, [-900 2.25 4.5], 1);
-	graph_slice('offms_mess', 'OFFMS Message', axis_snr, axis_err_mess, [-900 2.25 4.5], 2);
+		% Display the snr/iteration/frequency surface
+		figure(f); f = f+ndecodes;
+		graph_surf_snr(orthfile, orthtitle, axis_snr, 1);
+		graph_surf_snr(messfile, messtitle, axis_snr, 2);
+
+		% Display the error/snr/frequency surface
+		figure(f); f = f+ndecodes;
+		graph_surf_maxiter(orthfile, orthtitle, axis_err_orth, axis_snr, [2	   -4 4], 1);
+		graph_surf_maxiter(messfile, messtitle, axis_err_mess, axis_snr, [0.35 -4 4], 2);
+
+		% Display the snr/iteration/error/frequency volumetric slices
+		figure(f); f = f+ndecodes;
+		graph_slice(orthfile, orthtitle, axis_snr, axis_err_orth, [-450 5    2.5], 1);
+		graph_slice(messfile, messtitle, axis_snr, axis_err_mess, [-900 2.25 4.5], 2);
 end

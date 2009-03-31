@@ -7,12 +7,12 @@ function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
 	hist = load(['hist_maxiter_', filename, '.tsv']);
 
 	% Plot the surface.
-	subplot(2,2,nplot);
+	subplot(2,1,nplot);
 	surf(axis_err, axis_snr, hist);
 
 	% Make the labels.
 	title([titlename, ' maximal iteration error histogram']);
-	xlabel([titlename, ' error']);
+	xlabel('Error');
 	ylabel('SNR (dB)');
 	zlabel('Frequency');
 	

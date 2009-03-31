@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_curves_snr(filename, titlename, axis_snr, nplot)
+function graph_curves_snr(filename, titlename, axis_snr)
 	% Load the histogram data.
 	hist = 1 - load(['hist_snr_', filename, '.tsv']);
 	
@@ -12,7 +12,6 @@ function graph_curves_snr(filename, titlename, axis_snr, nplot)
 	axis_iters = 0:niters-1;
 
 	% Plot the curves.
-	subplot(2,1,nplot);
 	for s = 1:nsnrs
 		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.2f'),'dB'];
 
