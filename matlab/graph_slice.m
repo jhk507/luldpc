@@ -41,7 +41,7 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	campos(cam);
 	% Remove lines on the SNR slices.
 	for hi = 1:length(hslice)
-		if (size(get(hslice(hi), 'XData')) == [nerrs niters])
+		if size(get(hslice(hi), 'XData')) == [nerrs niters]
 			set(hslice(hi), 'LineStyle', 'none');
 		end
 	end
