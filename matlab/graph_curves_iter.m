@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_curves_iter(filename, titlename, axis_snr, nplot)
+function graph_curves_iter(filename, titlename, axis_snr)
 	% Load the histogram data.
 	hist = 1 - load(['hist_snr_', filename, '.tsv']);
 	
@@ -11,7 +11,6 @@ function graph_curves_iter(filename, titlename, axis_snr, nplot)
 	axis_iter = zeros(10,1);
 
 	% Plot the curves.
-	subplot(2,1,nplot);
 	for i = 1:length(axis_iter)
 		axis_iter(i) = max(1, ...
 			floor(i/length(axis_iter)*niters));

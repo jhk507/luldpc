@@ -8,7 +8,7 @@ function graph_surf_snr(filename, titlename, axis_snr, nplot)
 	axis_iters = 0:(size(hist,2)-1);
 
 	% Plot the surface.
-	subplot(2,2,nplot);
+	subplot(2,1,nplot);
 	surf(axis_iters, axis_snr, hist);
 
 	% Make the labels.

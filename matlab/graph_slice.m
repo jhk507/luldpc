@@ -32,7 +32,7 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	% Make the labels.
 	title([titlename, ' error histogram']);
 	xlabel('Iteration number');
-	ylabel([titlename, ' error']);
+	ylabel('Error');
 	zlabel('SNR (dB)');
 
 	% Set the axis style.
