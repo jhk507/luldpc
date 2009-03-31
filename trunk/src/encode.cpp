@@ -36,16 +36,18 @@ bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 bool msprod[M*Z];	// Encoding verification column
 
 // The SNRs to try.
-const double snrs[] = {
-	1.000,
-	1.075,
-	1.150,
-	1.225,
-	1.300,
-	1.375,
-	1.450,
-	1.525,
-	1.600
+const double snrs[] =
+{
+	1.0,
+	1.1,
+	1.2,
+	1.3,
+	1.4,
+	1.5,
+	1.6,
+	1.7,
+	1.8,
+	1.9
 };
 
 int snrindex;								// The current SNR index
