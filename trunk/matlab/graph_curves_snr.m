@@ -17,7 +17,7 @@ function graph_curves_snr(filename, titlename, axis_snr, nplot)
 		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.2f'),'dB'];
 
 		semilogy(axis_iters, hist(s,:));
-		if (s < nsnrs)
+		if s < nsnrs
 			hold all;
 		end
 	end

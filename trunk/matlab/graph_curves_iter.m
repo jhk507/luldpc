@@ -18,7 +18,7 @@ function graph_curves_iter(filename, titlename, axis_snr, nplot)
 		axis_iter_text(i,:) = ['i=', num2str(axis_iter(i),'%0.3d')];
 
 		semilogy(axis_snr, hist(:,axis_iter(i)));
-		if (i < length(axis_iter))
+		if i < length(axis_iter)
 			hold all;
 		end
 	end
