@@ -8,16 +8,17 @@ function graph_curves_iter(filename, titlename, axis_snr)
 	
 	% Set up the sizes and iteration axis.
 	niters = size(hist,2);
-	axis_iter = zeros(10,1);
+	nsiters = 10;
+	axis_iter = zeros(nsiters,1);
 
 	% Plot the curves.
-	for i = 1:length(axis_iter)
-		axis_iter(i) = max(1, ...
-			floor(i/length(axis_iter)*niters));
-		axis_iter_text(i,:) = ['i=', num2str(axis_iter(i),'%0.3d')];
+	axis_iter_text = cell(nsiters,1);
+	for i = 1:nsiters
+		axis_iter(i) = max(1, floor(i/nsiters*niters));
+		axis_iter_text{i} = ['i=', num2str(axis_iter(i))];
 
 		semilogy(axis_snr, hist(:,axis_iter(i)));
-		if i < length(axis_iter)
+		if i < nsiters
 			hold all;
 		end
 	end

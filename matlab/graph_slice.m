@@ -12,7 +12,7 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	niters = size(hist,2);
 	
 	% Generate the iterator column.
-	axis_iter = (0:(niters-1)).';
+	axis_iter = 1:niters;
 	
 	% Extract the slice matrices.
 	vol = zeros(nerrs, niters, nsnrs);
@@ -28,17 +28,19 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	% Do the slice plot.
 	subplot(1,2,nplot);
 	hslice = slice(cx, cy, cz, vol, niters-1, 0, axis_snr);
+	
+	% Set up the axis properties.
+	set(gca, 'XScale', 'log');
+	set(gca, 'YDir', 'reverse');
+	axis tight;
 
-	% Make the labels.
+	% Make the labels and colorbar.
 	title([titlename, ' error histogram']);
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('SNR (dB)');
+	colorbar;
 
-	% Set the axis style.
-	axis tight;
-	% Set the camera position.
-	campos(cam);
 	% Remove some lines on the slices.
 	for hi = 1:length(hslice)
 		dims = size(get(hslice(hi), 'XData'));
@@ -51,4 +53,7 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 		end
 		set(hslice(hi), 'MeshStyle', meshstyle{1});
 	end
+
+	% Set up the camera.
+	campos(cam);
 end
