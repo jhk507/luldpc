@@ -66,21 +66,25 @@ function graph
 		incfigure;
 		graph_surf_error(orthfile, orthtitle, axis_err_orth, [-50 2.5 5], 1);
 		graph_surf_error(messfile, messtitle, axis_err_mess, [-50 0.5 5], 2);
+		colorbar;
 
 		% Display the snr/iteration/frequency surface
 		incfigure;
 		graph_surf_snr(orthfile, orthtitle, axis_snr, 1);
 		graph_surf_snr(messfile, messtitle, axis_snr, 2);
+		colorbar;
 
 		% Display the error/snr/frequency surface
 		incfigure;
 		graph_surf_maxiter(orthfile, orthtitle, axis_err_orth, axis_snr, [2	   -4 4], 1);
 		graph_surf_maxiter(messfile, messtitle, axis_err_mess, axis_snr, [0.35 -4 4], 2);
+		colorbar;
 
 		% Display the snr/iteration/error/frequency volumetric slices
 		incfigure;
 		graph_slice(orthfile, orthtitle, axis_snr, axis_err_orth, [-300 2.5 2], 1);
 		graph_slice(messfile, messtitle, axis_snr, axis_err_mess, [-300 0.5 2], 2);
+		colorbar;
 	end
 end
 

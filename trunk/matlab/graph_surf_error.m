@@ -16,12 +16,11 @@ function graph_surf_error(filename, titlename, axis_err, cam, nplot)
 	set(gca, 'YDir', 'reverse');
 	axis tight;
 
-	% Make the labels and colorbar.
+	% Make the labels.
 	title([titlename, ' error histogram']);
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('Frequency');
-	colorbar;
 	
 	% Set up the camera.
 	% campos(cam);

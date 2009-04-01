@@ -13,12 +13,11 @@ function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
 	% Set up the axis properties.
 	axis tight;
 
-	% Make the labels and colorbar.
+	% Make the labels.
 	title([titlename, ' maximal iteration error histogram']);
 	xlabel('Error');
 	ylabel('SNR (dB)');
 	zlabel('Frequency');
-	colorbar;
 
 	% Set up the camera.
 	campos(cam);

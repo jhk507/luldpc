@@ -15,10 +15,9 @@ function graph_surf_snr(filename, titlename, axis_snr, nplot)
 	set(gca, 'XScale', 'log');
 	axis tight;
 
-	% Make the labels and colorbar.
+	% Make the labels.
 	title([titlename, ' zero-error SNR histogram']);
 	xlabel('Iteration number');
 	ylabel('SNR (dB)');
 	zlabel('Frequency');
-	colorbar;
 end
