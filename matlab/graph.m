@@ -27,14 +27,14 @@ function graph
 	
 	global ndecodes;
 	ndecodes = length(axis_decode);
-    
-    % Create the docked figure windows in order.
-    for fig = 0:6
-        for d = 1:ndecodes
-            hfigure = figure(fig*ndecodes + d);
+	
+	% Create the docked figure windows in order.
+	for fig = 0:6
+		for d = 1:ndecodes
+			hfigure = figure(fig*ndecodes + d);
 			clf;
 			set(hfigure, 'WindowStyle', 'docked');
-        end
+		end
 	end
 
 	global f;
