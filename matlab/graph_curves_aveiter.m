@@ -43,7 +43,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	
 	% Create the legend.
 	hlegend = legend(axis_snr_text);
-	set(hlegend, 'Position', [0 0.5 0.05 0.05]);
+	set(hlegend, 'Position', [0.01 0.75 0.01 0.01]);
 
 	% Make the labels.
 	title([titlename, ' average iterations to resolution vs. maximum iterations']);

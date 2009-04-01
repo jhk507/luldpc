@@ -34,12 +34,11 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	set(gca, 'YDir', 'reverse');
 	axis tight;
 
-	% Make the labels and colorbar.
+	% Make the labels.
 	title([titlename, ' error histogram']);
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('SNR (dB)');
-	colorbar;
 
 	% Remove some lines on the slices.
 	for hi = 1:length(hslice)
