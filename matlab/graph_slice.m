@@ -45,13 +45,12 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	for hi = 1:length(hslice)
 		dims = size(get(hslice(hi), 'XData'));
 		if dims == [niters nsnrs]
-			meshstyle = {'column'};
+			set(hslice(hi), 'MeshStyle', 'column');
 		elseif dims == [nerrs nsnrs]
-			meshstyle = {'column'};
+			set(hslice(hi), 'MeshStyle', 'column');
 		elseif dims == [nerrs niters]
-			meshstyle = {'row'};
+			set(hslice(hi), 'LineStyle', 'none');
 		end
-		set(hslice(hi), 'MeshStyle', meshstyle{1});
 	end
 
 	% Set up the camera.
