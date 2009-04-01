@@ -25,6 +25,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 		for s = 1:nsnrs
 			if hist(s,i) ~= 0
 				weight(s) = weight(s)./hist(s,i);
+			end
 		end
 		aves(:,i) = weight;
 	end
