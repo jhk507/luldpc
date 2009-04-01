@@ -39,10 +39,16 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	axis tight;
 	% Set the camera position.
 	campos(cam);
-	% Remove lines on the SNR slices.
+	% Remove some lines on the slices.
 	for hi = 1:length(hslice)
-		if size(get(hslice(hi), 'XData')) == [nerrs niters]
-			set(hslice(hi), 'LineStyle', 'none');
+		dims = size(get(hslice(hi), 'XData'));
+		if dims == [niters nsnrs]
+			meshstyle = {'column'};
+		elseif dims == [nerrs nsnrs]
+			meshstyle = {'column'};
+		elseif dims == [nerrs niters]
+			meshstyle = {'row'};
 		end
+		set(hslice(hi), 'MeshStyle', meshstyle{1});
 	end
 end
