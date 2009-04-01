@@ -9,7 +9,7 @@ function graph_surf_snr(filename, titlename, axis_snr, nplot)
 
 	% Plot the surface.
 	subplot(2,1,nplot);
-	surf(axis_iters, axis_snr, hist);
+	hsurf = surf(axis_iters, axis_snr, hist);
 
 	% Make the labels.
 	title([titlename, ' zero-error SNR histogram']);
@@ -18,4 +18,5 @@ function graph_surf_snr(filename, titlename, axis_snr, nplot)
 	zlabel('Frequency');
 
 	axis tight;
+	set(hsurf, 'MeshStyle', 'row');
 end

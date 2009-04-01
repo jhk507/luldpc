@@ -31,6 +31,6 @@ function graph_curves_snr(filename, titlename, axis_snr)
 	ylabel('BLER');
 	
 	% Set the axes and grids.
-	grid on;
 	axis tight;
+	grid on;
 end

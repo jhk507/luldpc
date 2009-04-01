@@ -9,7 +9,7 @@ function graph_surf_error(filename, titlename, axis_err, cam, nplot)
 
 	% Plot the surface.
 	subplot(2,1,nplot);
-	surf(axis_iters, axis_err, hist);
+	hsurf = surf(axis_iters, axis_err, hist);
 
 	% Make the labels.
 	title([titlename, ' error histogram']);
@@ -19,4 +19,5 @@ function graph_surf_error(filename, titlename, axis_err, cam, nplot)
 	
 	axis tight;
 	campos(cam);
+	set(hsurf, 'MeshStyle', 'row');
 end

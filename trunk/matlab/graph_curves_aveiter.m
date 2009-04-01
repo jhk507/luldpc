@@ -9,7 +9,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	% Set up the sizes and iteration axis.
 	nsnrs = length(axis_snr);
 	niters = size(hist,2);
-	axis_iters = 0:niters-1;
+	axis_iters = 1:niters;
 	
 	% Convert from a cumulative histogram to a moving weighted average
 	wsum = zeros(nsnrs, 1);
@@ -25,7 +25,6 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 		for s = 1:nsnrs
 			if hist(s,i) ~= 0
 				weight(s) = weight(s)./hist(s,i);
-			end
 		end
 		aves(:,i) = weight;
 	end
@@ -34,7 +33,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	for s = 1:nsnrs
 		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.2f'),'dB'];
 
-		plot(axis_iters, aves(s,:));
+		semilogx(axis_iters, aves(s,:));
 		if s < nsnrs
 			hold all;
 		end
@@ -50,6 +49,6 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	ylabel('Average iterations to resolution');
 	
 	% Set the axes and grids.
-	grid on;
 	axis tight;
+	grid on;
 end

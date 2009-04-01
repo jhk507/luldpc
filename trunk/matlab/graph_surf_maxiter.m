@@ -8,7 +8,7 @@ function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
 
 	% Plot the surface.
 	subplot(2,1,nplot);
-	surf(axis_err, axis_snr, hist);
+	hsurf = surf(axis_err, axis_snr, hist);
 
 	% Make the labels.
 	title([titlename, ' maximal iteration error histogram']);
@@ -18,4 +18,5 @@ function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
 	
 	axis tight;
 	campos(cam);
+	set(hsurf, 'MeshStyle', 'row');
 end
