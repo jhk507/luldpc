@@ -12,8 +12,9 @@ function graph_curves_snr(filename, titlename, axis_snr)
 	axis_iters = 0:niters-1;
 
 	% Plot the curves.
+	axis_snr_text = cell(nsnrs,1);
 	for s = 1:nsnrs
-		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.2f'),'dB'];
+		axis_snr_text{s} = [num2str(axis_snr(s)),'dB'];
 
 		semilogy(axis_iters, hist(s,:));
 		if s < nsnrs

@@ -6,17 +6,16 @@
 
 #pragma once
 
-
 namespace LDPC
 {
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
 
 // Presets for half-rate
-#define M 12	// Height of the unexpanded Preaching matrix
-#define N 24	// Width of the unexpanded Preaching matrix
+#define M 12		// Height of the unexpanded Preaching matrix
+#define N 24		// Width of the unexpanded Preaching matrix
 
-#define IMAX 500	// The maximum number of decode iterations
+#define IMAX 100	// The maximum number of decode iterations
 
 // Matrix sparsity parameters
 #define RHO_H_Y  7

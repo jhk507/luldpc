@@ -16,7 +16,7 @@ function graph
 	hdecodes = fopen('axis_decode.tsv', 'r');
 	d = 1;
 	while 1
-		line = {fgetl(hdecodes)}
+		line = {fgetl(hdecodes)};
 		if line{1} == -1
 			break;
 		end
@@ -27,6 +27,17 @@ function graph
 	
 	global ndecodes;
 	ndecodes = length(axis_decode);
+    
+    % Create the docked figure windows in order.
+    for fig = 0:6
+        for d = 1:ndecodes
+            hfigure = figure(fig*ndecodes + d);
+			clf;
+			set(hfigure, 'WindowStyle', 'docked');
+        end
+	end
+
+	global f;
 	
 	% Loop through the decode methods.
 	for d = 1:ndecodes
@@ -34,7 +45,6 @@ function graph
 		messfile = [axis_decode{d}, '_mess'];
 		title = upper(axis_decode{d});
 		
-		global f;
 		f = d;
 		
 		% Display the iteration/BLER multiple SNR curves
@@ -54,8 +64,8 @@ function graph
 		
 		% Display the error/iteration/frequency surface
 		incfigure;
-		graph_surf_error(orthfile, orthtitle, axis_err_orth, [-180 2    4.5], 1);
-		graph_surf_error(messfile, messtitle, axis_err_mess, [-180 0.35 4.5], 2);
+		graph_surf_error(orthfile, orthtitle, axis_err_orth, [-50 2.5 5], 1);
+		graph_surf_error(messfile, messtitle, axis_err_mess, [-50 0.5 5], 2);
 
 		% Display the snr/iteration/frequency surface
 		incfigure;
@@ -69,8 +79,8 @@ function graph
 
 		% Display the snr/iteration/error/frequency volumetric slices
 		incfigure;
-		graph_slice(orthfile, orthtitle, axis_snr, axis_err_orth, [-450 5    2.5], 1);
-		graph_slice(messfile, messtitle, axis_snr, axis_err_mess, [-900 2.25 4.5], 2);
+		graph_slice(orthfile, orthtitle, axis_snr, axis_err_orth, [-300 2.5 2], 1);
+		graph_slice(messfile, messtitle, axis_snr, axis_err_mess, [-300 0.5 2], 2);
 	end
 end
 
@@ -78,10 +88,7 @@ end
 function incfigure% (methodtitle, 
 	global f;
 	hfigure = figure(f);
-	clf;
-	set(hfigure, 'WindowStyle', 'docked');
-	
-	axes = get(hfigure, 'CurrentAxes');
+%	axes = get(hfigure, 'CurrentAxes');
 %	title = get(axes, 'Title');
 %	set(hfigure, 'Name', title);
 

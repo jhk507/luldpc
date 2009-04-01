@@ -31,8 +31,9 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	end
 
 	% Plot the curves.
+	axis_snr_text = cell(nsnrs, 1);
 	for s = 1:nsnrs
-		axis_snr_text(s,:) = [num2str(axis_snr(s),'%.2f'),'dB'];
+		axis_snr_text{s} = [num2str(axis_snr(s)),'dB'];
 
 		semilogx(axis_iters, aves(s,:));
 		if s < nsnrs
@@ -46,7 +47,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 
 	% Make the labels.
 	title([titlename, ' average iterations to resolution vs. maximum iterations']);
-	xlabel('Iteration number');
+	xlabel('Maximum iterations');
 	ylabel('Average iterations to resolution');
 	
 	% Set the axes and grids.
