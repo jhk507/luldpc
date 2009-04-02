@@ -88,8 +88,8 @@ function graph
 		% Display the error/iteration/frequency surface
 		title = ['Histogram for one SNR, ', method];
 		incfigure(title);
-		graph_surf_error(orthfile, [title, ', orthagonal error'], axis_err_orth, [-50 2.5 5], 1);
-		graph_surf_error(messfile, [title, ', message error'],    axis_err_mess, [-50 0.5 5], 2);
+		graph_surf_error(orthfile, [title, ', orthagonal error'], axis_err_orth, 1);
+		graph_surf_error(messfile, [title, ', message error'],    axis_err_mess, 2);
 		colorbar;
 
 		% Display the snr/iteration/frequency surface

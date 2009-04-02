@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_surf_error(filename, axistitle, axis_err, cam, nplot)
+function graph_surf_error(filename, axistitle, axis_err, nplot)
 	% Load the histogram data.
 	hist = load(['hist_err_', filename, '.tsv']);
 	
@@ -22,7 +22,4 @@ function graph_surf_error(filename, axistitle, axis_err, cam, nplot)
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('Frequency');
-	
-	% Set up the camera.
-	% campos(cam);
 end
