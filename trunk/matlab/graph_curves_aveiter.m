@@ -2,14 +2,15 @@
 % $Date$
 % $Rev$
 
-function graph_curves_aveiter(filename, axistitle, axis_snr)
+function graph_curves_aveiter(filename, axistitle)
 	% Load the histogram data.
 	hist = load(['hist_snr_', filename, '.tsv']);
 	
-	% Set up the sizes and iteration axis.
-	nsnrs = length(axis_snr);
-	niters = size(hist,2);
-	axis_iters = 1:niters;
+	% Declare the global variables.
+	global niters;
+	global nsnrs;
+	global axis_iter;
+	global axis_snr_text;
 	
 	% Convert from a cumulative histogram to a moving weighted average
 	wsum = zeros(nsnrs, 1);
@@ -31,24 +32,18 @@ function graph_curves_aveiter(filename, axistitle, axis_snr)
 	end
 
 	% Plot the curves.
-	axis_snr_text = cell(nsnrs, 1);
 	for s = 1:nsnrs
-		axis_snr_text{s} = [num2str(axis_snr(s)),'dB'];
-
-		semilogx(axis_iters, aves(s,:));
+		semilogx(axis_iter, aves(s,:));
 		if s < nsnrs
 			hold all;
 		end
 	end
 	
-	% Create the legend.
-	hlegend = legend(axis_snr_text);
-	set(hlegend, 'Position', [0.01 0.75 0.01 0.01]);
-
-	% Make the labels.
+	% Make the labels and legend.
 	title(axistitle);
 	xlabel('Maximum iterations');
 	ylabel('Average iterations to resolution');
+	legend(axis_snr_text, 'Location', 'BestOutside');
 	
 	% Set the axes and grids.
 	axis tight;

@@ -2,14 +2,17 @@
 % $Date$
 % $Rev$
 
-function graph_surf_snr(filename, axistitle, axis_snr, nplot)
+function graph_surf_snr(filename, axistitle, nplot)
 	% Load the histogram data.
 	hist = load(['hist_snr_', filename, '.tsv']);
-	axis_iters = 1:size(hist,2);
 
+	% Declare the global variables.
+	global axis_iter;
+	global axis_snr;
+	
 	% Plot the surface.
 	subplot(2,1,nplot);
-	surf(axis_iters, axis_snr, hist, 'MeshStyle', 'row');
+	surf(axis_iter, axis_snr, hist, 'MeshStyle', 'row');
 	
 	% Set up the axis properties.
 	set(gca, 'XScale', 'log');

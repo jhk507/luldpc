@@ -8,10 +8,31 @@ function graph
 	clear;
 	
 	% Load the axes.
-	axis_snr = load('axis_snr.tsv');
+	global axis_iter;
+	global axis_snr;
+	axis_iter     = load('axis_iter.tsv');
+	axis_snr      = load('axis_snr.tsv');
 	axis_err_orth = load('axis_err_orth.tsv');
 	axis_err_mess = load('axis_err_mess.tsv');
 	
+	% Calculate the axis lengths.
+	global nsiters;	nsiters = 10;
+	global niters; 	niters  = length(axis_iter);
+	global nsnrs;   nsnrs   = length(axis_snr);
+
+	% Create the legend text.
+	global axis_siter;      axis_siter = zeros(nsiters, 1);
+	global axis_siter_text; axis_siter_text = cell(nsiters, 1);
+	for i = 1:nsiters
+		axis_siter(i) = max(1, floor(i/nsiters*niters));
+		axis_siter_text{i} = ['i=', num2str(axis_siter(i))];
+	end
+	
+	global axis_snr_text; axis_snr_text = cell(nsnrs, 1);
+	for s = 1:nsnrs
+		axis_snr_text{s} = [num2str(axis_snr(s)),'dB'];
+	end
+
 	% Load the decode method names.
 	hdecodes = fopen('axis_decode.tsv', 'r');
 	d = 1;
@@ -52,17 +73,17 @@ function graph
 		% Display the iteration/BLER multiple SNR curves
 		title = ['Block error rate vs. maximum iterations, ', method];
 		incfigure(title);
-		graph_curves_snr(orthfile, title, axis_snr);
+		graph_curves_snr(orthfile, title);
 
 		% Display the SNR/BLER multiple iteration curves
 		title = ['Block error rate vs. signal-to-noise ratio, ', method];
 		incfigure(title);
-		graph_curves_iter(orthfile, title, axis_snr);
+		graph_curves_iter(orthfile, title);
 
 		% Display the maxiter/aveiter multiple SNR curves
 		title = ['Average iterations to resolution vs. maximum iterations, ', method];
 		incfigure(title);
-		graph_curves_aveiter(orthfile, title, axis_snr);
+		graph_curves_aveiter(orthfile, title);
 		
 		% Display the error/iteration/frequency surface
 		title = ['Histogram for one SNR, ', method];
@@ -74,22 +95,22 @@ function graph
 		% Display the snr/iteration/frequency surface
 		title = ['SNR/iteration resolution histogram, ', method];
 		incfigure(title);
-		graph_surf_snr(orthfile, [title, ', orthagonal error'], axis_snr, 1);
-		graph_surf_snr(messfile, [title, ', message error'],    axis_snr, 2);
+		graph_surf_snr(orthfile, [title, ', orthagonal error'], 1);
+		graph_surf_snr(messfile, [title, ', message error'],    2);
 		colorbar;
 
 		% Display the error/snr/frequency surface
 		title = ['Histogram at maximal iteration, ', method];
 		incfigure(title);
-		graph_surf_maxiter(orthfile, [title, ', orthagonal error'], axis_err_orth, axis_snr, [2    -4 4], 1);
-		graph_surf_maxiter(messfile, [title, ', message error'],    axis_err_mess, axis_snr, [0.35 -4 4], 2);
+		graph_surf_maxiter(orthfile, [title, ', orthagonal error'], axis_err_orth, [2    -4 4], 1);
+		graph_surf_maxiter(messfile, [title, ', message error'],    axis_err_mess, [0.35 -4 4], 2);
 		colorbar;
 
 		% Display the snr/iteration/error/frequency volumetric slices
 		title = ['Full volumetric histogram, ', method];
 		incfigure(title);
-		graph_slice(orthfile, [title, ', orthagonal error'], axis_snr, axis_err_orth, [-300 2.5 2], 1);
-		graph_slice(messfile, [title, ', message error'],    axis_snr, axis_err_mess, [-300 0.5 2], 2);
+		graph_slice(orthfile, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
+		graph_slice(messfile, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
 		colorbar;
 	end
 end
