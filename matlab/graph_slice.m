@@ -2,17 +2,17 @@
 % $Date$
 % $Rev$
 
-function graph_slice(filename, axistitle, axis_snr, axis_err, cam, nplot)
+function graph_slice(filename, axistitle, axis_err, cam, nplot)
 	% Load the slice data.
 	hist = load(['hist_slice_', filename, '.tsv']);
 	
-	% Calculate dimensions.
-	nerrs = length(axis_err);
-	nsnrs = length(axis_snr);
-	niters = size(hist,2);
+	% Declare the global variables.
+	global niters;
+	global nsnrs;
+	global axis_iter;
+	global axis_snr;
 	
-	% Generate the iterator column.
-	axis_iter = 1:niters;
+	nerrs = length(axis_err);
 	
 	% Extract the slice matrices.
 	vol = zeros(nerrs, niters, nsnrs);
@@ -30,8 +30,7 @@ function graph_slice(filename, axistitle, axis_snr, axis_err, cam, nplot)
 	hslice = slice(cx, cy, cz, vol, niters-1, 0, axis_snr);
 	
 	% Set up the axis properties.
-	set(gca, 'XScale', 'log');
-	set(gca, 'YDir', 'reverse');
+	set(gca, 'XScale', 'log', 'YDir', 'reverse');
 	axis tight;
 
 	% Make the labels.
