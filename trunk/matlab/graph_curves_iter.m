@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_curves_iter(filename, titlename, axis_snr)
+function graph_curves_iter(filename, axistitle, axis_snr)
 	% Load the histogram data.
 	hist = 1 - load(['hist_snr_', filename, '.tsv']);
 	
@@ -28,7 +28,7 @@ function graph_curves_iter(filename, titlename, axis_snr)
 	set(hlegend, 'Position', [0.01 0.75 0.01 0.01]);
 
 	% Make the labels.
-	title([titlename, ' block error rate vs. signal-to-noise ratio']);
+	title(axistitle);
 	xlabel('SNR (dB)');
 	ylabel('BLER');
 	

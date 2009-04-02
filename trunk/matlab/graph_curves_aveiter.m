@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_curves_aveiter(filename, titlename, axis_snr)
+function graph_curves_aveiter(filename, axistitle, axis_snr)
 	% Load the histogram data.
 	hist = load(['hist_snr_', filename, '.tsv']);
 	
@@ -46,7 +46,7 @@ function graph_curves_aveiter(filename, titlename, axis_snr)
 	set(hlegend, 'Position', [0.01 0.75 0.01 0.01]);
 
 	% Make the labels.
-	title([titlename, ' average iterations to resolution vs. maximum iterations']);
+	title(axistitle);
 	xlabel('Maximum iterations');
 	ylabel('Average iterations to resolution');
 	

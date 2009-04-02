@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_surf_snr(filename, titlename, axis_snr, nplot)
+function graph_surf_snr(filename, axistitle, axis_snr, nplot)
 	% Load the histogram data.
 	hist = load(['hist_snr_', filename, '.tsv']);
 	axis_iters = 1:size(hist,2);
@@ -16,7 +16,7 @@ function graph_surf_snr(filename, titlename, axis_snr, nplot)
 	axis tight;
 
 	% Make the labels.
-	title([titlename, ' zero-error SNR histogram']);
+	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('SNR (dB)');
 	zlabel('Frequency');

@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
+function graph_surf_maxiter(filename, axistitle, axis_err, axis_snr, cam, nplot)
 	% Load the histogram data.
 	hist = load(['hist_maxiter_', filename, '.tsv']);
 
@@ -14,7 +14,7 @@ function graph_surf_maxiter(filename, titlename, axis_err, axis_snr, cam, nplot)
 	axis tight;
 
 	% Make the labels.
-	title([titlename, ' maximal iteration error histogram']);
+	title(axistitle);
 	xlabel('Error');
 	ylabel('SNR (dB)');
 	zlabel('Frequency');
