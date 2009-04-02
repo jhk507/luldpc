@@ -35,13 +35,14 @@ function graph
 
 	% Load the decode method names.
 	hdecodes = fopen('axis_decode.tsv', 'r');
+	global axis_decode;
 	d = 1;
 	while 1
 		line = fgetl(hdecodes);
 		if line == -1
 			break;
 		end
-		axis_decode{d} = line;
+		axis_decode{d} = upper(line);
 		d = d + 1;
 	end
 	fclose(hdecodes);
@@ -52,21 +53,21 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	% Create the docked figure windows in order.
-	for fig = 0:6
-		for d = 1:ndecodes
-			hfigure = figure(fig*ndecodes + d);
-			clf;
-		end
-	end
-
+	nfigures = 7*ndecodes;
+	
 	global f;
 	
+	% Create the docked figure windows in order.
+	for f = 1:nfigures
+		figure(f);
+		clf;
+	end
+
 	% Loop through the decode methods.
 	for d = 1:ndecodes
 		orthfile = [axis_decode{d}, '_orth'];
 		messfile = [axis_decode{d}, '_mess'];
-		method = upper(axis_decode{d});
+		method = axis_decode{d};
 		
 		f = d;
 		
@@ -113,6 +114,12 @@ function graph
 		graph_slice(messfile, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
 		colorbar;
 	end
+	
+	% Display the performance histogram
+	title = 'Performance histogram';
+	f = nfigures+1;
+	incfigure(title);
+	graph_curves_perf(title);	
 end
 
 % Increment the figure number and set the window to docked mode.

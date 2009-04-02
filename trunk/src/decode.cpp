@@ -8,6 +8,7 @@
 #include <limits>
 #include <iostream>
 
+#include "itime.hpp"
 #include "mathfun.hpp"
 #include "encode.hpp"
 
@@ -252,6 +253,8 @@ bool decode()
 			return true;
 #endif
 
+		ITime perf;
+
 		// Update the R matrix
 		switch (method)
 		{
@@ -283,6 +286,8 @@ bool decode()
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
 		messhist[i].report(diff);
+
+		perfhist.report(perf.get()*1e6);
 
 		if (!functor_multhxhat::nerrs)
 		{

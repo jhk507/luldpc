@@ -5,13 +5,14 @@
 */
 
 #include <iostream>
-#if defined(_MSC_VER)
+
+#ifdef WIN32
 #include <windows.h>
 #else
-#include <sys/time.h>
 #include <unistd.h>
 #endif
 
+#include "itime.hpp"
 #include "ldpc.hpp"
 
 #if defined(_MSC_VER) && defined(_DEBUG)
@@ -61,39 +62,22 @@ int main()
 	enableFPEs();
 #endif
 
-
-#ifdef WIN32
 #ifndef _DEBUG
+#ifdef WIN32
 	SetPriorityClass(GetCurrentProcess(), ABOVE_NORMAL_PRIORITY_CLASS);
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
-#endif
-	LARGE_INTEGER freq;
-	QueryPerformanceFrequency(&freq);
-	LARGE_INTEGER start;
-	QueryPerformanceCounter(&start);
 #else
-#ifndef _DEBUG
 	cout << "Boosting process priority... "
 	     << ((nice(-10) != -10) ? "Failed" : "Succeeded")
 		 << endl;
 #endif
-	timeval start;
-	gettimeofday(&start, 0);
 #endif
+
+	LDPC::ITime progtime;
 
 	LDPC::execute();
 
-#ifdef WIN32
-	LARGE_INTEGER end;
-	QueryPerformanceCounter(&end);
-	end.QuadPart -= start.QuadPart;
-	const double runtime = end.QuadPart/(double)freq.QuadPart;
-#else
-	timeval end;
-	gettimeofday(&end, 0);
-	const double runtime = end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec)/1000000.0;
-#endif
-	cout << "\n\nRuntime: " << runtime << "s\n";
+	cout << "\n\nRuntime: " << progtime.get() << "s\n";
 
 	return 0;
 }
