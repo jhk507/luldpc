@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_surf_error(filename, titlename, axis_err, cam, nplot)
+function graph_surf_error(filename, axistitle, axis_err, cam, nplot)
 	% Load the histogram data.
 	hist = load(['hist_err_', filename, '.tsv']);
 	axis_iters = 1:size(hist,2);
@@ -17,7 +17,7 @@ function graph_surf_error(filename, titlename, axis_err, cam, nplot)
 	axis tight;
 
 	% Make the labels.
-	title([titlename, ' error histogram']);
+	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('Frequency');

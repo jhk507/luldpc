@@ -2,7 +2,7 @@
 % $Date$
 % $Rev$
 
-function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
+function graph_slice(filename, axistitle, axis_snr, axis_err, cam, nplot)
 	% Load the slice data.
 	hist = load(['hist_slice_', filename, '.tsv']);
 	
@@ -35,7 +35,7 @@ function graph_slice(filename, titlename, axis_snr, axis_err, cam, nplot)
 	axis tight;
 
 	% Make the labels.
-	title([titlename, ' error histogram']);
+	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('Error');
 	zlabel('SNR (dB)');

@@ -32,8 +32,8 @@ function graph
 	for fig = 0:6
 		for d = 1:ndecodes
 			hfigure = figure(fig*ndecodes + d);
-			clf;
 			set(hfigure, 'WindowStyle', 'docked');
+			clf;
 		end
 	end
 
@@ -43,58 +43,60 @@ function graph
 	for d = 1:ndecodes
 		orthfile = [axis_decode{d}, '_orth'];
 		messfile = [axis_decode{d}, '_mess'];
-		title = upper(axis_decode{d});
+		method = upper(axis_decode{d});
 		
 		f = d;
 		
 		% Display the iteration/BLER multiple SNR curves
-		incfigure;
+		title = [method, ' block error rate vs. maximum iterations'];
+		incfigure(title);
 		graph_curves_snr(orthfile, title, axis_snr);
 
 		% Display the SNR/BLER multiple iteration curves
-		incfigure;
+		title = [method, ' block error rate vs. signal-to-noise ratio'];
+		incfigure(title);
 		graph_curves_iter(orthfile, title, axis_snr);
 
 		% Display the maxiter/aveiter multiple SNR curves
-		incfigure;
+		title = [method, ' average iterations to resolution vs. maximum iterations'];
+		incfigure(title);
 		graph_curves_aveiter(orthfile, title, axis_snr);
 		
-		orthtitle = [title, ' Orthagonal'];
-		messtitle = [title, ' Message'];
-		
 		% Display the error/iteration/frequency surface
-		incfigure;
-		graph_surf_error(orthfile, orthtitle, axis_err_orth, [-50 2.5 5], 1);
-		graph_surf_error(messfile, messtitle, axis_err_mess, [-50 0.5 5], 2);
+		title = [method, ' error histogram'];
+		incfigure(title);
+		graph_surf_error(orthfile, ['Orthagonal ', title], axis_err_orth, [-50 2.5 5], 1);
+		graph_surf_error(messfile, ['Message ',    title], axis_err_mess, [-50 0.5 5], 2);
 		colorbar;
 
 		% Display the snr/iteration/frequency surface
-		incfigure;
-		graph_surf_snr(orthfile, orthtitle, axis_snr, 1);
-		graph_surf_snr(messfile, messtitle, axis_snr, 2);
+		title = [method, ' zero-error SNR histogram'];
+		incfigure(title);
+		graph_surf_snr(orthfile, ['Orthagonal ', title], axis_snr, 1);
+		graph_surf_snr(messfile, ['Message ',    title], axis_snr, 2);
 		colorbar;
 
 		% Display the error/snr/frequency surface
-		incfigure;
-		graph_surf_maxiter(orthfile, orthtitle, axis_err_orth, axis_snr, [2	   -4 4], 1);
-		graph_surf_maxiter(messfile, messtitle, axis_err_mess, axis_snr, [0.35 -4 4], 2);
+		title = [method, ' maximal iteration error histogram'];
+		incfigure(title);
+		graph_surf_maxiter(orthfile, ['Orthagonal ', title], axis_err_orth, axis_snr, [2    -4 4], 1);
+		graph_surf_maxiter(messfile, ['Message ',    title], axis_err_mess, axis_snr, [0.35 -4 4], 2);
 		colorbar;
 
 		% Display the snr/iteration/error/frequency volumetric slices
-		incfigure;
-		graph_slice(orthfile, orthtitle, axis_snr, axis_err_orth, [-300 2.5 2], 1);
-		graph_slice(messfile, messtitle, axis_snr, axis_err_mess, [-300 0.5 2], 2);
+		title = [method, ' error histogram'];
+		incfigure(title);
+		graph_slice(orthfile, ['Orthagonal ', title], axis_snr, axis_err_orth, [-300 2.5 2], 1);
+		graph_slice(messfile, ['Message ',    title], axis_snr, axis_err_mess, [-300 0.5 2], 2);
 		colorbar;
 	end
 end
 
 % Increment the figure number and set the window to docked mode.
-function incfigure% (methodtitle, 
+function incfigure(figtitle)
 	global f;
 	hfigure = figure(f);
-%	axes = get(hfigure, 'CurrentAxes');
-%	title = get(axes, 'Title');
-%	set(hfigure, 'Name', title);
+	set(hfigure, 'Name', figtitle);
 
 	global ndecodes;
 	f = f+ndecodes;
