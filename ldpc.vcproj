@@ -320,6 +320,14 @@
 			>
 		</File>
 		<File
+			RelativePath=".\src\itime.cpp"
+			>
+		</File>
+		<File
+			RelativePath=".\src\itime.hpp"
+			>
+		</File>
+		<File
 			RelativePath=".\src\ldpc.cpp"
 			>
 		</File>

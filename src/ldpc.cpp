@@ -22,10 +22,12 @@ namespace LDPC
 // Globals ////////////////////////////////////////////////////////////////////
 
 // The orthagonality error and message error histograms.
-// The template parameters are the number of histogram buckets, the full size
-// of the data range, and the desired portion of the data range to examine.
 OrthHistType orthhist[IMAX];
 MessHistType messhist[IMAX];
+
+// The performance histogram.
+Histogram<NPERFBUCKETS, MAXPERFTIME> perfhist;
+
 
 #if OUTPUT_DEBUGFILE
 ofstream debugfile("debugfile.tsv");
@@ -104,6 +106,8 @@ void execute()
 		messsets[method].init(decodeNames[method], "mess", messhist);
 	}
 
+	ofstream perffile("hist_perf.tsv");
+
 	// The decode method loop
 	for (method = firstMethod; method < ndecodes; method++)
 	{
@@ -154,10 +158,15 @@ void execute()
 			}
 		}
 		cout << '\n';
+
+		for (int b = 0; b < NPERFBUCKETS; b++)
+			perffile << perfhist.getNormalizedFreq(b) << '\t';
+		perffile << '\n';
+		perfhist.reset();
 	}
 
-	// Output the error histograms.
-	cout << "Generating histogram files...\n";
+	// Output the rest of the TSV data.
+	cout << "Generating remaining data files...\n";
 
 	ofstream decodeaxis("axis_decode.tsv");
 	for (method = firstMethod; method < ndecodes; method++)
@@ -169,15 +178,25 @@ void execute()
 		snraxis << snrs[snrindex] << '\n';
 	snraxis.close();
 
+	ofstream iteraxis("axis_iter.tsv");
+	for (int i = 1; i <= IMAX; i++)
+		iteraxis << i << '\n';
+	iteraxis.close();
+
 	ofstream orthaxis("axis_err_orth.tsv");
 	ofstream messaxis("axis_err_mess.tsv");
-	for (int b = 0; b < NBUCKETS; b++)
+	for (int b = 0; b < NERRBUCKETS; b++)
 	{
-		orthaxis << orthhist->getNormalizedValFloor(b) << '\n';
-		messaxis << messhist->getNormalizedValFloor(b) << '\n';
+		orthaxis << orthhist->getValFloor(b) << '\n';
+		messaxis << messhist->getValFloor(b) << '\n';
 	}
 	orthaxis.close();
 	messaxis.close();
+
+	ofstream perfaxis("axis_perf.tsv");
+	for (int b = 0; b < NPERFBUCKETS; b++)
+		perfaxis << perfhist.getValFloor(b) << '\n';
+	perfaxis.close();
 }
 
 }

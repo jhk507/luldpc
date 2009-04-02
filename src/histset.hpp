@@ -62,7 +62,7 @@ public:
 		// z - frequency
 		if (snrindex == DEFAULTSNR)
 		{
-			for (int b = 0; b < NBUCKETS; b++)
+			for (int b = 0; b < NERRBUCKETS; b++)
 			{
 				for (int i = 0; i < IMAX; i++)
 					ferr << hists[i].getNormalizedFreq(b) << '\t';
@@ -82,7 +82,7 @@ public:
 		// x - error buckets
 		// y - SNR
 		// z - frequency
-		for (int b = 0; b < NBUCKETS; b++)
+		for (int b = 0; b < NERRBUCKETS; b++)
 			fmaxiter << hists[IMAX-1].getNormalizedFreq(b) << '\t';
 		fmaxiter << '\n';
 
@@ -91,7 +91,7 @@ public:
 		// y - error buckets
 		// y2 - SNR
 		// z - frequency
-		for (int b = 0; b < NBUCKETS; b++)
+		for (int b = 0; b < NERRBUCKETS; b++)
 		{
 			for (int i = 0; i < IMAX; i++)
 				fslice << hists[i].getNormalizedFreq(b) << '\t';
