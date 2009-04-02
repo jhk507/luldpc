@@ -23,7 +23,7 @@ function graph_curves_perf(axistitle)
 	
 	% Make the labels and legend.
 	title(axistitle);
-	xlabel('Average iteration duration (us)');
+	xlabel('Iteration duration (us)');
 	ylabel('Frequency');
 	legend(axis_decode, 'Location', 'BestOutside');
 	
