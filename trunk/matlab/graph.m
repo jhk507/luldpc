@@ -116,7 +116,7 @@ function graph
 	end
 	
 	% Display the performance histogram
-	title = 'Performance histogram';
+	title = 'Single-iteration decode performance histogram';
 	f = nfigures+1;
 	incfigure(title);
 	graph_curves_perf(title);	
