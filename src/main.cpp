@@ -35,18 +35,21 @@ void enableFPEs()
 	//For any bit in the second parameter (mask) that is 1, the
 	//corresponding bit in the first parameter is used to update
 	//the control word.
-	unsigned int cwOriginal = _controlfp(cw, MCW_EM); //Set it.
-								//MCW_EM is defined in float.h.
-								//Restore the original value when done:
-								//_controlfp(cwOriginal, MCW_EM);
+	unsigned int cwOriginal = _controlfp(cw, MCW_EM);	//Set it.
+	//MCW_EM is defined in float.h.
+	//Restore the original value when done:
+	//_controlfp(cwOriginal, MCW_EM);
 
 	unsigned long cntrReg;
-	__asm stmxcsr [cntrReg]       //Get MXCSR register
-	cntrReg &= 0xFFFFFF7F & ~(2<<11); //bit 7 - invalid instruction mask
-								  //bit 9  - divide-by-zero mask
-								  //bit 10 - overflow mask
-								  //bit 11 - underflow mask
-	__asm ldmxcsr [cntrReg]       //Load MXCSR register
+	__asm stmxcsr [cntrReg]	// Get MXCSR register
+	
+	//bit 7 - invalid instruction mask
+	//bit 9  - divide-by-zero mask
+	//bit 10 - overflow mask
+	//bit 11 - underflow mask
+	cntrReg &= 0xFFFFFF7F & ~(2<<11);
+	
+	__asm ldmxcsr [cntrReg]	// Load MXCSR register
 }
 #endif
 
@@ -68,8 +71,8 @@ int main()
 	SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_ABOVE_NORMAL);
 #else
 	cout << "Boosting process priority... "
-	     << ((nice(-10) != -10) ? "Failed" : "Succeeded")
-		 << endl;
+		<< ((nice(-10) != -10) ? "Failed" : "Succeeded")
+		<< endl;
 #endif
 #endif
 
