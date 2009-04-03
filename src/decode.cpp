@@ -230,6 +230,9 @@ double functor_updateq::q0;
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
 
+// Do block-by-block profiling.
+// Profiler profs[8];
+
 bool decode()
 {
 	// Set the initial state of the decoder
@@ -365,15 +368,12 @@ void qlupdate()
 	for (int n = 0; n < Z*N; n++)
 	{
 		functor_sigmar::rsigma = 0;
-
 		mr.iterX<functor_sigmar>(n);
 
 		functor_updateq::q0 = my[n];
-
 		mq.iterX2<functor_updateq>(n,mr);
 
 		const double ml = functor_updateq::q0 + functor_sigmar::rsigma;
-
 		mxhat[n] = ml < 0; // Hard decision
 	}
 }
