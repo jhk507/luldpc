@@ -24,7 +24,14 @@ public:
 		reset();
 	}
 
-	void reset();
+	inline void reset()
+	{
+#ifdef WIN32
+		QueryPerformanceCounter(&start);
+#else
+		gettimeofday(&start, 0);
+#endif
+	}
 
 	inline double get() const
 	{
@@ -54,12 +61,12 @@ private:
 class Profiler : public ITime
 {
 public:
-	void start()
+	inline void start()
 	{
 		reset();
 	}
 
-	void stop()
+	inline void stop()
 	{
 		const double g = get();
 		const double t = average*count;
