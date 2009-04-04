@@ -42,7 +42,7 @@ function graph
 		if line == -1
 			break;
 		end
-		axis_decode{d} = upper(line);
+		axis_decode{d} = line;
 		d = d + 1;
 	end
 	fclose(hdecodes);
@@ -67,7 +67,7 @@ function graph
 	for d = 1:ndecodes
 		orthfile = [axis_decode{d}, '_orth'];
 		messfile = [axis_decode{d}, '_mess'];
-		method = axis_decode{d};
+		method = upper(axis_decode{d});
 		
 		f = d;
 		
