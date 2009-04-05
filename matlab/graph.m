@@ -53,7 +53,7 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 7*ndecodes;
+	nfigures = 8*ndecodes;
 	
 	global f;
 	
@@ -106,6 +106,12 @@ function graph
 		graph_surf_maxiter(orthfile, [title, ', orthagonal error'], axis_err_orth, [2    -4 4], 1);
 		graph_surf_maxiter(messfile, [title, ', message error'],    axis_err_mess, [0.35 -4 4], 2);
 		colorbar;
+		
+		% Display the snr/iteration/error averaged histogram surface
+		title = ['Weighted mean histogram, ', method];
+		incfigure(title);
+		graph_surf_histave(orthfile, [title, ', orthagonal error'], axis_err_orth, 1);
+		graph_surf_histave(messfile, [title, ', message error'],    axis_err_mess, 2);
 
 		% Display the snr/iteration/error/frequency volumetric slices
 		title = ['Full volumetric histogram, ', method];

@@ -10,7 +10,7 @@ function graph_surf_error(filename, axistitle, axis_err, nplot)
 	global axis_iter;
 
 	% Plot the surface.
-	subplot(2,1,nplot);
+	subplot(1,2,nplot);
 	surf(axis_iter, axis_err, hist, 'MeshStyle', 'row');
 	
 	% Set up the axis properties.

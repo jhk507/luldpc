@@ -10,7 +10,7 @@ function graph_surf_maxiter(filename, axistitle, axis_err, cam, nplot)
 	global axis_snr;
 
 	% Plot the surface.
-	subplot(2,1,nplot);
+	subplot(1,2,nplot);
 	surf(axis_err, axis_snr, hist, 'MeshStyle', 'row');
 	
 	% Set up the axis properties.

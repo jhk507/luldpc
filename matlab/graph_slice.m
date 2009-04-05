@@ -17,9 +17,7 @@ function graph_slice(filename, axistitle, axis_err, cam, nplot)
 	% Extract the slice matrices.
 	vol = zeros(nerrs, niters, nsnrs);
 	for s = 1:nsnrs
-		vol(:,:,s) = hist( ...
-			(1+(s-1)*nerrs):(s*nerrs), ...
-			1:niters);
+		vol(:,:,s) = hist((1+(s-1)*nerrs):(s*nerrs), 1:niters);
 	end
 	
 	% Create the stupidly redundant and inexplicably reversed coordinate system.
