@@ -11,7 +11,7 @@ function graph_surf_snr(filename, axistitle, nplot)
 	global axis_snr;
 	
 	% Plot the surface.
-	subplot(2,1,nplot);
+	subplot(1,2,nplot);
 	surf(axis_iter, axis_snr, hist, 'MeshStyle', 'row');
 	
 	% Set up the axis properties.
