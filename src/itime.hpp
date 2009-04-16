@@ -4,7 +4,7 @@
 * $Rev$
 */
 
-#include <iostream>
+#include <ostream>
 #include <cmath>
 
 #ifdef WIN32
