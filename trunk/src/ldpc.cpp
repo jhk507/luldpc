@@ -10,6 +10,7 @@ cutting down on frame pointer generation. In short, no multithreading allowed.
 
 #include <iostream>
 
+#include "itime.hpp"
 #include "encode.hpp"
 #include "histset.hpp"
 
@@ -108,6 +109,8 @@ void execute()
 
 	ofstream perffile("hist_perf.tsv");
 
+	ITime runtimer;
+
 	// The decode method loop
 	for (method = firstMethod; method < ndecodes; method++)
 	{
@@ -121,8 +124,11 @@ void execute()
 
 			int nerrs = 0;	// The number of block errors
 
+			ITime blocktimer;
+			const double endtime = (RUNTIME-runtimer.get())/(NSNRS*(ndecodes-method)-snrindex);
+
 			// The block loop
-			for (int b = 1; b <= NBLOCKS; b++)
+			for (int b = 1; ; b++)
 			{
 				// Encode
 				encode();
@@ -141,12 +147,19 @@ void execute()
 
 				if (!(b%10))
 				{
-					cout << "Block " << b << '/' << NBLOCKS
+					cout << "Block " << b
 						<< "\tBLER=" << nerrs*100.0/b << "%        \r";
 					cout.flush();
 				}
+
+				const double now = blocktimer.get();
+				if (now >= endtime)
+				{
+					cout << '\n' << b << " blocks in " << now << "s, "
+						<< (1000.0*now/b) << " ms/block\n";
+					break;
+				}
 			}
-			cout << '\n';
 
 			orthsets[method].writeLine();
 			messsets[method].writeLine();
