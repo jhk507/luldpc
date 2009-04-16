@@ -80,7 +80,8 @@ int main()
 
 	LDPC::execute();
 
-	cout << "\n\nRuntime: " << progtime.get() << "s\n";
+	cout << "\n\nRuntime: ";
+	progtime.outputLong(cout);
 
 	return 0;
 }

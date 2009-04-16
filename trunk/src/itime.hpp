@@ -4,6 +4,9 @@
 * $Rev$
 */
 
+#include <iostream>
+#include <cmath>
+
 #ifdef WIN32
 #include <windows.h>
 #undef max
@@ -45,6 +48,22 @@ public:
 	gettimeofday(&end, 0);
 	return end.tv_sec - start.tv_sec + (end.tv_usec - start.tv_usec)/1000000.0;
 #endif
+	}
+
+	void outputLong(std::ostream &out) const
+	{
+		const double now = get();
+		const int hours = now/3600;
+		const int mins = (int)(now/60) % 60;
+		const double secs = fmod(now, 60);
+
+		out << hours << ':';
+		if (mins < 10)
+			out << '0';
+		out << mins << ':';
+		if (secs < 10)
+			out << '0';
+		out << secs << '\n';
 	}
 
 private:
