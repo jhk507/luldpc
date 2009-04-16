@@ -289,7 +289,7 @@ bool decode()
 			diff += mxhat[j] != ms[j];
 		messhist[i].report(diff);
 
-		perfhist.report(perf.get()*1e6);
+		perfhist.report((int)(perf.get()*1e6));
 
 		if (!functor_multhxhat::nerrs)
 		{
