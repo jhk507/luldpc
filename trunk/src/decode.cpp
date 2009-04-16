@@ -4,7 +4,6 @@
 * $Rev$
 */
 
-#include <cmath>
 #include <limits>
 #include <iostream>
 
