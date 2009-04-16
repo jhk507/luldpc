@@ -55,7 +55,11 @@ void enableFPEs()
 
 using namespace std;
 
-int main()
+int
+#ifdef _MSC_VER
+__cdecl
+#endif
+main()
 {
 //	LDPC::makeluts();
 //	return 0;

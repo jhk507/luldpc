@@ -53,7 +53,7 @@ public:
 	void outputLong(std::ostream &out) const
 	{
 		const double now = get();
-		const int hours = now/3600;
+		const int hours = (int)(now/3600);
 		const int mins = (int)(now/60) % 60;
 		const double secs = fmod(now, 60);
 
