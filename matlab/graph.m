@@ -24,7 +24,7 @@ function graph
 	global axis_siter;      axis_siter = zeros(nsiters, 1);
 	global axis_siter_text; axis_siter_text = cell(nsiters, 1);
 	for i = 1:nsiters
-		axis_siter(i) = max(1, floor(i/nsiters*niters));
+		axis_siter(i) = floor(niters/10*(9*(i-1)/(nsiters-1)+1));
 		axis_siter_text{i} = ['i=', num2str(axis_siter(i))];
 	end
 	
