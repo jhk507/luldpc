@@ -62,21 +62,19 @@ double sigma;
 // Checks the product of the Preaching matrix and the generated parity bits to
 // verify them.
 struct functor_multhpp {
-	static bool success;	// Whether or not the encoding succeeded.
-	static inline void callbackProduct(int y, bool p) {
+	bool success;	// Whether or not the encoding succeeded.
+	inline void callbackProduct(int y, bool p) {
 		success &= msprod[y] == p;	// Checks if message sum product = parity SP
 	}
 };
-bool functor_multhpp::success;
 
 // Functor to find the sum over elements in ms for a row, iterating in x.
 struct functor_summsy {
-	static bool sum;		// The sum for this row.
-	static inline void callbackY(int y, int x) {
+	bool sum;		// The sum for this row.
+	inline void callbackY(int y, int x) {
 		sum ^= ms[x];		// Binary addition is equivalent to XOR.
 	}
 };
-bool functor_summsy::sum;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
@@ -102,10 +100,11 @@ void encode()
 	// Double-check that the encoding succeeded
 	Hs.multCol(ms, msprod);
 
-	functor_multhpp::success = true;
-	Hp.multCol<functor_multhpp>(mp);
+	functor_multhpp func;
+	func.success = true;
+	Hp.multColCallback(func, mp);
 
-	if (!functor_multhpp::success)
+	if (!func.success)
 	{
 		cerr << "Encoding check failed!\n";
 		exit(-1);
@@ -124,21 +123,23 @@ void setParity()
 	// With our matrix, this element is ZERO therefore there is NO SHIFT NEEDED
 	// const int xshift = 0;
 
+	functor_summsy funcsum;
+
 	// Determine v(0)
 	for (int mi = 0; mi < Z; mi++) // Iterate over the index of v0
 	{
-		functor_summsy::sum = 0;
+		funcsum.sum = 0;
 		for (int m = mi; m < Z*M; m += Z)	// Iterate over m for whole H matrix
-			Hs.iterY<functor_summsy>(m);	// Effectively iterate over n
-		mp[mi] = functor_summsy::sum;
+			Hs.iterY(funcsum, m);			// Effectively iterate over n
+		mp[mi] = funcsum.sum;
 	}
 
 	// Determine v(1)
 	for (int mi = 0; mi < Z; mi++)
 	{
-		functor_summsy::sum = Hp.pshift(0,0,mp,mi);	// P(i,k)v(0)
-		Hs.iterY<functor_summsy>(mi);				// sigma P(i,j)u(j)
-		mp[Z+mi] = functor_summsy::sum;				// p(1)
+		funcsum.sum = Hp.pshift(0,0,mp,mi);	// P(i,k)v(0)
+		Hs.iterY(funcsum, mi);				// sigma P(i,j)u(j)
+		mp[Z+mi] = funcsum.sum;				// p(1)
 	}
 
 	// Determine v(i)
@@ -147,9 +148,9 @@ void setParity()
 	{
 		for (int mi = 0; mi < Z; mi++, pmp++)
 		{
-			functor_summsy::sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
-			Hs.iterY<functor_summsy>(Z*i+mi);					// sigma P(i,j)u(j)
-			pmp[Z] = functor_summsy::sum;						// p(i+1)
+			funcsum.sum = *pmp ^ Hp.pshift(i,0,mp,mi);	// v(i) + P(i,k)v(0)
+			Hs.iterY(funcsum, Z*i+mi);					// sigma P(i,j)u(j)
+			pmp[Z] = funcsum.sum;						// p(i+1)
 		}
 	}
 }

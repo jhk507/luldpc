@@ -41,29 +41,30 @@ public:
 
 	// Iterate through a column.
 	template <typename Functor>
-	inline void iterX(int x) const;
+	inline void iterX(Functor &func, int x) const;
 
 	// Iterate through a row.
 	template <typename Functor>
-	inline void iterY(int y) const;
+	inline void iterY(Functor &func, int y) const;
 
 	// Iterate through a column of this matrix and another PreachingBased
 	// matrix at the same coordinates.
 	template <typename Functor>
-	inline void iterX2(int x, PreachingBased &p2) const;
+	inline void iterX2(Functor &func, int x, PreachingBased &p2) const;
 
 	// Iterate through a row of this matrix and another PreachingBased
 	// matrix at the same coordinates.
 	template <typename Functor>
-	inline void iterY2(int y, PreachingBased &p2) const;
+	inline void iterY2(Functor &func, int y, PreachingBased &p2) const;
 
 	// The functor called for every element in the column during construction.
-	struct functor_setlinks {
-		static LinkedElm *prev;
-		static LinkedElm **rVyc, **rVxc;
-		static const int (*rHyc)[Z*Y][YRHO+1];
+	struct functor_setlinks
+	{
+		LinkedElm *prev;
+		LinkedElm **rVyc, **rVxc;
+		const int (*rHyc)[Z*Y][YRHO+1];
 
-		static inline void callbackX(int y, int x) {
+		inline void callbackX(int y, int x) {
 			// A pointer to the current element in the row.
 			LinkedElm *currentelm = rVyc[y];
 			// A pointer to the current element in the compressed Preaching
@@ -97,19 +98,6 @@ public:
 	const Preaching<Y,X,YRHO,XRHO> &preaching;
 };
 
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-LinkedElm<Elm> *PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::prev;
-
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-LinkedElm<Elm> **PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rVyc;
-
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-LinkedElm<Elm> **PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rVxc;
-
-template <typename Elm, int Y, int X, int YRHO, int XRHO>
-const int (*PreachingBased<Elm,Y,X,YRHO,XRHO>::functor_setlinks::rHyc)[Z*Y][YRHO+1];
-
-
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO> &preachingInit) :
@@ -118,22 +106,24 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO>
 	// Allocate the memory for the main data array.
 	data = new LinkedElm[preaching.ones];
 
+	functor_setlinks funclinks;
+
 	// Store static pointers to the Vyc and Vxc members for use in the functor.
-	functor_setlinks::rVyc = Vyc;
-	functor_setlinks::rVxc = Vxc;
+	funclinks.rVyc = Vyc;
+	funclinks.rVxc = Vxc;
 	// Store a static pointer to the Preaching instance's Hyc array for use in
 	// the functor.
-	functor_setlinks::rHyc = &preaching.Hyc;
+	funclinks.rHyc = &preaching.Hyc;
 
 	// A pointer to the current data element.
 	LinkedElm *dati = data;
 	for (int y = 0;; y++)	// Iterate over the rows.
 	{
-		functor_setlinks::rVyc[y] = dati;		// Store the start of the row.
+		funclinks.rVyc[y] = dati;		// Store the start of the row.
 		if (y >= Z*Y)
 			break;
 		// A pointer to the compressed row in the Preaching matrix.
-		const int *pHyc = (*functor_setlinks::rHyc)[y];
+		const int *pHyc = (*funclinks.rHyc)[y];
 		while (*pHyc++ >= 0)	// Find the end of the row.
 			dati++;
 	}
@@ -141,12 +131,12 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::PreachingBased(const Preaching<Y,X,YRHO,XRHO>
 	for (int x = 0; x < Z*X; x++)	// Iterate over the columns.
 	{
 		// Remember the element previous to this one in the column.
-		functor_setlinks::prev = 0;
+		funclinks.prev = 0;
 
 		// Iterate through every element in the column.
-		preaching.iterX<functor_setlinks>(x);
+		preaching.iterX(funclinks, x);
 		// Terminate the column.
-		functor_setlinks::prev->nexty = 0;
+		funclinks.prev->nexty = 0;
 	}
 }
 
@@ -161,37 +151,37 @@ PreachingBased<Elm,Y,X,YRHO,XRHO>::~PreachingBased()
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX(int x) const
+inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX(Functor &func, int x) const
 {
 	LinkedElm *e = Vxc[x];
 	do
 	{
-		Functor::callback(e->val);
+		func.callback(e->val);
 		e = e->nexty;
 	} while (e);
 }
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY(int y) const
+inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY(Functor &func, int y) const
 {
 	LinkedElm *e = Vyc[y];
 	const LinkedElm *const end = Vyc[++y];
 	do
 	{
-		Functor::callback(e->val);
+		func.callback(e->val);
 		e++;
 	} while (e != end);
 }
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX2(int x, PreachingBased &p2) const
+inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX2(Functor &func, int x, PreachingBased &p2) const
 {
 	LinkedElm *e1 = Vxc[x], *e2 = p2.Vxc[x];
 	do
 	{
-		Functor::callback(e1->val, e2->val);
+		func.callback(e1->val, e2->val);
 		e1 = e1->nexty;
 		e2 = e2->nexty;
 	} while (e1);
@@ -199,13 +189,13 @@ inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterX2(int x, PreachingBased &p2)
 
 template <typename Elm, int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY2(int y, PreachingBased &p2) const
+inline void PreachingBased<Elm,Y,X,YRHO,XRHO>::iterY2(Functor &func, int y, PreachingBased &p2) const
 {
 	LinkedElm *e1 = Vyc[y], *e2 = p2.Vyc[y];
 	const LinkedElm *const end = Vyc[++y];
 	do
 	{
-		Functor::callback(e1->val, e2->val);
+		func.callback(e1->val, e2->val);
 		e1++;
 		e2++;
 	} while (e1 != end);

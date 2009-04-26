@@ -32,7 +32,7 @@ public:
 
 	// Functor member is of the form static void callbackProduct(int x, bool p)
 	template <typename Functor>
-	inline void multRow(const bool (&row)[Z*Y]) const;
+	inline void multRowCallback(Functor &func, const bool (&row)[Z*Y]) const;
 
 	inline void multRow(const bool (&row)[Z*Y], bool (&prodrow)[Z*X]) const;
 
@@ -40,7 +40,7 @@ public:
 
 	// Functor member is of the form inline static void callbackProduct(int y, bool p)
 	template <typename Functor>
-	inline void multCol(const bool (&col)[Z*X]) const;
+	inline void multColCallback(Functor &func, const bool (&col)[Z*X]) const;
 
 	inline void multCol(const bool (&col)[Z*X], bool (&prodcol)[Z*Y]) const;
 
@@ -48,10 +48,10 @@ public:
 
 	// Functor member is of the form inline static void callbackY(int y, int x)
 	template <typename Functor>	// For a y, iterate over x
-	inline void iterY(int y) const;
+	inline void iterY(Functor &func, int y) const;
 	// Functor member is of the form inline static void callbackX(int y, int x)
 	template <typename Functor> // For an x, iterate over y
-	inline void iterX(int x) const;
+	inline void iterX(Functor &func, int x) const;
 
 	// Multiply a ZxZ matrix expanded from the Preaching element at (xp,yp),
 	// 0 <= xp <= X, 0 <= yp <= Y; with a Zx1 column, and return the index into
@@ -142,7 +142,7 @@ inline bool Preaching<Y,X,YRHO,XRHO>::at(int y, int x) const
 
 template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
+inline void Preaching<Y,X,YRHO,XRHO>::multRowCallback(Functor &func, const bool (&row)[Z*Y]) const
 {
 	// Do the matrix multiplication loop, over x first
 	for (int x = 0; x < Z*X; x++)
@@ -150,7 +150,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y]) const
 		bool prod = 0;
 		for (const int *pHxc = Hxc[x]; *pHxc >= 0; pHxc++)
 			prod ^= row[*pHxc];
-		Functor::callbackProduct(x, prod);
+		func.callbackProduct(x, prod);
 	}
 }
 
@@ -169,7 +169,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multRow(const bool (&row)[Z*Y], bool (&pro
 
 template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
+inline void Preaching<Y,X,YRHO,XRHO>::multColCallback(Functor &func, const bool (&col)[Z*X]) const
 {
 	// Do the matrix multiplication loop, over y first
 	for (int y = 0; y < Z*Y; y++)
@@ -177,7 +177,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X]) const
 		bool prod = 0;
 		for (const int *pHyc = Hyc[y]; *pHyc >= 0; pHyc++)
 			prod ^= col[*pHyc];
-		Functor::callbackProduct(y, prod);
+		func.callbackProduct(y, prod);
 	}
 }
 
@@ -196,7 +196,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::multCol(const bool (&col)[Z*X], bool (&pro
 
 template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
+inline void Preaching<Y,X,YRHO,XRHO>::iterY(Functor &func, int y) const
 {
 	const int *pHyc = Hyc[y];	// A pointer to the current row.
 	int x = *pHyc;				// The current x value.
@@ -204,7 +204,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
 	// in the sparse matrix.
 	do
 	{
-		Functor::callbackY(y, x);
+		func.callbackY(y, x);
 		pHyc++;
 		x = *pHyc;
 	} while (x >= 0);
@@ -212,7 +212,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterY(int y) const
 
 template <int Y, int X, int YRHO, int XRHO>
 template <typename Functor>
-inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
+inline void Preaching<Y,X,YRHO,XRHO>::iterX(Functor &func, int x) const
 {
 	const int *pHxc = Hxc[x];	// A pointer to the current column.
 	int y = *pHxc;				// The current y value.
@@ -220,7 +220,7 @@ inline void Preaching<Y,X,YRHO,XRHO>::iterX(int x) const
 	{
 		// Loop through the column, calling the callback for every coordinate
 		// present in the sparse matrix.
-		Functor::callbackX(y, x);
+		func.callbackX(y, x);
 		pHxc++;
 		y = *pHxc;
 	} while (y >= 0);
