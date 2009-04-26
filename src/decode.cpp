@@ -63,35 +63,33 @@ const double beta = 0.15;
 // The matrix multiplication functor for decoding orthagonality verification.
 struct functor_multhxhat
 {
-	static int nerrs;		// The number of orthagonality errors.
-	static inline void callbackProduct(int y, bool p)
+	int nerrs;		// The number of orthagonality errors.
+	inline void callbackProduct(int y, bool p)
 	{
 		// There is an error every time there is a 1 in the product.
 		nerrs += p;
 	}
 };
-int functor_multhxhat::nerrs;
 
 // The functor to set the initial values for Q.
 struct functor_setq
 {
-	static double l;	// The L-matrix value to take.
-	static inline void callback(double &q)
+	double l;	// The L-matrix value to take.
+	inline void callback(double &q)
 	{
 		q = l;
 	}
 };
-double functor_setq::l;
 
 // Calculate the BP decoding pi term without exclusion. Keeps a cache of tanh
 // values as these take a while to get.
 struct functor_r_bp_pi
 {
-	static double pi;					// The pi term (without exclusion)
-	static double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
-	static double *pcache;				// The current index in the row
+	double pi;					// The pi term (without exclusion)
+	double tanh_cache[RHO_H_Y];	// The cache of calculated tanh values
+	double *pcache;				// The current index in the row
 
-	static inline void callback(double &q)
+	inline void callback(double &q)
 	{
 		const double tanhval = tanh/*app*/(q/2.0);	// Calculate the tanh term.
 		pi *= tanhval;							// Multiply it into pi.
@@ -99,19 +97,19 @@ struct functor_r_bp_pi
 		pcache++;
 	}
 };
-double functor_r_bp_pi::pi;
-double functor_r_bp_pi::tanh_cache[RHO_H_Y];
-double *functor_r_bp_pi::pcache;
 
 // The functor to update the R matrix, using BP decoding. Performs exclusion.
 struct functor_r_bp_update
 {
-	static inline void callback(double &r)
+	double pir0;			// The starting pi term to use.
+	double *tanh_cache;		// The appropriate cached tanh to start.
+
+	inline void callback(double &r)
 	{
-		double pir = functor_r_bp_pi::pi;		// The pi term to use.
-		// Retrieve the appropriate cached tanh.
-		const double tanhr = *functor_r_bp_pi::pcache;
-		functor_r_bp_pi::pcache++;
+		double pir = pir0;
+		
+		const double tanhr = *tanh_cache;
+		tanh_cache++;
 
 		if (!tanhr)
 		{
@@ -159,9 +157,9 @@ struct functor_r_bp_update
 // Calculate the minsum decoding pi and min terms without exclusion.
 struct functor_r_offms_pi
 {
-	static double min0, min1;	// The lowest and second-lowest minima, respectively
-	static int pi;				// The pi term, without exclusion.
-	static inline void callback(double &q)
+	double min0, min1;	// The lowest and second-lowest minima, respectively
+	int pi;				// The pi term, without exclusion.
+	inline void callback(double &q)
 	{
 		double qv = q;
 		if (qv < 0)
@@ -176,24 +174,22 @@ struct functor_r_offms_pi
 			min1 = qv;
 	}
 };
-double functor_r_offms_pi::min0;
-double functor_r_offms_pi::min1;
-int functor_r_offms_pi::pi;
 
 // Updates the R matrix with minsum decoding. Performs exclusion.
 struct functor_r_offms_update
 {
-	static inline void callback(double &r, double &q)
+	int pir0;
+	double min0, min1;
+	inline void callback(double &r, double &q)
 	{
-		int pir = functor_r_offms_pi::pi;	// The pi term to use.
+		int pir = pir0;	// The pi term to use.
 
 		const double qv = q;				// The Q term to use.
 		// Perform exclusion on the pi term.
 		if (qv < 0)
 			pir = -pir;
 		// Perform exclusion on the min term.
-		const double qvmin = (fabs(qv) == functor_r_offms_pi::min0) ?
-			functor_r_offms_pi::min1 : functor_r_offms_pi::min0;
+		const double qvmin = (fabs(qv) == min0) ? min1 : min0;
 
 		// Offset min sum calculation for r^(i)_(m,n)
 		r = pir * max((double)0.0, qvmin - beta);
@@ -204,27 +200,26 @@ struct functor_r_offms_update
 // during decoding.
 struct functor_sigmar
 {
-	static double rsigma;
-	static inline void callback(double &r)
+	double rsigma;
+	inline void callback(double &r)
 	{
 		rsigma += r;
 	}
 };
-double functor_sigmar::rsigma;
 
 // Update Q during decoding. Performs exclusion.
 struct functor_updateq
 {
 	// The value of Q for all elements in this column at iteration 0
-	static double q0;
+	double q0;
+	double rsigma;
 
-	static inline void callback(double &q, double &r)
+	inline void callback(double &q, double &r)
 	{
 		// Performs exclusion and sets Q.
-		q = q0 + functor_sigmar::rsigma - r;
+		q = q0 + rsigma - r;
 	}
 };
-double functor_updateq::q0;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
@@ -236,6 +231,8 @@ bool decode()
 {
 	// Set the initial state of the decoder
 	decode_initial();
+
+	functor_multhxhat funcverify;
 
 	// Iterative decoding
 	for (int i = 0; ; )
@@ -280,9 +277,9 @@ bool decode()
 		// Update the Q and L matrices
 		qlupdate();
 
-		functor_multhxhat::nerrs = 0;
-		H.multCol<functor_multhxhat>(mxhat);
-		orthhist[i].report(functor_multhxhat::nerrs);
+		funcverify.nerrs = 0;
+		H.multColCallback(funcverify, mxhat);
+		orthhist[i].report(funcverify.nerrs);
 
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
@@ -291,7 +288,7 @@ bool decode()
 
 		perfhist.report((int)(perf.get()*1e6));
 
-		if (!functor_multhxhat::nerrs)
+		if (!funcverify.nerrs)
 		{
 			if (diff)
 			{
@@ -315,29 +312,34 @@ bool decode()
 
 void decode_initial()
 {
+	functor_setq funcq;
+
 	// Set initial state
 	for (int n = 0; n < N*Z; n++)
 	{
 		if (method == bp)
 			my[n] *= 2.0/sigma/sigma; // Required for BP algorithm
 
-		functor_setq::l = my[n];
-		mq.iterX<functor_setq>(n);
+		funcq.l = my[n];
+		mq.iterX(funcq, n);
 	}
 }
 
 void rupdate_bp()
 {
+	functor_r_bp_pi funcpi;
+	functor_r_bp_update funcup;
 	// Update mr
 	for (int m = 0; m < Z*M; m++)
 	{
-		functor_r_bp_pi::pi = 1;
-		functor_r_bp_pi::pcache = functor_r_bp_pi::tanh_cache;
-		mq.iterY<functor_r_bp_pi>(m);
+		funcpi.pi = 1;
+		funcpi.pcache = funcpi.tanh_cache;
+		mq.iterY(funcpi, m);
 
 		// Reset the row index
-		functor_r_bp_pi::pcache = functor_r_bp_pi::tanh_cache;
-		mr.iterY<functor_r_bp_update>(m);
+		funcup.tanh_cache = funcpi.tanh_cache;
+		funcup.pir0 = funcpi.pi;
+		mr.iterY(funcup, m);
 	}
 }
 
@@ -345,34 +347,41 @@ void rupdate_offms()
 {
 	// Update mr
 	// OFF-MS method
+	functor_r_offms_pi funcpi;
+	functor_r_offms_update funcup;
 	for (int m = 0; m < Z*M; m++)
 	{
-		functor_r_offms_pi::pi = 1;	// Multiplicative identity
+		funcpi.pi = 1;	// Multiplicative identity
 
 		// Min function identities
 		// Assume a very large value so that it may be overwritten on the first
 		// iteration.
-		functor_r_offms_pi::min0 = numeric_limits<double>::max();
-		functor_r_offms_pi::min1 = numeric_limits<double>::max();
+		funcpi.min0 = numeric_limits<double>::max();
+		funcpi.min1 = numeric_limits<double>::max();
+		mq.iterY(funcpi, m);
 
-		mq.iterY<functor_r_offms_pi>(m);
-
-		mr.iterY2<functor_r_offms_update>(m,mq);
+		funcup.min0 = funcpi.min0;
+		funcup.min1 = funcpi.min1;
+		funcup.pir0 = funcpi.pi;
+		mr.iterY2(funcup, m,mq);
 	}
 }
 
 void qlupdate()
 {
+	functor_sigmar funcr;
+	functor_updateq funcq;
 	// Update mq and ml
 	for (int n = 0; n < Z*N; n++)
 	{
-		functor_sigmar::rsigma = 0;
-		mr.iterX<functor_sigmar>(n);
+		funcr.rsigma = 0;
+		mr.iterX(funcr, n);
 
-		functor_updateq::q0 = my[n];
-		mq.iterX2<functor_updateq>(n,mr);
+		funcq.q0 = my[n];
+		funcq.rsigma = funcr.rsigma;
+		mq.iterX2(funcq, n,mr);
 
-		const double ml = functor_updateq::q0 + functor_sigmar::rsigma;
+		const double ml = funcq.q0 + funcr.rsigma;
 		mxhat[n] = ml < 0; // Hard decision
 	}
 }
