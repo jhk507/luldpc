@@ -36,23 +36,28 @@ extern PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr;	// R matrix
 extern PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq;	// Q matrix
 
 // The decode method.
-enum DecodeMethod
+namespace DecodeMethod
+{
+enum Enum
 {
 	firstMethod = 0,	// (The first method available)
-	bp = 0,				// Belief propagation
+	ms = 0,				// Min sum
 	offms,				// Offset min sum
+	nms,				// Normalized min sum
+	bp,					// Belief propagation
 	ndecodes			// (The number of decoding algorithms)
 };
-extern DecodeMethod method;
+}
+extern DecodeMethod::Enum method;
 
-extern const char *const decodeNames[ndecodes];
+extern const char *const decodeNames[DecodeMethod::ndecodes];
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
 
-inline void operator++(DecodeMethod &incmethod, int)
+inline void operator++(DecodeMethod::Enum &incmethod, int)
 {
-	incmethod = (DecodeMethod)((int)incmethod + 1);
+	incmethod = (DecodeMethod::Enum)((int)incmethod + 1);
 }
 
 // Compute the output of the decoder
@@ -65,8 +70,9 @@ void decode_initial();
 // Update the R matrix (belief propagation method)
 void rupdate_bp();
 
-// Update the R matrix (offset minsum method)
-void rupdate_offms();
+// Update the R matrix (minsum method)
+template <DecodeMethod::Enum msMethod>
+void rupdate_ms();
 
 // Update the Q and L matrices
 void qlupdate();

@@ -46,14 +46,18 @@ PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
 // Decoding matrices
 bool mxhat[N*Z];	// xhat column
 
-DecodeMethod method;
+DecodeMethod::Enum method;
 
-const char *const decodeNames[ndecodes] =
+const char *const decodeNames[DecodeMethod::ndecodes] =
 {
-	"bp",
-	"offms"
+	"ms",
+	"offms",
+	"nms",
+	"bp"
 };
 
+// Alpha (for normalized minsum decoding)
+const double alpha = 0.8;
 // Beta (for minsum decoding)
 const double beta = 0.15;
 
@@ -155,7 +159,7 @@ struct functor_r_bp_update
 };
 
 // Calculate the minsum decoding pi and min terms without exclusion.
-struct functor_r_offms_pi
+struct functor_r_ms_pi
 {
 	double min0, min1;	// The lowest and second-lowest minima, respectively
 	int pi;				// The pi term, without exclusion.
@@ -176,7 +180,8 @@ struct functor_r_offms_pi
 };
 
 // Updates the R matrix with minsum decoding. Performs exclusion.
-struct functor_r_offms_update
+template <DecodeMethod::Enum msMethod>
+struct functor_r_ms_update
 {
 	int pir0;
 	double min0, min1;
@@ -192,7 +197,14 @@ struct functor_r_offms_update
 		const double qvmin = (fabs(qv) == min0) ? min1 : min0;
 
 		// Offset min sum calculation for r^(i)_(m,n)
-		r = pir * max((double)0.0, qvmin - beta);
+		r = pir;
+		if (msMethod == DecodeMethod::offms)
+			r *= max((double)0.0, qvmin - beta);
+		else
+			r *= qvmin;
+
+		if (msMethod == DecodeMethod::nms)
+			r *= alpha;
 	}
 };
 
@@ -257,12 +269,10 @@ bool decode()
 		// Update the R matrix
 		switch (method)
 		{
-		case bp:
-			rupdate_bp();
-			break;
-		case offms:
-			rupdate_offms();
-			break;
+		case DecodeMethod::ms:		rupdate_ms<DecodeMethod::ms>();		break;
+		case DecodeMethod::offms:	rupdate_ms<DecodeMethod::offms>();	break;
+		case DecodeMethod::nms:		rupdate_ms<DecodeMethod::nms>();	break;
+		case DecodeMethod::bp:		rupdate_bp();						break;
 		}
 
 #if OUTPUT_DEBUGFILE
@@ -317,7 +327,7 @@ void decode_initial()
 	// Set initial state
 	for (int n = 0; n < N*Z; n++)
 	{
-		if (method == bp)
+		if (method == DecodeMethod::bp)
 			my[n] *= 2.0/sigma/sigma; // Required for BP algorithm
 
 		funcq.l = my[n];
@@ -343,12 +353,13 @@ void rupdate_bp()
 	}
 }
 
-void rupdate_offms()
+template <DecodeMethod::Enum msMethod>
+void rupdate_ms()
 {
 	// Update mr
 	// OFF-MS method
-	functor_r_offms_pi funcpi;
-	functor_r_offms_update funcup;
+	functor_r_ms_pi funcpi;
+	functor_r_ms_update<msMethod> funcup;
 	for (int m = 0; m < Z*M; m++)
 	{
 		funcpi.pi = 1;	// Multiplicative identity
