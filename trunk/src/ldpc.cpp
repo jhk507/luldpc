@@ -98,10 +98,10 @@ void execute()
 	debugfile.flush();
 #endif
 
-	HistogramSet<OrthHistType> orthsets[ndecodes];
-	HistogramSet<MessHistType> messsets[ndecodes];
+	HistogramSet<OrthHistType> orthsets[DecodeMethod::ndecodes];
+	HistogramSet<MessHistType> messsets[DecodeMethod::ndecodes];
 
-	for (method = firstMethod; method < ndecodes; method++)
+	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
 	{
 		orthsets[method].init(decodeNames[method], "orth", orthhist);
 		messsets[method].init(decodeNames[method], "mess", messhist);
@@ -112,7 +112,7 @@ void execute()
 	ITime runtimer;
 
 	// The decode method loop
-	for (method = firstMethod; method < ndecodes; method++)
+	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
@@ -125,7 +125,7 @@ void execute()
 			int nerrs = 0;	// The number of block errors
 
 			ITime blocktimer;
-			const double endtime = (RUNTIME-runtimer.get())/(NSNRS*(ndecodes-method)-snrindex);
+			const double endtime = (RUNTIME-runtimer.get())/(NSNRS*(DecodeMethod::ndecodes-method)-snrindex);
 
 			// The block loop
 			for (int b = 1; ; b++)
@@ -182,7 +182,7 @@ void execute()
 	cout << "Generating remaining data files...\n";
 
 	ofstream decodeaxis("axis_decode.tsv");
-	for (method = firstMethod; method < ndecodes; method++)
+	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
 		decodeaxis << decodeNames[method] << '\n';
 	decodeaxis.close();
 
