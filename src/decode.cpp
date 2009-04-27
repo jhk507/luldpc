@@ -51,15 +51,20 @@ DecodeMethod::Enum method;
 const char *const decodeNames[DecodeMethod::ndecodes] =
 {
 	"ms",
+	"ms_sc",
 	"offms",
+	"offms_sc",
 	"nms",
+	"nms_sc",
 	"bp"
 };
 
 // Alpha (for normalized minsum decoding)
-const double alpha = 0.8;
+const double alpha   = 0.8;
+const double alphasc = 0.92;
 // Beta (for minsum decoding)
-const double beta = 0.15;
+const double beta   = 0.15;
+const double betasc = 0.08;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functors ///////////////////////////////////////////////////////////////////
@@ -180,7 +185,7 @@ struct functor_r_ms_pi
 };
 
 // Updates the R matrix with minsum decoding. Performs exclusion.
-template <DecodeMethod::Enum msMethod>
+template <DecodeMethod::Enum msMethod, bool sc>
 struct functor_r_ms_update
 {
 	int pir0;
@@ -199,12 +204,12 @@ struct functor_r_ms_update
 		// Offset min sum calculation for r^(i)_(m,n)
 		r = pir;
 		if (msMethod == DecodeMethod::offms)
-			r *= max((double)0.0, qvmin - beta);
+			r *= max((double)0.0, qvmin - (sc ? betasc : beta));
 		else
 			r *= qvmin;
 
 		if (msMethod == DecodeMethod::nms)
-			r *= alpha;
+			r *= sc ? alphasc : alpha;
 	}
 };
 
@@ -220,6 +225,7 @@ struct functor_sigmar
 };
 
 // Update Q during decoding. Performs exclusion.
+template <bool sc>
 struct functor_updateq
 {
 	// The value of Q for all elements in this column at iteration 0
@@ -229,7 +235,16 @@ struct functor_updateq
 	inline void callback(double &q, double &r)
 	{
 		// Performs exclusion and sets Q.
-		q = q0 + rsigma - r;
+		const double qnew = q0 + rsigma - r;
+		if (sc)
+		{
+			if (q != 0 && ((q >= 0) != (qnew >= 0)))
+				q = 0;
+			else
+				q = qnew;
+		}
+		else
+			q = qnew;
 	}
 };
 
@@ -269,10 +284,17 @@ bool decode()
 		// Update the R matrix
 		switch (method)
 		{
-		case DecodeMethod::ms:		rupdate_ms<DecodeMethod::ms>();		break;
-		case DecodeMethod::offms:	rupdate_ms<DecodeMethod::offms>();	break;
-		case DecodeMethod::nms:		rupdate_ms<DecodeMethod::nms>();	break;
-		case DecodeMethod::bp:		rupdate_bp();						break;
+		case DecodeMethod::ms:
+		case DecodeMethod::ms_sc:
+			rupdate_ms<DecodeMethod::ms, false>();
+			break;
+		case DecodeMethod::offms:		rupdate_ms<DecodeMethod::offms,	false>();	break;
+		case DecodeMethod::offms_sc:	rupdate_ms<DecodeMethod::offms,	true>();	break;
+		case DecodeMethod::nms:			rupdate_ms<DecodeMethod::nms,	false>();	break;
+		case DecodeMethod::nms_sc:		rupdate_ms<DecodeMethod::nms,	true>();	break;
+		case DecodeMethod::bp:
+			rupdate_bp();
+			break;
 		}
 
 #if OUTPUT_DEBUGFILE
@@ -285,7 +307,17 @@ bool decode()
 #endif
 
 		// Update the Q and L matrices
-		qlupdate();
+		switch (method)
+		{
+		case DecodeMethod::ms_sc:
+		case DecodeMethod::offms_sc:
+		case DecodeMethod::nms_sc:
+			qlupdate<true>();
+			break;
+		default:
+			qlupdate<false>();
+		}
+
 
 		funcverify.nerrs = 0;
 		H.multColCallback(funcverify, mxhat);
@@ -353,13 +385,13 @@ void rupdate_bp()
 	}
 }
 
-template <DecodeMethod::Enum msMethod>
+template <DecodeMethod::Enum msMethod, bool sc>
 void rupdate_ms()
 {
 	// Update mr
 	// OFF-MS method
 	functor_r_ms_pi funcpi;
-	functor_r_ms_update<msMethod> funcup;
+	functor_r_ms_update<msMethod, sc> funcup;
 	for (int m = 0; m < Z*M; m++)
 	{
 		funcpi.pi = 1;	// Multiplicative identity
@@ -378,10 +410,11 @@ void rupdate_ms()
 	}
 }
 
+template <bool sc>
 void qlupdate()
 {
 	functor_sigmar funcr;
-	functor_updateq funcq;
+	functor_updateq<sc> funcq;
 	// Update mq and ml
 	for (int n = 0; n < Z*N; n++)
 	{

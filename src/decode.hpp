@@ -42,8 +42,11 @@ enum Enum
 {
 	firstMethod = 0,	// (The first method available)
 	ms = 0,				// Min sum
+	ms_sc,
 	offms,				// Offset min sum
+	offms_sc,
 	nms,				// Normalized min sum
+	nms_sc,
 	bp,					// Belief propagation
 	ndecodes			// (The number of decoding algorithms)
 };
@@ -71,10 +74,11 @@ void decode_initial();
 void rupdate_bp();
 
 // Update the R matrix (minsum method)
-template <DecodeMethod::Enum msMethod>
+template <DecodeMethod::Enum msMethod, bool sc>
 void rupdate_ms();
 
 // Update the Q and L matrices
+template <bool sc>
 void qlupdate();
 
 }
