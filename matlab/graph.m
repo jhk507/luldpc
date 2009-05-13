@@ -16,7 +16,7 @@ function graph
 	axis_err_mess = load('axis_err_mess.tsv');
 	
 	% Calculate the axis lengths.
-	global nsiters;	nsiters = 10;
+	global nsiters;	nsiters = 2;
 	global niters; 	niters  = length(axis_iter);
 	global nsnrs;   nsnrs   = length(axis_snr);
 

@@ -19,7 +19,8 @@ namespace LDPC
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
-#define RUNTIME      (60)	// The number of seconds to run (approximate)
+#define NERRS	300
+//#define RUNTIME      (60)	// The number of seconds to run (approximate)
 #define NERRBUCKETS  25		// The number of error histogram buckets
 #define NPERFBUCKETS 100	// The number of performance histogram buckets
 #define MAXPERFTIME  2000	// The maximum performance histogram duration, in us
