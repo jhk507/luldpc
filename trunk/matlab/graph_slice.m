@@ -20,7 +20,7 @@ function graph_slice(filename, axistitle, axis_err, cam, nplot)
 		vol(:,:,s) = hist((1+(s-1)*nerrs):(s*nerrs), 1:niters);
 	end
 	
-	% Create the stupidly redundant and inexplicably reversed coordinate system.
+	% Create the redundant and inexplicably reversed coordinate system.
 	[cx, cy, cz] = meshgrid(axis_iter, axis_err, axis_snr);
 
 	% Do the slice plot.

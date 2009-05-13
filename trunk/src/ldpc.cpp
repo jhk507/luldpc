@@ -109,7 +109,7 @@ void execute()
 
 	ofstream perffile("hist_perf.tsv");
 
-	ITime runtimer;
+//	ITime runtimer;
 
 	// The decode method loop
 	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
@@ -124,11 +124,11 @@ void execute()
 
 			int nerrs = 0;	// The number of block errors
 
-			ITime blocktimer;
-			const double endtime = (RUNTIME-runtimer.get())/(NSNRS*(DecodeMethod::ndecodes-method)-snrindex);
+//			ITime blocktimer;
+//			const double endtime = (RUNTIME-runtimer.get())/(NSNRS*(DecodeMethod::ndecodes-method)-snrindex);
 
 			// The block loop
-			for (int b = 1; ; b++)
+			for (int b = 1; nerrs<NERRS ; b++)
 			{
 				// Encode
 				encode();
@@ -151,15 +151,9 @@ void execute()
 						<< "\tBLER=" << nerrs*100.0/b << "%        \r";
 					cout.flush();
 				}
-
-				const double now = blocktimer.get();
-				if (now >= endtime)
-				{
-					cout << '\n' << b << " blocks in " << now << "s, "
-						<< (1000.0*now/b) << " ms/block\n";
-					break;
-				}
+							
 			}
+			cout<<'\n';
 
 			orthsets[method].writeLine();
 			messsets[method].writeLine();
