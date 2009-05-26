@@ -33,8 +33,8 @@ function graph_curves_aveiter(filename, axistitle)
 
 	% Plot the curves.
 	for s = 1:nsnrs
-		semilogx(axis_iter, aves(s,:));
-		if s < nsnrs
+		plot(axis_iter, aves(s,:));
+        if s < nsnrs
 			hold all;
 		end
 	end
