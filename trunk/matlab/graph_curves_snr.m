@@ -13,7 +13,7 @@ function graph_curves_snr(filename, axistitle)
 	
 	% Plot the curves.
 	for s = 1:nsnrs
-		loglog(axis_iter, hist(s,:));
+		semilogy(axis_iter, hist(s,:));
 		if s < nsnrs
 			hold all;
 		end
