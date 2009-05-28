@@ -2,16 +2,16 @@
 % $Date$
 % $Rev$
 
-function graph_curves_aveiter(aves, axistitle)
+function graph_curves_aveiter_snr(aves, axistitle)
 	% Declare the global variables.
-	global nsnrs;
+	global ndecodes;
 	global axis_iter;
-	global axis_snr_text;
+	global methods;
 	
 	% Plot the curves.
-	for s = 1:nsnrs
-		plot(axis_iter, aves(s,:));
-		if s < nsnrs
+	for d = 1:ndecodes
+		plot(axis_iter, aves(d,:));
+		if d < ndecodes
 			hold all;
 		end
 	end
@@ -20,7 +20,7 @@ function graph_curves_aveiter(aves, axistitle)
 	title(axistitle);
 	xlabel('Maximum iterations');
 	ylabel('Average iterations to resolution');
-	legend(axis_snr_text, 'Location', 'BestOutside');
+	legend(methods, 'Location', 'BestOutside');
 	
 	% Set the axes and grids.
 	axis tight;
