@@ -5,7 +5,7 @@
 % Do all graphs.
 function graph
 	% Clear previous workspace data
-	clear;
+	clear all;
 	
 	% Load the axes.
 	global axis_iter;
@@ -63,6 +63,7 @@ function graph
 	
 	% Calculate the 'average iterations' data
 	hist_aveiter = zeros(nsnrs, ndecodes, niters);
+	hist_maxiter=  zeros(nsnrs, ndecodes, niters);
 	
 	for d = 1:ndecodes
 		hist = load(['hist_snr_', orthfiles{d}, '.tsv']);
@@ -84,6 +85,7 @@ function graph
 			end
 			hist_aveiter(:,d,i) = weight;
 		end
+		hist_maxiter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
 	end
 	
 	% Set all figures to be docked.
@@ -96,7 +98,6 @@ function graph
 	% Create the docked figure windows in order.
 	for f = 1:nfigures
 		figure(f);
-		clf;
 	end
 	
 	% Loop through the decode methods.
@@ -106,7 +107,7 @@ function graph
 		% Display the iteration/BLER multiple SNR curves
 		title = ['Block error rate vs. maximum iterations, ', methods{d}];
 		incfigure(title, ndecodes);
-		graph_curves_snr(orthfiles{d}, title);
+		graph_curves_snr(squeeze(hist_maxiter(:,d,:)), title);
 
 		% Display the SNR/BLER multiple iteration curves
 		title = ['Block error rate vs. signal-to-noise ratio, ', methods{d}];
@@ -161,10 +162,18 @@ function graph
 		snr = displaysnrs(dsnri);
 		for snri = 1:nsnrs
 			if axis_snr(snri) == snr
+				% Display the iteration/BLER multiple SNR curves
+				title = ['Block error rate vs. maximum iterations, ', axis_snr_text{snri}];
+				incfigure(title, 1);
+				graph_curves_snr_methods(squeeze(hist_maxiter(snri,:,:)), title);	
+				
 				% Display the maxiter/aveiter multiple SNR curves
 				title = ['Average iterations to resolution vs. maximum iterations, ', axis_snr_text{snri}];
 				incfigure(title, 1);
 				graph_curves_aveiter_snr(squeeze(hist_aveiter(snri,:,:)), title);				
+				
+		
+				
 				break;
 			end
 		end
@@ -180,8 +189,8 @@ end
 function incfigure(figtitle, increment)
 	global f;
 	hfigure = figure(f);
+	clf;
 	set(hfigure, 'Name', figtitle);
 
-	global ndecodes;
 	f = f+increment;
 end

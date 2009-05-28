@@ -2,16 +2,16 @@
 % $Date$
 % $Rev$
 
-function graph_curves_snr(hist, axistitle)
+function graph_curves_snr_methods(hist, axistitle)
 	% Declare the global variables.
-	global nsnrs;
+	global ndecodes;
 	global axis_iter;
-	global axis_snr_text;
+	global methods;
 	
 	% Plot the curves.
-	for s = 1:nsnrs
-		semilogy(axis_iter, hist(s,:));
-		if s < nsnrs
+	for d = 1:ndecodes
+		semilogy(axis_iter, hist(d,:));
+		if d < ndecodes
 			hold all;
 		end
 	end
@@ -20,7 +20,7 @@ function graph_curves_snr(hist, axistitle)
 	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('BLER');
-	legend(axis_snr_text, 'Location', 'BestOutside');
+	legend(methods, 'Location', 'BestOutside');
 	
 	% Set the axes and grids.
 	axis tight;
