@@ -5,7 +5,7 @@
 % Do all graphs.
 function graph
 	% Clear previous workspace data
-	clear all;
+	clear;
 	
 	% Load the axes.
 	global axis_iter;
@@ -64,6 +64,7 @@ function graph
 	% Calculate the 'average iterations' data
 	hist_aveiter = zeros(nsnrs, ndecodes, niters);
 	hist_maxiter=  zeros(nsnrs, ndecodes, niters);
+	hist_bleriter=  zeros(nsnrs, ndecodes, niters);
 	
 	for d = 1:ndecodes
 		hist = load(['hist_snr_', orthfiles{d}, '.tsv']);
@@ -82,10 +83,12 @@ function graph
 				if hist(s,i) ~= 0
 					weight(s) = weight(s)./hist(s,i);
 				end
+				
 			end
 			hist_aveiter(:,d,i) = weight;
 		end
 		hist_maxiter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
+		hist_bleriter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
 	end
 	
 	% Set all figures to be docked.
@@ -112,7 +115,7 @@ function graph
 		% Display the SNR/BLER multiple iteration curves
 		title = ['Block error rate vs. signal-to-noise ratio, ', methods{d}];
 		incfigure(title, ndecodes);
-		graph_curves_iter(orthfiles{d}, title);
+		graph_curves_iter_methods(squeeze(hist_bleriter(:,d,:)), title);
 
 		% Display the maxiter/aveiter multiple SNR curves
 		title = ['Average iterations to resolution vs. maximum iterations, ', methods{d}];
@@ -172,13 +175,19 @@ function graph
 				incfigure(title, 1);
 				graph_curves_aveiter_snr(squeeze(hist_aveiter(snri,:,:)), title);				
 				
-		
-				
 				break;
 			end
 		end
 	end
-					
+			
+	for i= 1:nsiters
+		iter= axis_siter(i);
+		
+		title = ['Block error rate vs. signal-to-noise ratio, i=', num2str(iter)];
+		incfigure(title, 1);
+		graph_curves_iter(squeeze(hist_bleriter(:,:,iter)), title);	
+	end
+	
 	% Display the performance histogram
 	title = 'Single-iteration decode performance histogram';
 	incfigure(title, 1);
