@@ -2,20 +2,18 @@
 % $Date$
 % $Rev$
 
-function graph_curves_iter(filename, axistitle)
-	% Load the histogram data.
-	hist = 1 - load(['hist_snr_', filename, '.tsv']);
+function graph_curves_iter(hist, axistitle)
 	
-	% Declare the global variables.
-	global nsiters;
+% Declare the global variables.
+	global ndecodes;
 	global axis_siter;
-	global axis_siter_text;
+	global methods;
 	global axis_snr;
 	
 	% Plot the curves.
-	for i = 1:nsiters
-		semilogy(axis_snr, hist(:,axis_siter(i)));
-		if i < nsiters
+	for d = 1:ndecodes
+		semilogy(axis_snr, hist(:,d));
+		if d < ndecodes
 			hold all;
 		end
 	end
@@ -24,7 +22,7 @@ function graph_curves_iter(filename, axistitle)
 	title(axistitle);
 	xlabel('SNR (dB)');
 	ylabel('BLER');
-	legend(axis_siter_text, 'Location', 'BestOutside');
+	legend(methods, 'Location', 'BestOutside');
 	
 	% Set the axes and grids.
 	axis tight;
