@@ -203,10 +203,10 @@ struct functor_r_ms_update
 
 		// Offset min sum calculation for r^(i)_(m,n)
 		r = pir;
-		if (msMethod == DecodeMethod::offms)
+		if (msMethod == DecodeMethod::offms)       //offset min sum and more min sums
 			r *= max((double)0.0, qvmin - (sc ? betasc : beta));
 		else
-			r *= qvmin;
+			r *= qvmin; 
 
 		if (msMethod == DecodeMethod::nms)
 			r *= sc ? alphasc : alpha;
@@ -279,15 +279,13 @@ bool decode()
 			return true;
 #endif
 
-		ITime perf;
+		ITime perf; 
 
 		// Update the R matrix
 		switch (method)
 		{
-		case DecodeMethod::ms:
-		case DecodeMethod::ms_sc:
-			rupdate_ms<DecodeMethod::ms, false>();
-			break;
+		case DecodeMethod::ms:			rupdate_ms<DecodeMethod::ms,    false>();	break;
+		case DecodeMethod::ms_sc:		rupdate_ms<DecodeMethod::ms,    true>();	break;
 		case DecodeMethod::offms:		rupdate_ms<DecodeMethod::offms,	false>();	break;
 		case DecodeMethod::offms_sc:	rupdate_ms<DecodeMethod::offms,	true>();	break;
 		case DecodeMethod::nms:			rupdate_ms<DecodeMethod::nms,	false>();	break;
