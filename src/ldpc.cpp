@@ -112,7 +112,8 @@ void execute()
 //	ITime runtimer;
 
 	// The decode method loop
-	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
+	//for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
+	method = DecodeMethod::ms_sc;
 	{
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
