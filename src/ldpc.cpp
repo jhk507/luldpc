@@ -112,9 +112,12 @@ void execute()
 //	ITime runtimer;
 
 	// The decode method loop
-	//for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	method = DecodeMethod::ms_sc;
+	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
+	//method = DecodeMethod::ms_sc;
 	{
+		if (method == DecodeMethod::bp)
+			continue;
+
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
 		// The SNR loop

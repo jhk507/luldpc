@@ -56,6 +56,7 @@ const char *const decodeNames[DecodeMethod::ndecodes] =
 	"offms_sc",
 	"nms",
 	"nms_sc",
+	"vms",
 	"bp"
 };
 
@@ -65,6 +66,7 @@ const double alphasc = 0.92;
 // Beta (for minsum decoding)
 const double beta   = 0.15;
 const double betasc = 0.08;
+const double betav = 0.15;
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functors ///////////////////////////////////////////////////////////////////
@@ -225,7 +227,7 @@ struct functor_sigmar
 };
 
 // Update Q during decoding. Performs exclusion.
-template <bool sc>
+template <DecodeMethod::Enum method, bool sc>
 struct functor_updateq
 {
 	// The value of Q for all elements in this column at iteration 0
@@ -236,15 +238,35 @@ struct functor_updateq
 	{
 		// Performs exclusion and sets Q.
 		const double qnew = q0 + rsigma - r;
-		if (sc)
+		if (method == DecodeMethod::vms)
 		{
-			if (q != 0 && ((q >= 0) != (qnew >= 0)))
-				q = 0;
+			const bool qsgn = qnew > 0;
+			double qmag = fabs(qnew);
+			if (qmag > betav)
+				qmag -= betav;
+			else
+			{
+				if (r != 0 && (r > 0) != qsgn)
+					qmag = 0;
+				else
+					cerr << "Error \n";
+			}
+			if (!qsgn)
+				qmag *= -1;
+			q = qmag;
+		}
+		else
+		{
+			if (sc)  //self correcting cases
+			{
+				if (q != 0 && ((q >= 0) != (qnew >= 0)))
+					q = 0;
+				else
+					q = qnew;
+			}
 			else
 				q = qnew;
 		}
-		else
-			q = qnew;
 	}
 };
 
@@ -290,6 +312,7 @@ bool decode()
 		case DecodeMethod::offms_sc:	rupdate_ms<DecodeMethod::offms,	true>();	break;
 		case DecodeMethod::nms:			rupdate_ms<DecodeMethod::nms,	false>();	break;
 		case DecodeMethod::nms_sc:		rupdate_ms<DecodeMethod::nms,	true>();	break;
+		case DecodeMethod::vms:			rupdate_ms<DecodeMethod::vms,	false>();	break;
 		case DecodeMethod::bp:
 			rupdate_bp();
 			break;
@@ -310,10 +333,10 @@ bool decode()
 		case DecodeMethod::ms_sc:
 		case DecodeMethod::offms_sc:
 		case DecodeMethod::nms_sc:
-			qlupdate<true>();
+			qlupdate<DecodeMethod::ms, true>();
 			break;
 		default:
-			qlupdate<false>();
+			qlupdate<DecodeMethod::vms, false>();
 		}
 
 
@@ -408,11 +431,11 @@ void rupdate_ms()
 	}
 }
 
-template <bool sc>
+template <DecodeMethod::Enum method, bool sc>
 void qlupdate()
 {
 	functor_sigmar funcr;
-	functor_updateq<sc> funcq;
+	functor_updateq<method, sc> funcq;
 	// Update mq and ml
 	for (int n = 0; n < Z*N; n++)
 	{

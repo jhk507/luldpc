@@ -94,7 +94,7 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 8*ndecodes;
+	nfigures = 3*ndecodes;
 	
 	global f;
 	
@@ -123,38 +123,38 @@ function graph
 		graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
 		
 		% Display the error/iteration/frequency surface
-		title = ['Histogram for one SNR, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_surf_error(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, 1);
-		graph_surf_error(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
-		colorbar;
+		%title = ['Histogram for one SNR, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_surf_error(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, 1);
+		%graph_surf_error(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
+		%colorbar;
 
 		% Display the snr/iteration/frequency surface
-		title = ['SNR/iteration resolution histogram, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_surf_snr(orthfiles{d}, [title, ', orthagonal error'], 1);
-		graph_surf_snr(messfiles{d}, [title, ', message error'],    2);
-		colorbar;
+		%title = ['SNR/iteration resolution histogram, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_surf_snr(orthfiles{d}, [title, ', orthagonal error'], 1);
+		%graph_surf_snr(messfiles{d}, [title, ', message error'],    2);
+		%colorbar;
 
 		% Display the error/snr/frequency surface
-		title = ['Histogram at maximal iteration, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_surf_maxiter(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [2    -4 4], 1);
-		graph_surf_maxiter(messfiles{d}, [title, ', message error'],    axis_err_mess, [0.35 -4 4], 2);
-		colorbar;
+		%title = ['Histogram at maximal iteration, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_surf_maxiter(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [2    -4 4], 1);
+		%graph_surf_maxiter(messfiles{d}, [title, ', message error'],    axis_err_mess, [0.35 -4 4], 2);
+		%colorbar;
 		
 		% Display the snr/iteration/error averaged histogram surface
-		title = ['Weighted mean histogram, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_surf_histave(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, 1);
-		graph_surf_histave(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
+		%title = ['Weighted mean histogram, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_surf_histave(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, 1);
+		%graph_surf_histave(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
 
 		% Display the snr/iteration/error/frequency volumetric slices
-		title = ['Full volumetric histogram, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
-		graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
-		colorbar;
+		%title = ['Full volumetric histogram, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
+		%graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
+		%colorbar;
 	end
 
 	f = nfigures+1;
