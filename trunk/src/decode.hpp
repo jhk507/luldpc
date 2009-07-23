@@ -47,6 +47,7 @@ enum Enum
 	offms_sc,
 	nms,				// Normalized min sum
 	nms_sc,
+	vms,
 	bp,					// Belief propagation
 	ndecodes			// (The number of decoding algorithms)
 };
@@ -78,7 +79,7 @@ template <DecodeMethod::Enum msMethod, bool sc>
 void rupdate_ms();
 
 // Update the Q and L matrices
-template <bool sc>
+template <DecodeMethod::Enum method, bool sc>
 void qlupdate();
 
 }
