@@ -50,13 +50,13 @@ DecodeMethod::Enum method;
 
 const char *const decodeNames[DecodeMethod::ndecodes] =
 {
-	"MS",
-	"SC-MS",
-	"OFF-MS",
-	"SC-OFF-MS",
-	"NM-MS",
-	"NM-MS-SC",
-	"V-OFF-MS",
+	"ms",
+	"ms_sc",
+	"offms",
+	"offms_sc",
+	"nms",
+	"nms_sc",
+	"vms",
 	"bp"
 };
 
