@@ -46,6 +46,12 @@ public:
 		fmaxiter.open(filename.c_str());
 		fmaxiter << std::setprecision(10);
 
+/*		filename = "hist_b_"; 
+		filename += name; 
+		filename += ".tsv"; 
+		fb.open(filename.c_str()); 
+		fb << std::setprecision(10); 
+*/  
 		filename = "hist_slice_";
 		filename += name;
 		filename += ".tsv";

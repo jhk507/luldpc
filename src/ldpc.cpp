@@ -113,10 +113,12 @@ void execute()
 
 	// The decode method loop
 	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	//method = DecodeMethod::ms_sc;
+	//method = DecodeMethod::vms;
 	{
 		if (method == DecodeMethod::bp)
 			continue;
+		if (method == DecodeMethod::ms)
+			continue; 
 
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 

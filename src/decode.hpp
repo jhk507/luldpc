@@ -43,9 +43,9 @@ enum Enum
 	firstMethod = 0,	// (The first method available)
 	ms = 0,				// Min sum
 	ms_sc,
-	offms,				// Offset min sum
+	offms,
 	offms_sc,
-	nms,				// Normalized min sum
+	nms,
 	nms_sc,
 	vms,
 	bp,					// Belief propagation
