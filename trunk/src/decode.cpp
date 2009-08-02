@@ -50,13 +50,13 @@ DecodeMethod::Enum method;
 
 const char *const decodeNames[DecodeMethod::ndecodes] =
 {
-	"ms",
-	"ms_sc",
-	"offms",
-	"offms_sc",
-	"nms",
-	"nms_sc",
-	"vms",
+	"MS",
+	"SC-MS",
+	"OFF-MS",
+	"SC-OFF-MS",
+	"NM-MS",
+	"NM-MS-SC",
+	"V-OFF-MS",
 	"bp"
 };
 
@@ -248,8 +248,8 @@ struct functor_updateq
 			{
 				if (r != 0 && (r > 0) != qsgn)
 					qmag = 0;
-				else
-					cerr << "Error \n";
+			//	else
+			//		cerr << "Error \n";
 			}
 			if (!qsgn)
 				qmag *= -1;
