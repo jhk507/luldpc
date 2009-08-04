@@ -40,18 +40,13 @@ public:
 		fsnr.open(filename.c_str());
 		fsnr << std::setprecision(10);
 
+
 		filename = "hist_maxiter_";
 		filename += name;
 		filename += ".tsv";
 		fmaxiter.open(filename.c_str());
 		fmaxiter << std::setprecision(10);
 
-/*		filename = "hist_b_"; 
-		filename += name; 
-		filename += ".tsv"; 
-		fb.open(filename.c_str()); 
-		fb << std::setprecision(10); 
-*/  
 		filename = "hist_slice_";
 		filename += name;
 		filename += ".tsv";
