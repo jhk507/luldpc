@@ -56,7 +56,7 @@ const char *const decodeNames[DecodeMethod::ndecodes] =
 	"offms_sc",
 	"nms",
 	"nms_sc",
-	"vms",
+	"v_off_ms",
 	"bp"
 };
 
@@ -238,7 +238,7 @@ struct functor_updateq
 	{
 		// Performs exclusion and sets Q.
 		const double qnew = q0 + rsigma - r;
-		if (method == DecodeMethod::vms)
+		if (method == DecodeMethod::v_off_ms)
 		{
 			const bool qsgn = qnew > 0;
 			double qmag = fabs(qnew);
@@ -312,7 +312,7 @@ bool decode()
 		case DecodeMethod::offms_sc:	rupdate_ms<DecodeMethod::offms,	true>();	break;
 		case DecodeMethod::nms:			rupdate_ms<DecodeMethod::nms,	false>();	break;
 		case DecodeMethod::nms_sc:		rupdate_ms<DecodeMethod::nms,	true>();	break;
-		case DecodeMethod::vms:			rupdate_ms<DecodeMethod::vms,	false>();	break;
+		case DecodeMethod::v_off_ms:	rupdate_ms<DecodeMethod::v_off_ms,	false>();	break;
 		case DecodeMethod::bp:
 			rupdate_bp();
 			break;
@@ -336,7 +336,7 @@ bool decode()
 			qlupdate<DecodeMethod::ms, true>();
 			break;
 		default:
-			qlupdate<DecodeMethod::vms, false>();
+			qlupdate<DecodeMethod::v_off_ms, false>();
 		}
 
 

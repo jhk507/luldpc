@@ -113,7 +113,7 @@ void execute()
 
 	// The decode method loop
 	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	//method = DecodeMethod::vms;
+	//method = DecodeMethod::ms;
 	{
 		if (method == DecodeMethod::bp)
 			continue;
@@ -183,8 +183,24 @@ void execute()
 
 	ofstream decodeaxis("axis_decode.tsv");
 	for (method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
+	{	if (method == DecodeMethod::bp)
+			continue;
+		if (method == DecodeMethod::ms)
+			continue;   
+	//	if (method == DecodeMethod::nms)
+	//		continue; 
+	//	if (method == DecodeMethod::nms_sc)
+	//		continue; 
+	//	if (method == DecodeMethod::offms)
+	//		continue; 
+	//	if (method == DecodeMethod::offms_sc)
+	//		continue; 
+	//	if (method == DecodeMethod::v_off_ms)
+	//		continue; 
+	
 		decodeaxis << decodeNames[method] << '\n';
-	decodeaxis.close();
+	}
+		decodeaxis.close();
 
 	ofstream snraxis("axis_snr.tsv");
 	for (snrindex = 0; snrindex < NSNRS; snrindex++)
