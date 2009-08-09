@@ -40,7 +40,6 @@ public:
 		fsnr.open(filename.c_str());
 		fsnr << std::setprecision(10);
 
-
 		filename = "hist_maxiter_";
 		filename += name;
 		filename += ".tsv";

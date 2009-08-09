@@ -30,7 +30,7 @@ bool mx[N*Z];	// (col) Combination of ms and mp
 double my[N*Z];	// (col) Encoder output after AWGN
 
 // Set the aliases into mx
-bool (&ms)[K*Z] = (bool(&)[K*Z])*mx;		// (col) Message
+bool (&ms)[K*Z] = (bool(&)[K*Z])mx;			// (col) Message
 bool (&mp)[M*Z] = (bool(&)[M*Z])mx[K*Z];	// (col) Generated parity
 
 bool msprod[M*Z];	// Encoding verification column
