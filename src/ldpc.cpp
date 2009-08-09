@@ -119,6 +119,17 @@ void execute()
 			continue;
 		if (method == DecodeMethod::ms)
 			continue; 
+	//	if (method == DecodeMethod::nms)
+	//		continue; 
+	//	if (method == DecodeMethod::nms_sc)
+	//		continue; 
+	//	if (method == DecodeMethod::offms)
+	//		continue; 
+	//	if (method == DecodeMethod::offms_sc)
+	//		continue; 
+	//	if (method == DecodeMethod::v_off_ms)
+	//		continue; 
+	
 
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
