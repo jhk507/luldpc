@@ -43,11 +43,10 @@ enum Enum
 	firstMethod = 0,	// (The first method available)
 	ms = 0,				// Min sum
 	ms_sc,
-	offms,
+	offms,				// Offset min sum
 	offms_sc,
-	nms,
+	nms,				// Normalized min sum
 	nms_sc,
-	v_off_ms,
 	bp,					// Belief propagation
 	ndecodes			// (The number of decoding algorithms)
 };
@@ -79,7 +78,7 @@ template <DecodeMethod::Enum msMethod, bool sc>
 void rupdate_ms();
 
 // Update the Q and L matrices
-template <DecodeMethod::Enum method, bool sc>
+template <bool sc>
 void qlupdate();
 
 }
