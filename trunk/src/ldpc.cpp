@@ -33,6 +33,27 @@ void LDPC::execute()
 	debugfile.flush();
 #endif
 
+	ofstream snraxis("axis_snr.tsv");
+	for (int snrindex = 0; snrindex < NSNRS; snrindex++)
+		snraxis << snrs[snrindex] << '\n';
+	snraxis.close();
+
+	ofstream iteraxis("axis_iter.tsv");
+	for (int i = 1; i <= IMAX; i++)
+		iteraxis << i << '\n';
+	iteraxis.close();
+
+	ofstream orthaxis("axis_err_orth.tsv");
+	ofstream messaxis("axis_err_mess.tsv");
+	for (int b = 0; b < NERRBUCKETS; b++)
+	{
+		orthaxis << orthhist->getValFloor(b) << '\n';
+		messaxis << messhist->getValFloor(b) << '\n';
+	}
+	orthaxis.close();
+	messaxis.close();
+
+
 	HistogramSet<OrthHistType> orthsets[DecodeMethod::ndecodes];
 	HistogramSet<MessHistType> messsets[DecodeMethod::ndecodes];
 
@@ -110,9 +131,6 @@ void LDPC::execute()
 		perfhist.reset();
 	}
 
-	// Output the rest of the TSV data.
-	cout << "Generating remaining data files...\n";
-
 	ofstream decodeaxis("axis_decode.tsv");
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
 	{
@@ -121,26 +139,6 @@ void LDPC::execute()
 		decodeaxis << decodeNames[method] << '\n';
 	}
 	decodeaxis.close();
-
-	ofstream snraxis("axis_snr.tsv");
-	for (int snrindex = 0; snrindex < NSNRS; snrindex++)
-		snraxis << snrs[snrindex] << '\n';
-	snraxis.close();
-
-	ofstream iteraxis("axis_iter.tsv");
-	for (int i = 1; i <= IMAX; i++)
-		iteraxis << i << '\n';
-	iteraxis.close();
-
-	ofstream orthaxis("axis_err_orth.tsv");
-	ofstream messaxis("axis_err_mess.tsv");
-	for (int b = 0; b < NERRBUCKETS; b++)
-	{
-		orthaxis << orthhist->getValFloor(b) << '\n';
-		messaxis << messhist->getValFloor(b) << '\n';
-	}
-	orthaxis.close();
-	messaxis.close();
 
 	ofstream perfaxis("axis_perf.tsv");
 	for (int b = 0; b < NPERFBUCKETS; b++)
