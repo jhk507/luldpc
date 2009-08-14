@@ -27,6 +27,8 @@ public:
 
 	int block;
 	int nerrs;
+	
+	pthread_mutex_t mutexcout;
 
 #if OUTPUT_DEBUGFILE
 	std::ofstream debugfile;
