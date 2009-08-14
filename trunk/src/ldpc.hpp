@@ -8,44 +8,33 @@
 
 #include <fstream>
 
-#include "histogram.hpp"
 #include "preachingbased.hpp"
-#include "decode.hpp"
+#include "ldpcstate.hpp"
 
-namespace LDPC
+class LDPC
 {
-///////////////////////////////////////////////////////////////////////////////
-// Globals ////////////////////////////////////////////////////////////////////
+public:
+	// The orthagonality error and message error histograms.
+	OrthHistType orthhist[IMAX];
+	MessHistType messhist[IMAX];
 
-#define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
+	// The performance histogram.
+	Histogram<NPERFBUCKETS, MAXPERFTIME> perfhist;
 
-#define NERRS	300
-#define NERRBUCKETS  25		// The number of error histogram buckets
-#define NPERFBUCKETS 100	// The number of performance histogram buckets
-#define MAXPERFTIME  2000	// The maximum performance histogram duration, in us
+	LDPCstate states[NTHREADS];
 
-// The orthagonality error and message error histograms.
-// The template parameters are the number of histogram buckets, the full size
-// of the data range, and the desired portion of the data range to examine.
-typedef ValNormalizedHistogram<NERRBUCKETS, M*Z, (int)(M*Z*0.33)> OrthHistType;
-typedef ValNormalizedHistogram<NERRBUCKETS, N*Z, (int)(N*Z*0.06)> MessHistType;
-extern OrthHistType orthhist[IMAX];
-extern MessHistType messhist[IMAX];
-
-// The performance histogram.
-extern Histogram<NPERFBUCKETS, MAXPERFTIME> perfhist;
+	int block;
+	int nerrs;
 
 #if OUTPUT_DEBUGFILE
-extern std::ofstream debugfile;
+	std::ofstream debugfile;
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functions //////////////////////////////////////////////////////////////////
 
-// Initialize the simulation parameters
-void setSnrDB(double snrdbInit);
+	// Run the simulation
+	void execute();
 
-// Run the simulation
-void execute();
-
-}
+	void threadblock(LDPCstate *state);
+};
