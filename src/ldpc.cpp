@@ -73,6 +73,12 @@ void LDPC::execute()
 		contexts[t].ldpc = this;
 		contexts[t].state = &states[t];
 	}
+	
+	if (pthread_mutex_init(&mutexcout, 0))
+	{
+		cerr << "Could not create console output mutex!\n";
+		return;
+	}
 
 	// The decode method loop
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
@@ -131,6 +137,9 @@ void LDPC::execute()
 		perfhist.reset();
 	}
 
+	if (pthread_mutex_destroy(&mutexcout))
+		cerr << "Could not destroy console output mutex!\n";
+	
 	ofstream decodeaxis("axis_decode.tsv");
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
 	{
@@ -178,9 +187,15 @@ void LDPC::threadblock(LDPCstate *state)
 
 		if (!(block%100))
 		{
-			cout << "Block " << block
-				<< "\tBLER=" << nerrs*100.0/block << "%        \r";
-			cout.flush();
+			if (!pthread_mutex_trylock(&mutexcout))
+			{
+				cout << "Block " << block
+					<< "\tBLER=" << nerrs*100.0/block << "%        \r";
+				cout.flush();
+				pthread_mutex_unlock(&mutexcout);
+			}
 		}
+		
+//		usleep(1000);
 	}
 }

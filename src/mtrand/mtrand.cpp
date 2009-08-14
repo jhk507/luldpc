@@ -5,8 +5,8 @@
 // reside in header file because of the risk of multiple declarations
 
 // initialization of static private members
-unsigned long MTRand_int32::state[n] = {0x0UL};
-int MTRand_int32::p = 0;
+//unsigned long MTRand_int32::state[n] = {0x0UL};
+//int MTRand_int32::p = 0;
 bool MTRand_int32::init = false;
 
 void MTRand_int32::gen_state() { // generate new state vector

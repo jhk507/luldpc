@@ -47,11 +47,11 @@
 class MTRand_int32 { // Mersenne Twister random number generator
 public:
 	// default constructor: uses default seed only if this is the first instance
-	MTRand_int32() { if (!init) seed(5489UL); init = true; }
+	MTRand_int32():p(0) { if (!init) seed(5489UL); init = true; }
 	// constructor with 32 bit int as seed
-	MTRand_int32(unsigned long s) { seed(s); init = true; }
+	MTRand_int32(unsigned long s):p(0) { seed(s); init = true; }
 	// constructor with array of size 32 bit ints as seed
-	MTRand_int32(const unsigned long* array, int size) { seed(array, size); init = true; }
+	MTRand_int32(const unsigned long* array, int size):p(0) { seed(array, size); init = true; }
 	// the two seed functions
 	void seed(unsigned long); // seed with 32 bit integer
 	void seed(const unsigned long*, int size); // seed with array
@@ -64,8 +64,8 @@ protected: // used by derived classes, otherwise not accessible; use the ()-oper
 private:
 	static const int n = 624, m = 397; // compile time constants
 	// the variables below are static (no duplicates can exist)
-	static unsigned long state[n]; // state vector array
-	static int p; // position in state array
+	/*static*/ unsigned long state[n]; // state vector array
+	/*static*/ int p; // position in state array
 	static bool init; // true if init function is called
 	// private functions used to generate the pseudo random numbers
 	unsigned long twiddle(unsigned long, unsigned long); // used by gen_state()
