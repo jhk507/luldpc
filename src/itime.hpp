@@ -16,9 +16,6 @@
 
 #pragma once
 
-namespace LDPC
-{
-
 class ITime
 {
 public:
@@ -97,5 +94,3 @@ private:
 	double average;
 	int count;
 };
-
-}

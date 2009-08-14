@@ -8,9 +8,6 @@
 
 #include <cmath>
 
-namespace LDPC
-{
-
 #define LUTSIZE 1024
 #define TANHMAX 19.1
 
@@ -27,5 +24,3 @@ inline double tanhapp(double x)
 		tanhlut[(int)(xabs*(LUTSIZE/TANHMAX))];
 	return (x >= 0) ? pval : -pval;
 }
-
-};

@@ -12,9 +12,6 @@
 
 #include "histogram.hpp"
 
-namespace LDPC
-{
-
 template <typename HistType>
 class HistogramSet
 {
@@ -54,7 +51,7 @@ public:
 	}
 
 	// Output the error histograms.
-	void writeLine()
+	void writeLine(int snrindex)
 	{
 		// Error surface histogram
 		// x - iterations
@@ -107,5 +104,3 @@ private:
 
 	const HistType *hists;
 };
-
-}

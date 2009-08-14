@@ -9,12 +9,9 @@
 
 #include "itime.hpp"
 #include "mathfun.hpp"
-#include "encode.hpp"
+#include "ldpcstate.hpp"
 
 using namespace std;
-
-namespace LDPC
-{
 
 ///////////////////////////////////////////////////////////////////////////////
 // Globals ////////////////////////////////////////////////////////////////////
@@ -39,14 +36,6 @@ const int Ha[M][N] =
 const Preaching<M,N,RHO_H_Y, RHO_H_X>	H(Ha, 0);	// Half-rate Preaching matrix H
 const Preaching<M,K,RHO_HS_Y,RHO_HS_X>	Hs(Ha, 0);	// Half-rate Preaching matrix H (first half)
 const Preaching<M,M,RHO_HP_Y,RHO_HP_X>	Hp(Ha, K);	// Half-rate Preaching matrix H (second half, for parity)
-
-PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mr(H);	// R matrix
-PreachingBased<double, M,N,RHO_H_Y,RHO_H_X> mq(H);	// Q matrix
-
-// Decoding matrices
-bool mxhat[N*Z];	// xhat column
-
-DecodeMethod::Enum method;
 
 const char *const decodeNames[DecodeMethod::ndecodes] =
 {
@@ -254,7 +243,10 @@ struct functor_updateq
 // Do block-by-block profiling.
 // Profiler profs[8];
 
-bool decode()
+bool LDPCstate::decode(
+	OrthHistType (&orthhist)[IMAX],
+	MessHistType (&messhist)[IMAX],
+	PerfHistType &perfhist)
 {
 	// Set the initial state of the decoder
 	decode_initial();
@@ -352,7 +344,7 @@ bool decode()
 	}
 }
 
-void decode_initial()
+void LDPCstate::decode_initial()
 {
 	functor_setq funcq;
 
@@ -367,7 +359,7 @@ void decode_initial()
 	}
 }
 
-void rupdate_bp()
+void LDPCstate::rupdate_bp()
 {
 	functor_r_bp_pi funcpi;
 	functor_r_bp_update funcup;
@@ -386,7 +378,7 @@ void rupdate_bp()
 }
 
 template <DecodeMethod::Enum msMethod, bool sc>
-void rupdate_ms()
+void LDPCstate::rupdate_ms()
 {
 	// Update mr
 	// OFF-MS method
@@ -411,7 +403,7 @@ void rupdate_ms()
 }
 
 template <bool sc>
-void qlupdate()
+void LDPCstate::qlupdate()
 {
 	functor_sigmar funcr;
 	functor_updateq<sc> funcq;
@@ -428,6 +420,4 @@ void qlupdate()
 		const double ml = funcq.q0 + funcr.rsigma;
 		mxhat[n] = ml < 0; // Hard decision
 	}
-}
-
 }

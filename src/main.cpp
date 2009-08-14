@@ -80,9 +80,10 @@ main()
 #endif
 #endif
 
-	LDPC::ITime progtime;
+	ITime progtime;
 
-	LDPC::execute();
+	LDPC ldpc;
+	ldpc.execute();
 
 	cout << "\n\nRuntime: ";
 	progtime.outputLong(cout);
