@@ -178,7 +178,7 @@ void LDPC::threadblock(LDPCstate *state)
 		if (!state->decode(orthhist, messhist, perfhist))
 			nerrs++;
 
-		if (!(block%10))
+		if (!(block%100))
 		{
 			cout << "Block " << block
 				<< "\tBLER=" << nerrs*100.0/block << "%        \r";
