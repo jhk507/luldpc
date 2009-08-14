@@ -5,9 +5,6 @@
 
 using namespace std;
 
-namespace LDPC
-{
-
 const double tanhlut[] =
 {
 #include "tanhlut.cpp"
@@ -30,4 +27,3 @@ void makeluts()
 	}
 }
 
-}

@@ -20,7 +20,6 @@
 #define NPERFBUCKETS 100	// The number of performance histogram buckets
 #define MAXPERFTIME  2000	// The maximum performance histogram duration, in us
 
-#define NTHREADS	2
 #define NERRS		300
 #define NSNRS		10	// The number of SNRs to try
 #define DEFAULTSNR	5	// The index of the default SNR.
