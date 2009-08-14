@@ -46,6 +46,12 @@ void LDPC::execute()
 
 //	ITime runtimer;
 
+	threadcontext contexts[NTHREADS];
+	for (int t = 0; t < NTHREADS; t++)
+	{
+		contexts[t].ldpc = this;
+		contexts[t].state = &states[t];
+	}
 
 	// The decode method loop
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
@@ -66,8 +72,25 @@ void LDPC::execute()
 				state->init(method, snrindex);
 				if (!ithread)
 					cout << "\nSetting the SNR to " << state->snrdb << " dB...\n";
-				threadblock(state);
+				//threadblock(state);
+				
+				if (pthread_create(&contexts[ithread].thread, 0, threadproc, contexts+ithread))
+				{
+					cerr << "Thread creation failed!\n";
+					return;
+				}
 			}
+			
+			for (int ithread = 0; ithread < NTHREADS; ithread++)
+			{
+				void *status;
+				if (pthread_join(contexts[ithread].thread, &status))
+				{
+					cerr << "Could not join thread!\n";
+					return;
+				}
+			}
+			
 			cout << '\n';
 
 			orthsets[method].writeLine(snrindex);
@@ -123,6 +146,13 @@ void LDPC::execute()
 	for (int b = 0; b < NPERFBUCKETS; b++)
 		perfaxis << perfhist.getValFloor(b) << '\n';
 	perfaxis.close();
+}
+
+void *LDPC::threadproc(void *arg)
+{
+	threadcontext *const instance = (threadcontext*)arg;
+	instance->ldpc->threadblock(instance->state);
+	return 0;
 }
 
 void LDPC::threadblock(LDPCstate *state)

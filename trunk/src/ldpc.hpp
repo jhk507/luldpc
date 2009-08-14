@@ -7,6 +7,8 @@
 #pragma once
 
 #include <fstream>
+#include <pthread.h>
+
 
 #include "preachingbased.hpp"
 #include "ldpcstate.hpp"
@@ -37,4 +39,13 @@ public:
 	void execute();
 
 	void threadblock(LDPCstate *state);
+	
+	struct threadcontext
+	{
+		LDPC *ldpc;
+		LDPCstate *state;
+		pthread_t thread;
+	};
+	static void *threadproc(void *arg);
 };
+
