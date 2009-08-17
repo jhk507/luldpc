@@ -62,8 +62,8 @@ struct functor_summsy {
 // Functions //////////////////////////////////////////////////////////////////
 
 LDPCstate::LDPCstate() :
-	grand((unsigned long)time(0)),
-	irand((unsigned long)time(0)),
+//	grand((unsigned long)time(0)),
+//	irand((unsigned long)time(0)),
 	mr(H),
 	mq(H),
 	ms((bool(&)[K*Z])*mx),
