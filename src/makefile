@@ -10,5 +10,5 @@ radio-debugopt:
 	$(basic) -D NTHREADS=2 -pthread -O3 -march=core2 -g
 
 sprout:
-	$(basic) -D NTHREADS=64 -O3 -mcpu=ultrasparc -mtune=ultrasparc
+	$(basic) -D NTHREADS=64 -pthreads -O3 -mcpu=ultrasparc -mtune=ultrasparc
 
