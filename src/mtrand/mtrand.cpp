@@ -7,7 +7,7 @@
 // initialization of static private members
 //unsigned long MTRand_int32::state[n] = {0x0UL};
 //int MTRand_int32::p = 0;
-bool MTRand_int32::init = false;
+//bool MTRand_int32::init = false;
 
 void MTRand_int32::gen_state() { // generate new state vector
 	for (int i = 0; i < (n - m); ++i)

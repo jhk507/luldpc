@@ -254,10 +254,10 @@ bool LDPCstate::decode(
 	functor_multhxhat funcverify;
 
 	// Iterative decoding
-	for (int i = 0; ; )
+	for (iter = 0; ; )
 	{
 #if OUTPUT_DEBUGFILE
-		debugfile << "Before iteration " << i << ":" << endl;
+		debugfile << "Before iteration " << iter << ":" << endl;
 
 		debugfile << "l:" << endl;
 		outputLarge<N,Z>(ml, debugfile);
@@ -267,7 +267,7 @@ bool LDPCstate::decode(
 
 		debugfile.flush();
 
-		if (i >= 1)
+		if (iter >= 1)
 			return true;
 #endif
 
@@ -290,7 +290,7 @@ bool LDPCstate::decode(
 		}
 
 #if OUTPUT_DEBUGFILE
-		debugfile << "After iteration " << i << ":" << endl;
+		debugfile << "After iteration " << iter << ":" << endl;
 
 		debugfile << "r:" << endl;
 		mr.output(debugfile);
@@ -310,15 +310,14 @@ bool LDPCstate::decode(
 			qlupdate<false>();
 		}
 
-
 		funcverify.nerrs = 0;
 		H.multColCallback(funcverify, mxhat);
-		orthhist[i].report(funcverify.nerrs);
+		orthhist[iter].report(funcverify.nerrs);
 
 		int diff = 0;	 // The number of x==xhat errors
 		for (int j = 0; j < Z*K; j++)
 			diff += mxhat[j] != ms[j];
-		messhist[i].report(diff);
+		messhist[iter].report(diff);
 
 		perfhist.report((int)(perf.get()*1e6));
 
@@ -331,7 +330,7 @@ bool LDPCstate::decode(
 #endif
 				return false;
 			}
-			for (i++; i < IMAX; i++)
+			for (int i = ++iter; i < IMAX; i++)
 			{
 				orthhist[i].report(0);
 				messhist[i].report(0);
@@ -339,7 +338,7 @@ bool LDPCstate::decode(
 			return true;
 		}
 
-		if (++i >= IMAX)
+		if (++iter >= IMAX)
 			return false;
 	}
 }

@@ -83,8 +83,9 @@ public:
 
 	DecodeMethod::Enum method;
 
+	int iter;
 	int snrindex;	// The current SNR index
-	double snr;	// Signal-to-noise ratio
+	double snr;		// Signal-to-noise ratio
 	double snrdb;
 	double sigma;
 
@@ -95,7 +96,7 @@ public:
 	// Set the aliases into mx
 	bool (&ms)[K*Z];	// (col) Message
 	bool (&mp)[M*Z];	// (col) Generated parity
-
+	
 	// The Gaussian distribution random number generator
 	MTRand_gaussian grand;	//((unsigned long)time(0));
 	// Discrete value random number generator
