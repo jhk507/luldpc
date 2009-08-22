@@ -63,8 +63,9 @@ function graph
 	
 	% Calculate the 'average iterations' data
 	hist_aveiter = zeros(nsnrs, ndecodes, niters);
-	hist_maxiter=  zeros(nsnrs, ndecodes, niters);
-	hist_bleriter=  zeros(nsnrs, ndecodes, niters);
+    hist_aveiter_alt = zeros(nsnrs, ndecodes, niters);
+	hist_maxiter = zeros(nsnrs, ndecodes, niters);
+	hist_bleriter = zeros(nsnrs, ndecodes, niters);
 	
 	for d = 1:ndecodes
 		hist = load(['hist_snr_', orthfiles{d}, '.tsv']);
@@ -89,12 +90,14 @@ function graph
 		end
 		hist_maxiter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
 		hist_bleriter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
+        
+        hist_aveiter_alt(:,d,:) = load(['hist_iter_', axis_decode{d}, '.tsv']);
 	end
 	
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 3*ndecodes;
+	nfigures = 4*ndecodes;
 	
 	global f;
 	
@@ -108,17 +111,17 @@ function graph
 		f = d;
 		
 		% Display the iteration/BLER multiple SNR curves
-		title = ['Block error rate vs. maximum iterations, ', methods{d}];
+		title = ['Block Error Rate vs. Maximum Iterations, ', methods{d}];
 		incfigure(title, ndecodes);
 		graph_curves_snr(squeeze(hist_maxiter(:,d,:)), title);
 
 		% Display the SNR/BLER multiple iteration curves
-		title = ['Block error rate vs. signal-to-noise ratio, ', methods{d}];
+		title = ['Block Error Rate vs. Signal-to-noise Ratio, ', methods{d}];
 		incfigure(title, ndecodes);
 		graph_curves_iter_methods(squeeze(hist_bleriter(:,d,:)), title);
 
 		% Display the maxiter/aveiter multiple SNR curves
-		title = ['Average iterations to resolution vs. maximum iterations, ', methods{d}];
+		title = ['Average Iteration Number vs. Maximum Iterations Number, ', methods{d}];
 		incfigure(title, ndecodes);
 		graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
 		
@@ -149,12 +152,12 @@ function graph
 		%graph_surf_histave(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, 1);
 		%graph_surf_histave(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
 
-		% Display the snr/iteration/error/frequency volumetric slices
-		%title = ['Full volumetric histogram, ', methods{d}];
-		%incfigure(title, ndecodes);
-		%graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
-		%graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
-		%colorbar;
+		%Display the snr/iteration/error/frequency volumetric slices
+		title = ['Full volumetric histogram, ', methods{d}];
+		incfigure(title, ndecodes);
+		graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
+		graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
+		colorbar;
 	end
 
 	f = nfigures+1;
@@ -166,15 +169,21 @@ function graph
 		for snri = 1:nsnrs
 			if axis_snr(snri) == snr
 				% Display the iteration/BLER multiple SNR curves
-				title = ['Block error rate vs. maximum iterations, ', axis_snr_text{snri}];
+				title = ['Block Error Rate vs. Maximum Iterations, ', axis_snr_text{snri}];
 				incfigure(title, 1);
 				graph_curves_snr_methods(squeeze(hist_maxiter(snri,:,:)), title);	
 				
 				% Display the maxiter/aveiter multiple SNR curves
-				title = ['Average iterations to resolution vs. maximum iterations, ', axis_snr_text{snri}];
+				title = ['Average Iteration Number vs. Maximum Iteration Number, ', axis_snr_text{snri}];
 				incfigure(title, 1);
-				graph_curves_aveiter_snr(squeeze(hist_aveiter(snri,:,:)), title);				
-				
+				graph_curves_aveiter_snr(squeeze(hist_aveiter(snri,:,:)), title);
+                
+                % Display the maxiter/aveitr multiple SNR curves
+                % (alternate method)
+				title = ['Average Iteration Number vs. Maximum Iteration Number (alternate method), ', axis_snr_text{snri}];
+				incfigure(title, 1);
+				graph_curves_aveiter_snr(squeeze(hist_aveiter_alt(snri,:,:)), title);
+                
 				break;
 			end
 		end
@@ -183,7 +192,7 @@ function graph
 	for i= 1:nsiters
 		iter= axis_siter(i);
 		
-		title = ['Block error rate vs. signal-to-noise ratio, i=', num2str(iter)];
+		title = ['Block Error Rate vs. Signal-to-noise Ratio, i=', num2str(iter)];
 		incfigure(title, 1);
 		graph_curves_iter(squeeze(hist_bleriter(:,:,iter)), title);	
 	end

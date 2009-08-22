@@ -21,12 +21,14 @@ public:
 	MessHistType messhist[IMAX];
 
 	// The performance histogram.
-	Histogram<NPERFBUCKETS, MAXPERFTIME> perfhist;
+	PerfHistType perfhist;
 
 	LDPCstate states[NTHREADS];
 
 	int block;
 	int nerrs;
+	
+	int totaliter[IMAX];	// Array to calculate average iteration
 	
 	pthread_mutex_t mutexcout;
 

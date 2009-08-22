@@ -53,7 +53,6 @@ void LDPC::execute()
 	orthaxis.close();
 	messaxis.close();
 
-
 	HistogramSet<OrthHistType> orthsets[DecodeMethod::ndecodes];
 	HistogramSet<MessHistType> messsets[DecodeMethod::ndecodes];
 
@@ -83,16 +82,26 @@ void LDPC::execute()
 	// The decode method loop
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
 		method < DecodeMethod::ndecodes; method++)
-	{	
+	{
 		if (method == DecodeMethod::bp || method == DecodeMethod::ms)
 			continue; 
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
+		
+		string iterfilename = "hist_iter_";
+		iterfilename += decodeNames[method];
+		iterfilename += ".tsv";
+		ofstream iterfile(iterfilename.c_str());
+		iterfile << setprecision(10);
 
 		// The SNR loop
 		for (int snrindex = 0; snrindex < NSNRS; snrindex++)
 		{
 			block = 1;
 			nerrs = 0;
+			
+			for (int i = 0; i < IMAX; i++)
+				totaliter[i] = 0;
+				
 			for (int ithread = 0; ithread < NTHREADS; ithread++)
 			{
 				LDPCstate *const state = states+ithread;
@@ -127,7 +136,11 @@ void LDPC::execute()
 			{
 				orthhist[i].reset();
 				messhist[i].reset();
+				
+				const long double aveiter = totaliter[i]/((long double)block);
+				iterfile << aveiter << '\t';
 			}
+			iterfile << '\n';
 		}
 		cout << '\n';
 
@@ -184,13 +197,20 @@ void LDPC::threadblock(LDPCstate *state)
 		// Decode
 		if (!state->decode(orthhist, messhist, perfhist))
 			nerrs++;
+			
+		// Add to totaliter array for "average iteration" calculation
+		int i;
+		for (i = 0; i < state->iter; i++)
+			totaliter[i] += i;
+		for (; i < IMAX; i++)
+			totaliter[i] += state->iter;
 
 		if (!(block%100))
 		{
 			if (!pthread_mutex_trylock(&mutexcout))
 			{
 				cout << "Block " << block
-					<< "\tBLER=" << nerrs*100.0/block << "%        \r";
+					<< "    BLER=" << nerrs*100.0/block << "%    " << nerrs << " errors       \r";
 				cout.flush();
 				pthread_mutex_unlock(&mutexcout);
 			}

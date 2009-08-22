@@ -18,8 +18,8 @@ function graph_curves_aveiter(aves, axistitle)
 	
 	% Make the labels and legend.
 	title(axistitle);
-	xlabel('Maximum iterations');
-	ylabel('Average iterations to resolution');
+	xlabel('Maximum iteration number');
+	ylabel('Average iteration number');
 	legend(axis_snr_text, 'Location', 'BestOutside');
 	
 	% Set the axes and grids.
