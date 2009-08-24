@@ -65,6 +65,7 @@ public:
 					ferr << hists[i].getNormalizedFreq(b) << '\t';
 				ferr << '\n';
 			}
+			ferr.flush();
 		}
 
 		// SNR surface histogram at zero error
@@ -74,6 +75,7 @@ public:
 		for (int i = 0; i < IMAX; i++)
 			fsnr << hists[i].getNormalizedFreq(0) << '\t';
 		fsnr << '\n';
+		fsnr.flush();
 
 		// SNR surface histogram at maximum iteration
 		// x - error buckets
@@ -82,6 +84,7 @@ public:
 		for (int b = 0; b < NERRBUCKETS; b++)
 			fmaxiter << hists[IMAX-1].getNormalizedFreq(b) << '\t';
 		fmaxiter << '\n';
+		fmaxiter.flush();
 
 		// Giant 4D slice histogram
 		// x - iterations
@@ -94,6 +97,7 @@ public:
 				fslice << hists[i].getNormalizedFreq(b) << '\t';
 			fslice << '\n';
 		}
+		fslice.flush();
 	}
 
 private:

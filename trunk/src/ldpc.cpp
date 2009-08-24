@@ -141,6 +141,7 @@ void LDPC::execute()
 				iterfile << aveiter << '\t';
 			}
 			iterfile << '\n';
+			iterfile.flush();
 		}
 		cout << '\n';
 

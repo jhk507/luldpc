@@ -47,6 +47,7 @@ struct DecodeMethod
 		nms,				// Normalized min sum
 		nms_sc,
 		bp,					// Belief propagation
+		v_off_ms, 
 		ndecodes			// (The number of decoding algorithms)
 	};
 };
@@ -136,7 +137,7 @@ public:
 	void rupdate_ms();
 
 	// Update the Q and L matrices
-	template <bool sc>
+	template <DecodeMethod::Enum msMethod, bool sc>
 	void qlupdate();
 
 	static void calculateRho();
