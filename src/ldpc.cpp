@@ -205,7 +205,7 @@ void LDPC::threadblock(LDPCstate *state)
 		for (; i < IMAX; i++)
 			totaliter[i] += state->iter;
 
-		if (!(block%100))
+		if (!(block%100) || nerrs >= NERRS)
 		{
 			if (!pthread_mutex_trylock(&mutexcout))
 			{
