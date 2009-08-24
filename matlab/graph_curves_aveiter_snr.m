@@ -20,7 +20,7 @@ function graph_curves_aveiter_snr(aves, axistitle)
 	title(axistitle);
 	xlabel('Maximum iterations');
 	ylabel('Average iterations to resolution');
-	legend(methods, 'Location', 'BestOutside');
+	set(legend(methods, 'Location', 'BestOutside'), 'Interpreter','none');
 	
 	% Set the axes and grids.
 	axis tight;

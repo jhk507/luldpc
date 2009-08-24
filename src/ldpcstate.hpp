@@ -46,8 +46,8 @@ struct DecodeMethod
 		offms_sc,
 		nms,				// Normalized min sum
 		nms_sc,
-		bp,					// Belief propagation
 		v_off_ms, 
+		bp,					// Belief propagation
 		ndecodes			// (The number of decoding algorithms)
 	};
 };

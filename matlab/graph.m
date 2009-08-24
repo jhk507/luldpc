@@ -6,7 +6,7 @@
 function graph
 	% Clear previous workspace data
 	clear;
-	
+		
 	% Load the axes.
 	global axis_iter;
 	global axis_snr;
@@ -63,7 +63,7 @@ function graph
 	
 	% Calculate the 'average iterations' data
 	hist_aveiter = zeros(nsnrs, ndecodes, niters);
-    hist_aveiter_alt = zeros(nsnrs, ndecodes, niters);
+	hist_aveiter_alt = zeros(nsnrs, ndecodes, niters);
 	hist_maxiter = zeros(nsnrs, ndecodes, niters);
 	hist_bleriter = zeros(nsnrs, ndecodes, niters);
 	
@@ -90,8 +90,8 @@ function graph
 		end
 		hist_maxiter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
 		hist_bleriter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
-        
-        hist_aveiter_alt(:,d,:) = load(['hist_iter_', axis_decode{d}, '.tsv']);
+		
+		hist_aveiter_alt(:,d,:) = load(['hist_iter_', axis_decode{d}, '.tsv']);
 	end
 	
 	% Set all figures to be docked.
@@ -171,24 +171,24 @@ function graph
 				% Display the iteration/BLER multiple SNR curves
 				title = ['Block Error Rate vs. Maximum Iterations, ', axis_snr_text{snri}];
 				incfigure(title, 1);
-				graph_curves_snr_methods(squeeze(hist_maxiter(snri,:,:)), title);	
+				graph_curves_snr_methods(reshape(hist_maxiter(snri,:,:),ndecodes,niters), title);	
 				
 				% Display the maxiter/aveiter multiple SNR curves
 				title = ['Average Iteration Number vs. Maximum Iteration Number, ', axis_snr_text{snri}];
 				incfigure(title, 1);
-				graph_curves_aveiter_snr(squeeze(hist_aveiter(snri,:,:)), title);
-                
-                % Display the maxiter/aveitr multiple SNR curves
-                % (alternate method)
+				graph_curves_aveiter_snr(reshape(hist_aveiter(snri,:,:),ndecodes,niters), title);
+				
+				% Display the maxiter/aveitr multiple SNR curves
+				% (alternate method)
 				title = ['Average Iteration Number vs. Maximum Iteration Number (alternate method), ', axis_snr_text{snri}];
 				incfigure(title, 1);
-				graph_curves_aveiter_snr(squeeze(hist_aveiter_alt(snri,:,:)), title);
-                
+				graph_curves_aveiter_snr(reshape(hist_aveiter_alt(snri,:,:),ndecodes,niters), title);
+				
 				break;
 			end
 		end
 	end
-			
+
 	for i= 1:nsiters
 		iter= axis_siter(i);
 		
@@ -200,7 +200,7 @@ function graph
 	% Display the performance histogram
 	title = 'Single-iteration decode performance histogram';
 	incfigure(title, 1);
-	graph_curves_perf(title);	
+	graph_curves_perf(title);
 end
 
 % Increment the figure number and set the window to docked mode.
