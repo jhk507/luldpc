@@ -25,7 +25,7 @@ function graph_curves_perf(axistitle)
 	title(axistitle);
 	xlabel('Iteration duration (us)');
 	ylabel('Frequency');
-	legend(axis_decode, 'Location', 'BestOutside');
+	set(legend(axis_decode, 'Location', 'BestOutside'), 'Interpreter','none');
 	
 	% Set the axes and grids.
 	axis tight;

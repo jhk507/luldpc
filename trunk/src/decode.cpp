@@ -45,7 +45,7 @@ const char *const decodeNames[DecodeMethod::ndecodes] =
 	"offms_sc",
 	"nms",
 	"nms_sc",
-	"v_off_ms,"
+	"v_off_ms",
 	"bp"
 };
 
@@ -55,7 +55,7 @@ const double alphasc = 0.92;
 // Beta (for minsum decoding)
 const double beta   = 0.15;
 const double betasc = 0.08;
-const double betav = 0.15; 
+const double betav  = 0.15; 
 
 ///////////////////////////////////////////////////////////////////////////////
 // Functors ///////////////////////////////////////////////////////////////////
@@ -229,14 +229,18 @@ struct functor_updateq
 		const double qnew = q0 + rsigma - r;
 		if (method == DecodeMethod::v_off_ms)
 		{
-			const bool qsgn = qnew > 0; 
-			double qmag = fabs (qnew);
+			const bool qsgn = qnew < 0;
+			double qmag = fabs(qnew);
 			if (qmag > betav)
-				qmag -= betav; 
+			{
+				qmag -= betav;
+				if (qsgn) qmag = -qmag;
+				q = qmag;
+			}
 			else
 			{
-				if (r != 0 && (r > 0) != qsgn)
-					q = qmag; 
+				if (r != 0 && (r < 0) != qsgn)
+					q = 0;
 			}
 		}
 		else

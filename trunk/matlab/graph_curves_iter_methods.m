@@ -22,7 +22,7 @@ function graph_curves_iter_methods(hist, axistitle)
 	title(axistitle);
 	xlabel('SNR (dB)');
 	ylabel('BLER');
-	legend(axis_siter_text, 'Location', 'BestOutside');
+	set(legend(axis_siter_text, 'Location', 'BestOutside'), 'Interpreter','none');
 	
 	% Set the axes and grids.
 	axis tight;

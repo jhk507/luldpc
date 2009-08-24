@@ -20,7 +20,7 @@ function graph_curves_snr_methods(hist, axistitle)
 	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('BLER');
-	legend(methods, 'Location', 'BestOutside');
+	set(legend(methods, 'Location', 'BestOutside'), 'Interpreter','none');
 	
 	% Set the axes and grids.
 	axis tight;

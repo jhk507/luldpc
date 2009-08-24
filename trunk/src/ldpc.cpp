@@ -52,16 +52,15 @@ void LDPC::execute()
 	}
 	orthaxis.close();
 	messaxis.close();
+	
+	ofstream perfaxis("axis_perf.tsv");
+	for (int b = 0; b < NPERFBUCKETS; b++)
+		perfaxis << perfhist.getValFloor(b) << '\n';
+	perfaxis.close();
 
 	HistogramSet<OrthHistType> orthsets[DecodeMethod::ndecodes];
 	HistogramSet<MessHistType> messsets[DecodeMethod::ndecodes];
-
-	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	{
-		orthsets[method].init(decodeNames[method], "orth", orthhist);
-		messsets[method].init(decodeNames[method], "mess", messhist);
-	}
-
+	ofstream decodeaxis("axis_decode.tsv");
 	ofstream perffile("hist_perf.tsv");
 
 //	ITime runtimer;
@@ -80,13 +79,19 @@ void LDPC::execute()
 	}
 
 	// The decode method loop
-	for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
-		method < DecodeMethod::ndecodes; method++)
+	//for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
+		//method < DecodeMethod::ndecodes; method++)
+	DecodeMethod::Enum method = DecodeMethod::v_off_ms;
 	{
-		if (method == DecodeMethod::bp || method == DecodeMethod::ms)
-			continue; 
+		//if (method == DecodeMethod::bp || method == DecodeMethod::ms)
+			//continue; 
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
-		
+
+		orthsets[method].init(decodeNames[method], "orth", orthhist);
+		messsets[method].init(decodeNames[method], "mess", messhist);
+
+		decodeaxis << decodeNames[method] << '\n';
+
 		string iterfilename = "hist_iter_";
 		iterfilename += decodeNames[method];
 		iterfilename += ".tsv";
@@ -143,7 +148,6 @@ void LDPC::execute()
 			iterfile << '\n';
 			iterfile.flush();
 		}
-		cout << '\n';
 
 		for (int b = 0; b < NPERFBUCKETS; b++)
 			perffile << perfhist.getNormalizedFreq(b) << '\t';
@@ -153,20 +157,6 @@ void LDPC::execute()
 
 	if (pthread_mutex_destroy(&mutexcout))
 		cerr << "Could not destroy console output mutex!\n";
-	
-	ofstream decodeaxis("axis_decode.tsv");
-	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	{
-		if (method == DecodeMethod::bp || method == DecodeMethod::ms)
-			continue; 	
-		decodeaxis << decodeNames[method] << '\n';
-	}
-	decodeaxis.close();
-
-	ofstream perfaxis("axis_perf.tsv");
-	for (int b = 0; b < NPERFBUCKETS; b++)
-		perfaxis << perfhist.getValFloor(b) << '\n';
-	perfaxis.close();
 }
 
 void *LDPC::threadproc(void *arg)

@@ -20,8 +20,8 @@ function graph_curves_aveiter(aves, axistitle)
 	title(axistitle);
 	xlabel('Maximum iteration number');
 	ylabel('Average iteration number');
-	legend(axis_snr_text, 'Location', 'BestOutside');
-	
+	set(legend(axis_snr_text, 'Location', 'BestOutside'), 'Interpreter','none');
+
 	% Set the axes and grids.
 	axis tight;
 	grid on;
