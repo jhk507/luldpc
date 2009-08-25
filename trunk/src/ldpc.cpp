@@ -79,12 +79,11 @@ void LDPC::execute()
 	}
 
 	// The decode method loop
-	//for (DecodeMethod::Enum method = DecodeMethod::firstMethod;
-		//method < DecodeMethod::ndecodes; method++)
-	DecodeMethod::Enum method = DecodeMethod::v_off_ms;
+	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
+	//DecodeMethod::Enum method = DecodeMethod::v_off_ms;
 	{
-		//if (method == DecodeMethod::bp || method == DecodeMethod::ms)
-			//continue; 
+		if (method == DecodeMethod::bp || method == DecodeMethod::ms)
+			continue; 
 		cout << "Decoding using " << decodeNames[method] << " method...\n";
 
 		orthsets[method].init(decodeNames[method], "orth", orthhist);
