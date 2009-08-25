@@ -97,7 +97,7 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 4*ndecodes;
+	nfigures = 3*ndecodes;
 	
 	global f;
 	
@@ -153,11 +153,11 @@ function graph
 		%graph_surf_histave(messfiles{d}, [title, ', message error'],    axis_err_mess, 2);
 
 		%Display the snr/iteration/error/frequency volumetric slices
-		title = ['Full volumetric histogram, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
-		graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
-		colorbar;
+		%title = ['Full volumetric histogram, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_slice(orthfiles{d}, [title, ', orthagonal error'], axis_err_orth, [-300 2.5 2], 1);
+		%graph_slice(messfiles{d}, [title, ', message error'],    axis_err_mess, [-300 0.5 2], 2);
+		%colorbar;
 	end
 
 	f = nfigures+1;
