@@ -120,6 +120,11 @@ void LDPCstate::calculateRho()
 			if (H.H[y][x] != -1) hxi++;
 		if (hx < hxi) hx = hxi;
 	}
+	
+	cout << "M="  << M   << " N="   << N   << " Variant=" << VARIANT << '\n'
+		<< "hx="  << hx  << " hy="  << hy  << '\n'
+		<< "hsx=" << hsx << " hsy=" << hsy << '\n'
+		<< "hpx=" << hpx << " hpy=" << hpy << '\n';
 }
 
 void LDPCstate::encode()

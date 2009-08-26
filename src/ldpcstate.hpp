@@ -13,6 +13,7 @@
 // Presets for half-rate
 #define M 12		// Height of the unexpanded Preaching matrix
 #define N 24		// Width of the unexpanded Preaching matrix
+#define VARIANT 'A'	// Variant of the Preaching matrix
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
@@ -26,6 +27,7 @@
 #define IMAX		500	// The maximum number of decode iterations
 
 // Matrix sparsity parameters
+#if (M == 12 && N == 24)	// rate = 1/2
 #define RHO_H_Y  7
 #define RHO_H_X  6
 #define RHO_HS_Y 5
@@ -33,6 +35,50 @@
 #define RHO_HP_Y 3
 #define RHO_HP_X 3
 
+#elif(M == 6 && N == 24)
+#if (VARIANT == 'A')		// rate = 3/4, A
+#define RHO_H_Y  15
+#define RHO_H_X  4
+#define RHO_HS_Y 12
+#define RHO_HS_X 4
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+
+#elif (VARIANT == 'B')		// rate = 3/4, B
+#define RHO_H_Y  15
+#define RHO_H_X  6
+#define RHO_HS_Y 13
+#define RHO_HS_X 6
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+#endif
+
+#elif (M == 8 && N == 24)
+#if (VARIANT == 'A')		// rate = 2/3, A
+#define RHO_H_Y  10
+#define RHO_H_X  6
+#define RHO_HS_Y 8
+#define RHO_HS_X 6
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+
+#elif (VARIANT == 'B')		// rate = 2/3, B
+#define RHO_H_Y  11
+#define RHO_H_X  4
+#define RHO_HS_Y 8
+#define RHO_HS_X 4
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+#endif
+
+#elif (M == 4 && N == 24)	// rate = 5/6
+#define RHO_H_Y  20 
+#define RHO_H_X  4
+#define RHO_HS_Y 18
+#define RHO_HS_X 4
+#define RHO_HP_Y 3
+#define RHO_HP_X 3
+#endif
 
 // The decode method.
 struct DecodeMethod

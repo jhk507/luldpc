@@ -61,6 +61,7 @@ __cdecl
 #endif
 main()
 {
+//	LDPCstate::calculateRho();
 //	LDPC::makeluts();
 //	return 0;
 
