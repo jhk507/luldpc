@@ -8,7 +8,8 @@
 
 #include "automatrix.hpp"
 
-#define Z 96				// Matrix expansion factor
+#define Z 48				// Matrix expansion factor
+#define ZMAX 96				// Maximum allowable expansion factor
 #define K (N-M)				// Width of parity portion of Preaching matrix
 #define RATE ((double)M/N)	// Rate
 
@@ -109,6 +110,11 @@ Preaching<Y,X,YRHO,XRHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 		}
 	}
 
+	// An appropriate value to use as a modular ceiling
+	// WARNING: This makes the code play nice when Z != 96, but the results may
+	// not be sane. Verification is needed.
+	const int zlim = ZMAX + Z - ZMAX%Z;
+
 	for (int xb = 0; xb < X; xb++)			// Iterate over preaching blocks, x
 	{
 		for (int xs = 0; xs < Z; xs++)		// Iterate within preaching subblocks, x
@@ -123,7 +129,7 @@ Preaching<Y,X,YRHO,XRHO>::Preaching(const int (&Hinit)[Y][XH], int off) :
 				const int h = H[yb][xb];
 				if (h >= 0)
 					// Stores the position of the "1" element within expanded Preaching matrix
-					pHxc[c++] = (Z - h + xs)%Z + Z*yb;
+					pHxc[c++] = (zlim - h + xs)%Z + Z*yb;
 			}
 			// Terminate the compressed data
 			pHxc[c] = -1;
