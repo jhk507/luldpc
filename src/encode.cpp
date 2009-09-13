@@ -9,7 +9,6 @@
 #include <cmath>
 #include <ctime>
 
-
 #include "ldpcstate.hpp"
 
 using namespace std;
@@ -17,16 +16,16 @@ using namespace std;
 // The SNRs to try.
 const double snrs[] =
 {
-	1.0,
-	1.1,
-	1.2,
-	1.3,
-	1.4,
-	1.5,
-	1.6,
-	1.7,
-	1.8,
-	1.9
+	SNRMIN+0.0,
+	SNRMIN+0.1,
+	SNRMIN+0.2,
+	SNRMIN+0.3,
+	SNRMIN+0.4,
+	SNRMIN+0.5,
+	SNRMIN+0.6,
+	SNRMIN+0.7,
+	SNRMIN+0.8,
+	SNRMIN+0.9
 };
 
 ///////////////////////////////////////////////////////////////////////////////
