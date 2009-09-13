@@ -11,9 +11,9 @@
 #include "histogram.hpp"
 
 // Presets for half-rate
-#define M 12		// Height of the unexpanded Preaching matrix
-#define N 24		// Width of the unexpanded Preaching matrix
-#define VARIANT 'A'	// Variant of the Preaching matrix
+#define M 12				// Height of the unexpanded Preaching matrix
+#define N 24				// Width of the unexpanded Preaching matrix
+#define VARIANT 'A'			// Variant of the Preaching matrix
 
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
@@ -21,13 +21,14 @@
 #define NPERFBUCKETS 100	// The number of performance histogram buckets
 #define MAXPERFTIME  400	// The maximum performance histogram duration, in us
 
-#define NERRS		300
-#define NSNRS		10	// The number of SNRs to try
-#define DEFAULTSNR	5	// The index of the default SNR.
-#define IMAX		500	// The maximum number of decode iterations
+#define NERRS		300		// The number of errors to wait for
+#define NSNRS		10		// The number of SNRs to try
+#define DEFAULTSNR	5		// The index of the default SNR.
+#define IMAX		500		// The maximum number of decode iterations
 
 // Matrix sparsity parameters
 #if (M == 12 && N == 24)	// rate = 1/2
+#define SNRMIN 1.0
 #define RHO_H_Y  7
 #define RHO_H_X  6
 #define RHO_HS_Y 5
@@ -35,7 +36,8 @@
 #define RHO_HP_Y 3
 #define RHO_HP_X 3
 
-#elif(M == 6 && N == 24)
+#elif (M == 6 && N == 24)
+#define SNRMIN 7.0
 #if (VARIANT == 'A')		// rate = 3/4, A
 #define RHO_H_Y  15
 #define RHO_H_X  4
@@ -44,7 +46,8 @@
 #define RHO_HP_Y 3
 #define RHO_HP_X 3
 
-#elif (VARIANT == 'B')		// rate = 3/4, B
+#elif (VARIANT == 'B')		// rate = 3/4, B	Broken!
+#define SNRMIN 100.0
 #define RHO_H_Y  15
 #define RHO_H_X  6
 #define RHO_HS_Y 13
@@ -55,6 +58,7 @@
 
 #elif (M == 8 && N == 24)
 #if (VARIANT == 'A')		// rate = 2/3, A
+#define SNRMIN 4.5
 #define RHO_H_Y  10
 #define RHO_H_X  6
 #define RHO_HS_Y 8
@@ -63,6 +67,7 @@
 #define RHO_HP_X 3
 
 #elif (VARIANT == 'B')		// rate = 2/3, B
+#define SNRMIN 4.8
 #define RHO_H_Y  11
 #define RHO_H_X  4
 #define RHO_HS_Y 8
@@ -72,6 +77,7 @@
 #endif
 
 #elif (M == 4 && N == 24)	// rate = 5/6
+#define SNRMIN 9.8
 #define RHO_H_Y  20 
 #define RHO_H_X  4
 #define RHO_HS_Y 18
