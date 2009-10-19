@@ -80,7 +80,7 @@ void LDPC::execute()
 
 	// The decode method loop
 	for (DecodeMethod::Enum method = DecodeMethod::firstMethod; method < DecodeMethod::ndecodes; method++)
-	//DecodeMethod::Enum method = DecodeMethod::v_off_ms;
+//	DecodeMethod::Enum method = DecodeMethod::nms;
 	{
 		if (method == DecodeMethod::bp || method == DecodeMethod::ms)
 			continue; 

@@ -11,10 +11,9 @@
 #include "histogram.hpp"
 
 // Presets for half-rate
-#define M 12				// Height of the unexpanded Preaching matrix
+#define M 4			// Height of the unexpanded Preaching matrix
 #define N 24				// Width of the unexpanded Preaching matrix
 #define VARIANT 'A'			// Variant of the Preaching matrix
-
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
 
 #define NERRBUCKETS  25		// The number of error histogram buckets
@@ -58,7 +57,7 @@
 
 #elif (M == 8 && N == 24)
 #if (VARIANT == 'A')		// rate = 2/3, A
-#define SNRMIN 4.5
+#define SNRMIN 4.7
 #define RHO_H_Y  10
 #define RHO_H_X  6
 #define RHO_HS_Y 8
@@ -67,7 +66,7 @@
 #define RHO_HP_X 3
 
 #elif (VARIANT == 'B')		// rate = 2/3, B
-#define SNRMIN 4.8
+#define SNRMIN 4.7
 #define RHO_H_Y  11
 #define RHO_H_X  4
 #define RHO_HS_Y 8
