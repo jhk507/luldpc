@@ -97,7 +97,7 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 3*ndecodes;
+	nfigures = 2*ndecodes;
 	
 	global f;
 	
@@ -121,9 +121,9 @@ function graph
 		graph_curves_iter_methods(squeeze(hist_bleriter(:,d,:)), title);
 
 		% Display the maxiter/aveiter multiple SNR curves
-		title = ['Average Iteration Number vs. Maximum Iterations Number, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
+	%	title = ['Average Iteration Number vs. Maximum Iterations Number bat-method, ', methods{d}];
+	%	incfigure(title, ndecodes);
+	%	graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
 		
 		% Display the error/iteration/frequency surface
 		%title = ['Histogram for one SNR, ', methods{d}];
@@ -162,7 +162,7 @@ function graph
 
 	f = nfigures+1;
 	
-	displaysnrs = [ 5.2 5.5 ];
+	displaysnrs = [ 10.4 10.7 ];
 	
 	for dsnri = 1:length(displaysnrs)
 		snr = displaysnrs(dsnri);
@@ -174,13 +174,13 @@ function graph
 				graph_curves_snr_methods(reshape(hist_maxiter(snri,:,:),ndecodes,niters), title);	
 				
 				% Display the maxiter/aveiter multiple SNR curves
-				title = ['Average Iteration Number vs. Maximum Iteration Number, ', axis_snr_text{snri}];
-				incfigure(title, 1);
-				graph_curves_aveiter_snr(reshape(hist_aveiter(snri,:,:),ndecodes,niters), title);
+				%title = ['Average Iteration Number vs. Maximum Iteration Number batmethod, ', axis_snr_text{snri}];
+				%incfigure(title, 1);
+				%graph_curves_aveiter_snr(reshape(hist_aveiter(snri,:,:),ndecodes,niters), title);
 				
 				% Display the maxiter/aveitr multiple SNR curves
 				% (alternate method)
-				title = ['Average Iteration Number vs. Maximum Iteration Number (alternate method), ', axis_snr_text{snri}];
+				title = ['Average Iteration Number vs. Maximum Iteration Number, ', axis_snr_text{snri}];
 				incfigure(title, 1);
 				graph_curves_aveiter_snr(reshape(hist_aveiter_alt(snri,:,:),ndecodes,niters), title);
 				
