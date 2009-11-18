@@ -3,13 +3,12 @@
 % $Rev$
 
 function graph_surf_snr(filename, axistitle, nplot)
+	% Declare the global variables.
+	global axis_iter axis_snr;
+	
 	% Load the histogram data.
 	hist = load(['hist_snr_', filename, '.tsv']);
 
-	% Declare the global variables.
-	global axis_iter;
-	global axis_snr;
-	
 	% Plot the surface.
 	subplot(1,2,nplot);
 	surf(axis_iter, axis_snr, hist, 'MeshStyle', 'row');

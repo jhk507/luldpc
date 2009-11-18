@@ -3,12 +3,12 @@
 % $Rev$
 
 function graph_surf_error(filename, axistitle, axis_err, nplot)
-	% Load the histogram data.
-	hist = load(['hist_err_', filename, '.tsv']);
-	
 	% Declare the global variables.
 	global axis_iter;
 
+	% Load the histogram data.
+	hist = load(['hist_err_', filename, '.tsv']);
+	
 	% Plot the surface.
 	subplot(1,2,nplot);
 	surf(axis_iter, axis_err, hist, 'MeshStyle', 'row');

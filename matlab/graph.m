@@ -6,15 +6,19 @@
 function graph
 	% Clear previous workspace data
 	clear;
-		
+	clc;
+
+	% Set default line style options. All lines are black.
+	set(0, 'DefaultAxesColorOrder', [0 0 0], ...
+		'DefaultAxesLineStyleOrder', '.-|+-|o-|*-|x-|s-|d-|^-|v-|>-|<-');
+
 	% Load the axes.
-	global axis_iter;
-	global axis_snr;
+	global axis_iter axis_snr;
 	axis_iter     = load('axis_iter.tsv');
 	axis_snr      = load('axis_snr.tsv');
 	axis_err_orth = load('axis_err_orth.tsv');
 	axis_err_mess = load('axis_err_mess.tsv');
-	
+
 	% Calculate the axis lengths.
 	global nsiters;	nsiters = 2;
 	global niters; 	niters  = length(axis_iter);
@@ -90,7 +94,6 @@ function graph
 		end
 		hist_maxiter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
 		hist_bleriter(:,d,:) = 1 - load(['hist_snr_', orthfiles{d}, '.tsv']);
-		
 		hist_aveiter_alt(:,d,:) = load(['hist_iter_', axis_decode{d}, '.tsv']);
 	end
 	
@@ -121,9 +124,9 @@ function graph
 		graph_curves_iter_methods(squeeze(hist_bleriter(:,d,:)), title);
 
 		% Display the maxiter/aveiter multiple SNR curves
-	%	title = ['Average Iteration Number vs. Maximum Iterations Number bat-method, ', methods{d}];
-	%	incfigure(title, ndecodes);
-	%	graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
+		%title = ['Average Iteration Number vs. Maximum Iterations Number bat-method, ', methods{d}];
+		%incfigure(title, ndecodes);
+		%graph_curves_aveiter(squeeze(hist_aveiter(:,d,:)), title);
 		
 		% Display the error/iteration/frequency surface
 		%title = ['Histogram for one SNR, ', methods{d}];

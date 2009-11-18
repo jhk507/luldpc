@@ -3,12 +3,8 @@
 % $Rev$
 
 function graph_curves_iter_methods(hist, axistitle)
-		
 	% Declare the global variables.
-	global nsiters;
-	global axis_siter;
-	global axis_siter_text;
-	global axis_snr;
+	global nsiters nsnrs axis_siter axis_siter_text axis_snr;
 	
 	% Plot the curves.
 	for i = 1:nsiters

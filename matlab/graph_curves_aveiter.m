@@ -4,9 +4,7 @@
 
 function graph_curves_aveiter(aves, axistitle)
 	% Declare the global variables.
-	global nsnrs;
-	global axis_iter;
-	global axis_snr_text;
+	global nsnrs axis_iter axis_snr_text;
 	
 	% Plot the curves.
 	for s = 1:nsnrs
