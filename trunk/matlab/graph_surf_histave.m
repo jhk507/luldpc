@@ -3,14 +3,11 @@
 % $Rev$
 
 function graph_surf_histave(filename, axistitle, axis_err, nplot)
+	% Declare the global variables.
+	global niters nsnrs axis_iter axis_snr;
+	
 	% Load the slice data.
 	hist = load(['hist_slice_', filename, '.tsv']);
-	
-	% Declare the global variables.
-	global niters;
-	global nsnrs;
-	global axis_iter;
-	global axis_snr;
 	
 	nerrs = length(axis_err);
 	
