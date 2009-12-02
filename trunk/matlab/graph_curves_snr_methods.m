@@ -16,7 +16,7 @@ function graph_curves_snr_methods(hist, axistitle)
 	
 	% Make the labels and legend.
 	title(axistitle);
-	xlabel('Iteration number');
+	xlabel('Maximum Iteration Numbers');
 	ylabel('BLER');
 	set(legend(methods, 'Location', 'BestOutside'), 'Interpreter','none');
 	

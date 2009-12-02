@@ -18,7 +18,7 @@ function graph_curves_snr(hist, axistitle)
 	title(axistitle);
 	xlabel('Iteration number');
 	ylabel('BLER');
-	set(legend(axis_snr_text, 'Location', 'BestOutside'), 'Interpreter','none');
+	set(legend(axis_snr_text, 'Location', 'BestOutside'),'Interpreter', 'none');
 	
 	% Set the axes and grids.
 	axis tight;

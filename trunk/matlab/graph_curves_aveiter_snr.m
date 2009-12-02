@@ -16,11 +16,14 @@ function graph_curves_aveiter_snr(aves, axistitle)
 	
 	% Make the labels and legend.
 	title(axistitle);
-	xlabel('Maximum iterations');
-	ylabel('Average iterations to resolution');
+	xlabel('Maximum Iteration Number');
+	ylabel('Average Iteration Number');;
 	set(legend(methods, 'Location', 'BestOutside'), 'Interpreter','none');
 	
 	% Set the axes and grids.
 	axis tight;
 	grid on;
 end
+
+
+
