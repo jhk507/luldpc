@@ -11,7 +11,7 @@
 #include "histogram.hpp"
 
 // Presets for half-rate
-#define M 4			// Height of the unexpanded Preaching matrix
+#define M 12			// Height of the unexpanded Preaching matrix
 #define N 24				// Width of the unexpanded Preaching matrix
 #define VARIANT 'A'			// Variant of the Preaching matrix
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
@@ -27,7 +27,7 @@
 
 // Matrix sparsity parameters
 #if (M == 12 && N == 24)	// rate = 1/2
-#define SNRMIN 	2.4	//1.4	//1.0
+#define SNRMIN 	1.2	//1.4	//1.0
 #define RHO_H_Y  7
 #define RHO_H_X  6
 #define RHO_HS_Y 5

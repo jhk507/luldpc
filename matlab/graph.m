@@ -100,7 +100,7 @@ function graph
 	% Set all figures to be docked.
 	set(0, 'DefaultFigureWindowStyle', 'docked');
 	
-	nfigures = 2*ndecodes;
+	nfigures = 1*ndecodes;
 	
 	global f;
 	
@@ -114,9 +114,9 @@ function graph
 		f = d;
 		
 		% Display the iteration/BLER multiple SNR curves
-		title = ['Block Error Rate vs. Maximum Iterations, ', methods{d}];
-		incfigure(title, ndecodes);
-		graph_curves_snr(squeeze(hist_maxiter(:,d,:)), title);
+%		title = ['Block Error Rate vs. Maximum Iterations, ', methods{d}];
+%		incfigure(title, ndecodes);
+%		graph_curves_snr(squeeze(hist_maxiter(:,d,:)), title);
 
 		% Display the SNR/BLER multiple iteration curves
 		title = ['Block Error Rate vs. Signal-to-noise Ratio, ', methods{d}];
@@ -165,7 +165,7 @@ function graph
 
 	f = nfigures+1;
 	
-	displaysnrs = [ 10.4 10.7 ];
+	displaysnrs = [ 1.7 2.0 ];
 	
 	for dsnri = 1:length(displaysnrs)
 		snr = displaysnrs(dsnri);
