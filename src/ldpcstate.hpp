@@ -11,7 +11,7 @@
 #include "histogram.hpp"
 
 // Presets for half-rate
-#define M 12			// Height of the unexpanded Preaching matrix
+#define M 4			// Height of the unexpanded Preaching matrix
 #define N 24				// Width of the unexpanded Preaching matrix
 #define VARIANT 'A'			// Variant of the Preaching matrix
 #define OUTPUT_DEBUGFILE 0	// Enable to output data to a debug file
@@ -36,7 +36,7 @@
 #define RHO_HP_X 3
 
 #elif (M == 6 && N == 24)
-#define SNRMIN 7.0 	//8.0	//7.0
+#define SNRMIN 2.3
 #if (VARIANT == 'A')		// rate = 3/4, A
 #define RHO_H_Y  15
 #define RHO_H_X  4
@@ -57,7 +57,7 @@
 
 #elif (M == 8 && N == 24)
 #if (VARIANT == 'A')		// rate = 2/3, A
-#define SNRMIN 5.5		//5.0				//4.7
+#define SNRMIN 1.7   
 #define RHO_H_Y  10
 #define RHO_H_X  6
 #define RHO_HS_Y 8
@@ -76,7 +76,7 @@
 #endif
 
 #elif (M == 4 && N == 24)	// rate = 5/6
-#define SNRMIN 12. //10.7	//9.9
+#define SNRMIN 3.0
 #define RHO_H_Y  20 
 #define RHO_H_X  4
 #define RHO_HS_Y 18
