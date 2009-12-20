@@ -8,10 +8,10 @@
 
 #include "automatrix.hpp"
 
-#define Z 72				// Matrix expansion factor 
+#define Z 96				// Matrix expansion factor 
 #define ZMAX 96				// Maximum allowable expansion factor
 #define K (N-M)				// Width of parity portion of Preaching matrix
-#define RATE ((double)M/N)	// Rate
+#define RATE ((double)K/N)	// Rate
 
 /////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////

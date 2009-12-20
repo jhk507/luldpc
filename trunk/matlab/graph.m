@@ -165,7 +165,7 @@ function graph
 
 	f = nfigures+1;
 	
-	displaysnrs = [ 1.7 2.0 ];
+	displaysnrs = [ 2.9 3.1 ];
 	
 	for dsnri = 1:length(displaysnrs)
 		snr = displaysnrs(dsnri);
