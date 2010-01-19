@@ -16,7 +16,7 @@ function graph_curves_iter_methods(hist, axistitle)
 	
 	% Make the labels and legend.
 	title(axistitle);
-	xlabel('SNR (dB)');
+	xlabel('Eb/N0 (dB)');
 	ylabel('BLER');
 	set(legend(axis_siter_text, 'Location', 'BestOutside'), 'Interpreter','none');
 	
