@@ -1,0 +1,1 @@
+This is a simulation of the LDPC error correcting code scheme implemented with templated C++ classes.
